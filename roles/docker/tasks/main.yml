@@ -1,0 +1,33 @@
+---
+
+- name: Install docker.io and dependencies
+  become: true
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - docker.io
+      - docker-compose
+
+- name: Create group docker
+  become: true
+  group:
+    name: docker
+
+- name: Add docker user to docker group
+  become: true
+  user:
+    name: "{{ ansible_env.USER }}"
+    append: true
+    groups: docker
+
+- name: "Add docker daemon network config: {{ docker_daemon_config_folder }}/daemon.json"
+  become: true
+  copy:
+    src: daemon.json
+    dest: "{{ docker_daemon_config_folder }}/daemon.json"
+    mode: 0644
+  notify:
+    - restart_docker

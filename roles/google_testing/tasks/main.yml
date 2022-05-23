@@ -1,0 +1,11 @@
+- name: Install basic build tools
+  become: true
+  package:
+    name:
+      - build-essential
+      - gcc
+      - g++
+      - cmake
+
+- import_tasks: test_mock.yml
+- import_tasks: benchmark.yml

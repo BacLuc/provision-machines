@@ -1,0 +1,4 @@
+- name: Remove no more referenced packages
+  become: true
+  apt:
+    autoremove: true
