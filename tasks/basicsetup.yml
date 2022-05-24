@@ -2,15 +2,15 @@
   become: true
   package:
     name:
-      - tree
-      - nano
-      - wget
-      - htop
-      - rsync
-      - unzip
-      - tar
       - fd-find
       - firefox
+      - htop
+      - nano
+      - rsync
+      - tar
+      - tree
+      - unzip
+      - wget
 
 - name: Set timezone to Europe/Zurich
   become: true
