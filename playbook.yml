@@ -7,7 +7,6 @@
 
   - role: bash
   - role: tmux
-  - role: google_testing
 
   - role: git-tools
     vars:
@@ -18,17 +17,6 @@
       git_user_email: "lucius.bachmann@gmx.ch"
 
   - role: docker
-#  - role: ansible-role-docmake
-#    vars:
-#      pandoc: true
-#      texlive_min: true
-#      texlive_additional: true
-#      markdownlint: true
-#      drawio: true
-#      gpp: true
-#      metropolis: true
-#      tikz_uml: true
-#      docmake_version: '35411f1'
   - role: okular
 
   - role: ansible-role-intellij
@@ -56,5 +44,4 @@
   - role: ansible-role-visual-studio-code
 
   post_tasks:
-    - include_tasks: tasks/intellij.yml
     - include_tasks: tasks/ubuntu_cleanup.yml
