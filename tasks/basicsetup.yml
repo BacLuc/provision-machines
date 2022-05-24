@@ -2,8 +2,10 @@
   become: true
   package:
     name:
+      - dos2unix
       - fd-find
       - firefox
+      - geany
       - htop
       - nano
       - rsync
