@@ -12,13 +12,6 @@
       - fd-find
       - firefox
 
-- name: Install X11 base
-  become: true
-  package:
-    name:
-      - xbase-clients
-      - x11-common
-
 - name: Set timezone to Europe/Zurich
   become: true
   timezone:
