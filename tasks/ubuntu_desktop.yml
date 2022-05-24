@@ -1,22 +1,17 @@
-- name: Install Ubuntu Desktop
-  become: true
-  apt:
-    name: ubuntu-desktop
-
-- name: Install Ubuntu Desktop missing dependencies (needed for vbox guest additions)
-  become: true
-  apt:
-    name: linux-image-generic
-
 - name: Install psutil that is needed for dconf module below
   become: true
   apt:
     name: python3-psutil
 
+- name: Install xfce-terminal
+  become: true
+  apt:
+    name: xfce4-terminal
+
 - name: define all gnome favorite apps
   dconf:
     key: "/org/gnome/shell/favorite-apps"
-    value: "['org.gnome.Nautilus.desktop', 'firefox.desktop', 'org.gnome.Terminal.desktop', 'jetbrains-clion.desktop', 'jetbrains-idea-ce.desktop', 'code.desktop']"
+    value: "['nemo.desktop', 'firefox.desktop', 'xfce4-terminal.desktop', 'code.desktop']"
 
 - name: add german keyboard layouts
   dconf:
