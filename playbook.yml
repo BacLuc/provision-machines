@@ -5,6 +5,7 @@
   - include_tasks: tasks/basicsetup.yml
   - include_tasks: tasks/java.yml
 
+  roles:
   - role: bash
   - role: tmux
 
