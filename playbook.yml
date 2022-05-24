@@ -5,15 +5,6 @@
   - include_tasks: tasks/basicsetup.yml
   - include_tasks: tasks/java.yml
 
-  roles:
-  - role: ssh
-    vars:
-      ssh_pub_files: ['ssh_key_clang_home.opub', 'rsa-key-clang-scs-20170919.opub']
-
-  - role: swapfile
-    vars:
-      swapfile_size: 4G
-
   - role: ansible-role-samba
     become: true
     vars:
