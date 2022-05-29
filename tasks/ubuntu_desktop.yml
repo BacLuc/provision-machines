@@ -17,3 +17,23 @@
   dconf:
     key: "/org/gnome/desktop/input-sources/sources"
     value: "[('xkb', 'ch'), ('xkb', 'us')]"
+
+- name: add shortcut for switching workspace down
+  dconf:
+    key: /org/gnome/desktop/wm/keybindings switch-to-workspace-down
+    value: "['<Super>Page_Down', '<Control><Super>Down']"
+
+- name: add shortcut for switching workspace left
+  dconf:
+    key: /org/gnome/desktop/wm/keybinding switch-to-workspace-left
+    value: "['<Control><Super>Left']"
+
+- name: add shortcut for switching workspace up
+  dconf:
+    key: /org/gnome/desktop/wm/keybinding switch-to-workspace-up
+    value: "['<Control><Super>Up']"
+
+- name: add shortcut for switching workspace right
+  dconf:
+    key: /org/gnome/desktop/wm/keybinding switch-to-workspace-right
+    value: "['<Control><Super>Right']"
