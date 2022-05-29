@@ -28,28 +28,6 @@
   - role: docker
   - role: okular
 
-  - role: ansible-role-intellij
-    vars:
-      intellij_version: '2021.3.1'
-      intellij_edition: 'community'
-      users:
-        - username: '{{ ansible_env.USER }}'
-          intellij_jdks:
-            - name: '11'
-              home: '{{ jdk11_home }}'
-          intellij_default_jdk: '11'
-          intellij_disabled_plugins:
-            - org.jetbrains.plugins.gradle
-            - CVS
-            - com.intellij.uiDesigner
-            - org.jetbrains.android
-            - TestNG-J
-            - hg4idea
-            - Subversion
-            - AntSupport
-            - DevKit
-            - Kotlin
-
   - role: ansible-role-visual-studio-code
 
   post_tasks:
