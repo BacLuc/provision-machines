@@ -6,6 +6,14 @@
   - include_tasks: tasks/java.yml
 
   roles:
+  - role: ansible-role-customize-gnome
+    vars:
+      gnome_extensions:
+      - url: https://extensions.gnome.org/extension-data/sound-output-device-chooserkgshank.net.v43.shell-extension.zip
+        id: 906
+      - url: https://extensions.gnome.org/extension-data/wsmatrixmartin.zurowietz.de.v23.shell-extension.zip
+        id: 1485
+
   - role: bash
   - role: tmux
 
