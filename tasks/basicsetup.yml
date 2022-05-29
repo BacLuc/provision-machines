@@ -29,3 +29,21 @@
   lineinfile: dest=/etc/default/locale
     regexp="LC_ALL"
     line="LC_ALL=\"en_US.UTF-8\""
+
+- name: Install additional packages
+  become: true
+  package:
+    name:
+      - apt-transport-https
+      - chromium-browser
+      - chromium-browser-l10n
+      - chromium-codecs-ffmpeg
+      - curl
+      - geany
+      - git
+      - gitk
+      - gnome-tweaks
+      - keepassxc
+      - tig
+      - vlc
+      - xournal
