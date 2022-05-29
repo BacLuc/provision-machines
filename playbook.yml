@@ -30,5 +30,10 @@
 
   - role: ansible-role-visual-studio-code
 
+  # todo:
+  # - install jetbrains toolbox
+  # - install nvm
+  # - setup thunderbird
+
   post_tasks:
     - include_tasks: tasks/ubuntu_cleanup.yml
