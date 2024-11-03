@@ -11,7 +11,7 @@
 - name: define all gnome favorite apps
   dconf:
     key: "/org/gnome/shell/favorite-apps"
-    value: "['nemo.desktop', 'firefox.desktop', 'xfce4-terminal.desktop', 'code.desktop']"
+    value: "['nemo.desktop', 'chromium-browser.desktop', 'xfce4-terminal.desktop', 'code.desktop']"
 
 - name: add german keyboard layouts
   dconf:
