@@ -17,3 +17,14 @@ jobs:
         run: |
           cp ci-inventory.yaml inventory/local.yaml
           sudo ./provision.sh
+
+  check_format:
+    name: "check format"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: "run provisioning"
+        run: |
+          docker compose run --rm prettier
+          git diff --exit-code
