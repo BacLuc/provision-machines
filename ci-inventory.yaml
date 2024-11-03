@@ -1,0 +1,20 @@
+all:
+  hosts:
+    localhost:
+
+local:
+  hosts:
+    localhost:
+  vars:
+    enable_bash: true
+    enable_basic_setup: true
+    enable_customize_gnome: false
+    enable_docker: true
+    enable_git_tools: true
+    git_graphical_tools: false
+    enable_java: true
+    enable_okular: false
+    enable_tmux: true
+    enable_ubuntu_cleanup: true
+    enable_ubuntu_desktop: false
+    enable_visual_studio_code: true
