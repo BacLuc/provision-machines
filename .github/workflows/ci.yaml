@@ -15,6 +15,7 @@ jobs:
 
       - name: "run provisioning"
         run: |
+          cp ci-inventory.yaml inventory/local.yaml
           sudo ./provision.sh
 
   check_format:
