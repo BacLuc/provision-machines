@@ -3,7 +3,7 @@
   pre_tasks:
   - include_tasks: tasks/ubuntu_desktop.yml
   - include_tasks: tasks/basicsetup.yml
-  - include_tasks: tasks/java.yml
+#  - include_tasks: tasks/java.yml
 
   roles:
   - role: ansible-role-customize-gnome
