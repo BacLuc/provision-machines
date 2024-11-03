@@ -1,0 +1,5 @@
+services:
+  prettier:
+    image: ${REGISTRY:-ghcr.io}/${REPO_OWNER:-bacluc}/${REPO_NAME:-prettier-image}/prettier-image:3.3.3
+    volumes:
+      - ./:/workspace
