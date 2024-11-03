@@ -1,5 +1,4 @@
 ---
-
 - name: Install dependencies to add docker repository
   become: true
   apt:
@@ -11,26 +10,26 @@
 
 - name: Install keyrings
   ansible.builtin.shell: install -m 0755 -d /etc/apt/keyrings
-  
-- name: 'download key'
+
+- name: "download key"
   become: true
   get_url:
-    url: 'https://download.docker.com/linux/ubuntu/gpg'
-    dest: '/etc/apt/keyrings/docker.asc'
+    url: "https://download.docker.com/linux/ubuntu/gpg"
+    dest: "/etc/apt/keyrings/docker.asc"
     force: false
-    mode: 'ugo=r'  
-        
+    mode: "ugo=r"
+
 - name: Get arch
   ansible.builtin.shell: dpkg --print-architecture
   register: arch
-  
+
 - name: Get release
   ansible.builtin.shell: . /etc/os-release && echo "$VERSION_CODENAME"
   register: os_release
 
 - name: Add docker apt repository with signature
   apt_repository:
-    repo: 'deb [arch={{ arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ os_release.stdout }} stable'
+    repo: "deb [arch={{ arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ os_release.stdout }} stable"
 
 - name: Install docker-ce and dependencies
   become: true

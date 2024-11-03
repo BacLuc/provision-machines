@@ -1,44 +1,44 @@
 - hosts: all
 
   pre_tasks:
-  - include_tasks: tasks/ubuntu_desktop.yml
-    when: enable_ubuntu_desktop | default(false)
-  - include_tasks: tasks/basicsetup.yml
-    when: enable_basicsetup | default(false)
-  - include_tasks: tasks/java.yml
-    when: enable_java | default(false)
+    - include_tasks: tasks/ubuntu_desktop.yml
+      when: enable_ubuntu_desktop | default(false)
+    - include_tasks: tasks/basicsetup.yml
+      when: enable_basicsetup | default(false)
+    - include_tasks: tasks/java.yml
+      when: enable_java | default(false)
 
   roles:
-  - role: ansible-role-customize-gnome
-    when: enable_customize_gnome | default(false)
-    vars:
-      gnome_extensions:
-      - url: https://extensions.gnome.org/extension-data/sound-output-device-chooserkgshank.net.v43.shell-extension.zip
-        id: 906
-      - url: https://extensions.gnome.org/extension-data/wsmatrixmartin.zurowietz.de.v23.shell-extension.zip
-        id: 1485
+    - role: ansible-role-customize-gnome
+      when: enable_customize_gnome | default(false)
+      vars:
+        gnome_extensions:
+          - url: https://extensions.gnome.org/extension-data/sound-output-device-chooserkgshank.net.v43.shell-extension.zip
+            id: 906
+          - url: https://extensions.gnome.org/extension-data/wsmatrixmartin.zurowietz.de.v23.shell-extension.zip
+            id: 1485
 
-  - role: bash
-    when: enable_bash | default(false)
-  - role: tmux
-    when: enable_tmux | default(false)
+    - role: bash
+      when: enable_bash | default(false)
+    - role: tmux
+      when: enable_tmux | default(false)
 
-  - role: git-tools
-    when: enable_git_tools | default(false)
-    vars:
-      git_aliases: true
-      git_rerere: true
-      git_editor_nano: true
-      git_user_name: "BacLuc"
-      git_user_email: "lucius.bachmann@gmx.ch"
+    - role: git-tools
+      when: enable_git_tools | default(false)
+      vars:
+        git_aliases: true
+        git_rerere: true
+        git_editor_nano: true
+        git_user_name: "BacLuc"
+        git_user_email: "lucius.bachmann@gmx.ch"
 
-  - role: docker
-    when: enable_docker | default(false)
-  - role: okular
-    when: enable_okular | default(false)
+    - role: docker
+      when: enable_docker | default(false)
+    - role: okular
+      when: enable_okular | default(false)
 
-  - role: ansible-role-visual-studio-code
-    when: enable_visula_studio_code | default(false)
+    - role: ansible-role-visual-studio-code
+      when: enable_visula_studio_code | default(false)
 
   # todo:
   # - install jetbrains toolbox
