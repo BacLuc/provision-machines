@@ -21,6 +21,8 @@
 
     - role: bash
       when: enable_bash | default(false)
+    - role: kubectl
+      when: enable_kubectl | default(false)
     - role: tmux
       when: enable_tmux | default(false)
 

@@ -1,0 +1,50 @@
+- name: Install kubectl and helm
+  become: true
+  community.general.snap:
+    name:
+      - kubectl
+      - helm
+    classic: true
+
+- name: Install yq
+  become: true
+  community.general.snap:
+    name:
+      - yq
+
+- name: Source kubectl tools
+  blockinfile:
+    path: "~/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: kubectl tools"
+    block: |
+      function ktx() {
+        if [ $# -eq 0 ]; then
+           kubectl config get-contexts
+           return
+        fi
+        yq '.current-context="'$1'"' < ${shell_tmp_dir}/.kube/config > ${shell_tmp_dir}/.kube/config
+      }
+
+      source <(kubectl completion bash)
+      complete -F __start_kubectl k
+
+      KUBECONFIG=""
+      for file in $(find $HOME/.kube/config.d -type f); do
+              KUBECONFIG="$KUBECONFIG:$file"
+      done
+
+      shell_tmp_dir=$(mktemp -d)
+      mkdir ${shell_tmp_dir}/.kube
+      yq eval -n ' .apiVersion="v1" | .current-context=""' > ${shell_tmp_dir}/.kube/config
+      KUBECONFIG="$KUBECONFIG:${shell_tmp_dir}/.kube/config"
+
+- name: Add bash aliases
+  lineinfile: dest="~/.bash_aliases"
+    line="{{ item.line }}"
+    regexp="{{ item.regexp }}"
+    state=present
+    insertafter=EOF
+    create=True
+    mode="u+rw"
+  with_items:
+    - { regexp: "^alias k=", line: "alias k=kubectl" }
