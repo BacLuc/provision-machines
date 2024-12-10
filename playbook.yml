@@ -40,11 +40,6 @@
     - role: ansible-role-visual-studio-code
       when: enable_visula_studio_code | default(false)
 
-  # todo:
-  # - install jetbrains toolbox
-  # - install nvm
-  # - setup thunderbird
-
   post_tasks:
     - include_tasks: tasks/ubuntu_cleanup.yml
       when: enable_ubuntu_cleanup | default(false)
