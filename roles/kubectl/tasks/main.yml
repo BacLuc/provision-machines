@@ -48,3 +48,13 @@
     mode="u+rw"
   with_items:
     - { regexp: "^alias k=", line: "alias k=kubectl" }
+
+- name: Check if k9s is installed
+  stat:
+    path: /home/linuxbrew/.linuxbrew/Homebrew/bin/k9s
+  register: k9s_installed
+
+- name: install k9s
+  when: k9s_installed.stat.exists is false
+  command: |
+    /home/linuxbrew/.linuxbrew/Homebrew/bin/brew install k9s
