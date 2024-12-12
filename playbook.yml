@@ -9,6 +9,8 @@
       when: enable_java | default(false)
 
   roles:
+    - role: homebrew
+      when: enable_homebrew | default(false)
     - role: ansible-role-customize-gnome
       when: enable_customize_gnome | default(false)
       vars:
