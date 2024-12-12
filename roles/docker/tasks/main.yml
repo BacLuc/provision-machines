@@ -28,6 +28,7 @@
   register: os_release
 
 - name: Add docker apt repository with signature
+  become: true
   apt_repository:
     repo: "deb [arch={{ arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ os_release.stdout }} stable"
 
