@@ -6,6 +6,7 @@ local:
   hosts:
     localhost:
   vars:
+    enable_ansible_ppa: true
     enable_bash: true
     enable_basic_setup: true
     enable_homebrew: true
@@ -21,3 +22,6 @@ local:
     enable_ubuntu_cleanup: true
     enable_ubuntu_desktop: false
     enable_visual_studio_code: true
+
+    ansible:
+      apt_list_file: /etc/apt/sources.list.d/ansible-ubuntu-ansible-jammy.list

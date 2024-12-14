@@ -7,6 +7,8 @@
       when: enable_basicsetup | default(false)
     - include_tasks: tasks/java.yml
       when: enable_java | default(false)
+    - include_tasks: tasks/ansible-ppa.yml
+      when: enable_ansible_ppa | default(false)
 
   roles:
     - role: homebrew
