@@ -22,18 +22,4 @@
 - name: Install additional packages
   become: true
   package:
-    name:
-      - apt-transport-https
-      - chromium-browser
-      - chromium-browser-l10n
-      - chromium-codecs-ffmpeg
-      - curl
-      - geany
-      - git
-      - gitk
-      - gnome-tweaks
-      - keepassxc
-      - nextcloud-desktop
-      - tig
-      - vlc
-      - xournal
+    name: "{{ apt_packages.additional_tools }}"

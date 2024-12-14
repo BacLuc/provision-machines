@@ -39,6 +39,21 @@ local:
         - tree
         - unzip
         - wget
+      additional_tools:
+        - apt-transport-https
+        - chromium-browser
+        - chromium-browser-l10n
+        - chromium-codecs-ffmpeg
+        - curl
+        - geany
+        - git
+        - gitk
+        - gnome-tweaks
+        - keepassxc
+        - nextcloud-desktop
+        - tig
+        - vlc
+        - xournal
 
     git:
       config:
