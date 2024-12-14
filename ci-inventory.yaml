@@ -26,6 +26,20 @@ local:
     ansible:
       apt_list_file: /etc/apt/sources.list.d/ansible-ubuntu-ansible-jammy.list
 
+    apt_packages:
+      basic_tools:
+        - dos2unix
+        - fd-find
+        - firefox
+        - geany
+        - htop
+        - nano
+        - rsync
+        - tar
+        - tree
+        - unzip
+        - wget
+
     git:
       config:
         user_name: "User"

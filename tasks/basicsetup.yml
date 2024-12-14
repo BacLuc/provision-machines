@@ -1,18 +1,7 @@
 - name: Install basic tools
   become: true
   package:
-    name:
-      - dos2unix
-      - fd-find
-      - firefox
-      - geany
-      - htop
-      - nano
-      - rsync
-      - tar
-      - tree
-      - unzip
-      - wget
+    name: "{{ apt_packages.basic_tools }}"
 
 - name: Set timezone to Europe/Zurich
   become: true
