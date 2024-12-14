@@ -25,3 +25,8 @@ local:
 
     ansible:
       apt_list_file: /etc/apt/sources.list.d/ansible-ubuntu-ansible-jammy.list
+
+    git:
+      config:
+        user_name: "User"
+        user_email: "user@domain.org"
