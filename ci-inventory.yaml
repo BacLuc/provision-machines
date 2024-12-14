@@ -30,8 +30,8 @@ local:
       basic_tools:
         - dos2unix
         - fd-find
-        - firefox
-        - geany
+        #- firefox
+        #- geany
         - htop
         - nano
         - rsync
@@ -41,19 +41,19 @@ local:
         - wget
       additional_tools:
         - apt-transport-https
-        - chromium-browser
-        - chromium-browser-l10n
-        - chromium-codecs-ffmpeg
+        #- chromium-browser
+        #- chromium-browser-l10n
+        #- chromium-codecs-ffmpeg
         - curl
-        - geany
-        - git
-        - gitk
-        - gnome-tweaks
-        - keepassxc
-        - nextcloud-desktop
+        #- geany
+        #- git
+        #- gitk
+        #- gnome-tweaks
+        #- keepassxc
+        #- nextcloud-desktop
         - tig
-        - vlc
-        - xournal
+        #- vlc
+        #- xournal
 
     git:
       config:
