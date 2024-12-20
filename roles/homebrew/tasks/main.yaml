@@ -4,7 +4,6 @@
   register: homebrew_installed
 
 - name: install homebrew
-  become: true
   when: homebrew_installed.stat.exists is false
   shell: |
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
