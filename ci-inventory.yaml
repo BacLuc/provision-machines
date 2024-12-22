@@ -49,11 +49,13 @@ local:
         #- git
         #- gitk
         #- gnome-tweaks
-        #- keepassxc
         #- nextcloud-desktop
         - tig
         #- vlc
         #- xournal
+
+    basic_utils:
+      enable_keepassxc: false
 
     git:
       config:

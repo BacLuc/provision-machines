@@ -47,6 +47,8 @@
     - role: ansible-role-visual-studio-code
       when: enable_visula_studio_code | default(false)
 
+    - role: basic_utils
+
   post_tasks:
     - include_tasks: tasks/ubuntu_cleanup.yml
       when: enable_ubuntu_cleanup | default(false)

@@ -1,0 +1,9 @@
+- name: install flatpak
+  become: true
+  package:
+    name: flatpak
+
+- name: add flathub repository
+  become: true
+  command: |
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo

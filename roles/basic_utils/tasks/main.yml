@@ -1,0 +1,30 @@
+- name: basic_utils print var
+  debug:
+    var: basic_utils
+
+# region keepassxc
+- name: install keepassxc flatpak
+  when: basic_utils.enable_keepassxc | default(false)
+  command: flatpak install flathub org.keepassxc.KeePassXC --assumeyes
+
+- name: Modify Desktop file
+  when: basic_utils.enable_keepassxc | default(false)
+  become: true
+  lineinfile:
+    dest="/var/lib/flatpak/exports/share/applications/org.keepassxc.KeePassXC.desktop"
+    line="{{ item.line }}"
+    regexp="{{ item.regexp }}"
+    state=present
+    insertafter=EOF
+    create=True
+    mode="u+rw"
+  with_items:
+    - {
+        regexp: "^Exec=",
+        line: "Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=keepassxc --file-forwarding org.keepassxc.KeePassXC --platform xcb @@ %f @@",
+      }
+# manually to do:
+# enable ssh-agent integration
+# enable auto type for shortcut
+
+# endregion
