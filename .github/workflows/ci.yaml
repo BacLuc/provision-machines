@@ -11,6 +11,10 @@ jobs:
     name: "Run provisioning on ubuntu"
     runs-on: ubuntu-22.04
     steps:
+      - name: "uninstall homebrew"
+        run: |
+          sudo rm -rf /home/linuxbrew
+
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: "run provisioning"
