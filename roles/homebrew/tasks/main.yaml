@@ -1,6 +1,10 @@
+- name: set facts homebrew role
+  set_fact:
+    homebrew_path: "/home/linuxbrew/.linuxbrew/Homebrew/bin"
+
 - name: Check if Homebrew is installed
   stat:
-    path: /home/linuxbrew/.linuxbrew/Homebrew/bin/brew
+    path: "{{ homebrew_path }}/brew"
   register: homebrew_installed
 
 - name: install homebrew
@@ -13,4 +17,4 @@
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: homebrew"
     block: |
-      PATH="$PATH:/home/linuxbrew/.linuxbrew/Homebrew/bin/"
+      PATH="$PATH:{{ homebrew_path }}"
