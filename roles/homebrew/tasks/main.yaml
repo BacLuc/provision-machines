@@ -18,3 +18,10 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK: homebrew"
     block: |
       PATH="$PATH:{{ homebrew_path }}"
+
+- name: template update homebrew script
+  become: true
+  template:
+    src: homebrew-upgrade.j2.sh
+    dest: "{{update_packages_script.dir}}/homebrew-upgrade"
+    mode: "u=rwx,go=rx"
