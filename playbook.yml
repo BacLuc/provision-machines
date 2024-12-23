@@ -4,6 +4,11 @@
       dir: /usr/local/bin/update-script.d
 
   pre_tasks:
+    - name: Get user
+      ansible.builtin.shell: whoami
+      register: user_command
+    - set_fact:
+        user: "{{ user_command.stdout.strip() }}"
     - include_tasks: tasks/ubuntu_desktop.yml
       when: enable_ubuntu_desktop | default(false)
     - include_tasks: tasks/basicsetup.yml
