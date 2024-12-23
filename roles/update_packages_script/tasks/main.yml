@@ -1,0 +1,20 @@
+- name: "create update scripts folder"
+  become: true
+  file:
+    path: "{{ update_packages_script.dir }}"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: "create update script"
+  become: true
+  copy:
+    src: update-script.sh
+    dest: /usr/local/bin/update-script
+    mode: "u=rwx,go=rx"
+
+- name: "add apt upgrade script"
+  become: true
+  copy:
+    src: apt-upgrade.sh
+    dest: "{{ update_packages_script.dir }}/apt-upgrade"
+    mode: "u=rwx,go=rx"

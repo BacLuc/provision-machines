@@ -1,4 +1,7 @@
 - hosts: all
+  vars:
+    update_packages_script:
+      dir: /usr/local/bin/update-script.d
 
   pre_tasks:
     - include_tasks: tasks/ubuntu_desktop.yml
@@ -11,6 +14,7 @@
       when: enable_ansible_ppa | default(false)
 
   roles:
+    - role: update_packages_script
     - role: homebrew
       when: enable_homebrew | default(false)
     - role: ansible-role-customize-gnome

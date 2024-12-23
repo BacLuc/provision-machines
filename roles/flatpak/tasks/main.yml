@@ -7,3 +7,10 @@
   become: true
   command: |
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+- name: add update script
+  become: true
+  copy:
+    src: flatpak-upgrade.sh
+    dest: "{{update_packages_script.dir}}/flatpak-upgrade"
+    mode: "u=rwx,go=rx"
