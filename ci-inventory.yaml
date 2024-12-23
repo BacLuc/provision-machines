@@ -56,6 +56,7 @@ local:
 
     basic_utils:
       enable_keepassxc: false
+      enable_signal: true
 
     git:
       config:

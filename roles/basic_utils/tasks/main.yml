@@ -28,3 +28,10 @@
 # enable auto type for shortcut
 
 # endregion
+
+- name: install signal snap
+  when: basic_utils.enable_signal | default(false)
+  become: true
+  community.general.snap:
+    name:
+      - signal-desktop
