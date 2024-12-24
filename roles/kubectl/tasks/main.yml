@@ -36,7 +36,7 @@
       shell_tmp_dir=$(mktemp -d)
       mkdir ${shell_tmp_dir}/.kube
       yq eval -n ' .apiVersion="v1" | .current-context=""' > ${shell_tmp_dir}/.kube/config
-      KUBECONFIG="$KUBECONFIG:${shell_tmp_dir}/.kube/config"
+      export KUBECONFIG="$KUBECONFIG:${shell_tmp_dir}/.kube/config"
 
 - name: Add bash aliases
   lineinfile: dest="~/.bash_aliases"
