@@ -1,3 +1,25 @@
+- name: "set facts for kubectl role"
+  set_fact:
+    kubectl:
+      contex_management_part: |
+        function ktx() {
+          if [ $# -eq 0 ]; then
+             kubectl config get-contexts
+             return
+          fi
+          yq '.current-context="'$1'"' < ${shell_tmp_dir}/.kube/config > ${shell_tmp_dir}/.kube/config
+        }
+
+        KUBECONFIG=""
+        for file in $(find $HOME/.kube/config.d -type f); do
+          KUBECONFIG="$KUBECONFIG:$file"
+        done
+
+        shell_tmp_dir=$(mktemp -d)
+        mkdir ${shell_tmp_dir}/.kube
+        yq eval -n ' .apiVersion="v1" | .current-context=""' > ${shell_tmp_dir}/.kube/config
+        export KUBECONFIG="$KUBECONFIG:${shell_tmp_dir}/.kube/config"
+
 - name: Install kubectl and helm
   become: true
   community.general.snap:
@@ -12,31 +34,36 @@
     name:
       - yq
 
-- name: Source kubectl tools
+- name: Source kubectl tools bash
   blockinfile:
     path: "~/.bashrc"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK: kubectl tools"
-    block: |
-      function ktx() {
-        if [ $# -eq 0 ]; then
-           kubectl config get-contexts
-           return
-        fi
-        yq '.current-context="'$1'"' < ${shell_tmp_dir}/.kube/config > ${shell_tmp_dir}/.kube/config
-      }
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: kubectl context"
+    block: "{{ kubectl.contex_management_part }}"
 
+- name: Source kubectl tools zsh
+  when: enable_zsh | default(false)
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: kubectl context"
+    block: "{{ kubectl.contex_management_part }}"
+
+- name: Add kubectl completion for alias for bash
+  blockinfile:
+    path: "~/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: kubectl completion"
+    block: |
       source <(kubectl completion bash)
       complete -F __start_kubectl k
 
-      KUBECONFIG=""
-      for file in $(find $HOME/.kube/config.d -type f); do
-              KUBECONFIG="$KUBECONFIG:$file"
-      done
-
-      shell_tmp_dir=$(mktemp -d)
-      mkdir ${shell_tmp_dir}/.kube
-      yq eval -n ' .apiVersion="v1" | .current-context=""' > ${shell_tmp_dir}/.kube/config
-      export KUBECONFIG="$KUBECONFIG:${shell_tmp_dir}/.kube/config"
+- name: Add kubectl completion for alias for zsh
+  when: enable_zsh | default(false)
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: kubectl completion"
+    block: |
+      source <(kubectl completion zsh)
+      complete -F __start_kubectl k
+      [[ $commands[kubectl] ]] && source <(kubectl completion zsh)
 
 - name: Add bash aliases
   lineinfile: dest="~/.bash_aliases"
@@ -48,6 +75,10 @@
     mode="u+rw"
   with_items:
     - { regexp: "^alias k=", line: "alias k=kubectl" }
+    - {
+        regexp: "^alias kn=",
+        line: 'alias kn=''f() { [ "$1" ] && kubectl config set-context --current --namespace $1 || kubectl config view --minify | grep namespace | cut -d" " -f6 ; } ; f''',
+      }
 
 - name: Check if k9s is installed
   stat:
