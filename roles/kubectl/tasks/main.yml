@@ -51,10 +51,10 @@
 
 - name: Check if k9s is installed
   stat:
-    path: /home/linuxbrew/.linuxbrew/Homebrew/bin/k9s
+    path: "{{ homebrew_path }}/k9s"
   register: k9s_installed
 
 - name: install k9s
   when: k9s_installed.stat.exists is false
   command: |
-    /home/linuxbrew/.linuxbrew/Homebrew/bin/brew install k9s
+    {{ homebrew_path }}/brew install k9s
