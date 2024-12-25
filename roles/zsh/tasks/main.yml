@@ -1,3 +1,11 @@
+- name: "set facts for zsh role"
+  set_fact:
+    zsh: "{{ zsh | default({}) | combine( { 'completions_dir': '~/zsh/completions' } ) }}"
+
+- name: zsh print var
+  debug:
+    var: zsh
+
 - name: "install zsh"
   become: true
   package:
@@ -104,3 +112,27 @@
     src: oh-my-zsh-upgrade.j2.sh
     dest: "{{update_packages_script.dir}}/oh-my-zsh-upgrade"
     mode: "u=rwx,go=rx"
+
+- name: "create completions script"
+  file:
+    path: "{{ zsh.completions_dir }}"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: "check if docker completion script exists"
+  stat:
+    path: "{{ zsh.completions_dir }}/_docker"
+  register: zsh_completion_exists
+
+- name: "install docker completion script"
+  when: zsh_completion_exists.stat.exists is false
+  shell: "docker completion zsh > {{ zsh.completions_dir }}/_docker"
+
+- name: "source docker completion script"
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: add docker completion script"
+    block: |
+      source {{ zsh.completions_dir }}/_docker
+
+      complete -F _docker dc
