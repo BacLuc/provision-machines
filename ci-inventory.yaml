@@ -22,6 +22,7 @@ local:
     enable_ubuntu_cleanup: true
     enable_ubuntu_desktop: false
     enable_visual_studio_code: true
+    enable_zsh: true
 
     ansible:
       apt_list_file: /etc/apt/sources.list.d/ansible-ubuntu-ansible-jammy.list
@@ -62,3 +63,8 @@ local:
       config:
         user_name: "User"
         user_email: "user@domain.org"
+
+    zsh:
+      # This somehow forces the sudo password prompt again.
+      # Enable it once to install, then disable it.
+      enable_zsh_autosuggestions: false

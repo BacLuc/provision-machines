@@ -1,0 +1,106 @@
+- name: "install zsh"
+  become: true
+  package:
+    name: zsh
+
+- name: "check if .zshrc exists"
+  stat:
+    path: "~/.zshrc"
+  register: zshrc_exists
+
+- name: "setup initial zshrc"
+  when: zshrc_exists.stat.exists is false
+  copy:
+    src: initial.zshrc
+    dest: "~/.zshrc"
+
+- name: "add fonts-powerline"
+  become: true
+  package:
+    name: fonts-powerline
+
+# you need to log out and log in again for this to have effect
+- name: Ensure default shell is /bin/zsh for "{{ user }}"
+  when: lookup( "ansible.builtin.env", "SHELL" ) != "/bin/zsh"
+  become: true
+  ansible.builtin.user:
+    name: "{{ user }}"
+    shell: /bin/zsh
+
+- name: "check if oh-my-zsh is installed"
+  stat:
+    path: ~/.oh-my-zsh
+  register: ohmyzsh_exists
+
+- name: "install oh-my-zsh"
+  when: ohmyzsh_exists.stat.exists is false
+  shell: |
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+
+- name: "install autojump"
+  become: true
+  package:
+    name: autojump
+
+- name: "install zsh-autosuggestions"
+  when: zsh.enable_zsh_autosuggestions | default(false)
+  command: |
+    {{ homebrew_path }}/brew install zsh-autosuggestions
+
+- name: "install zsh-syntax-highlighting"
+  become: true
+  package:
+    name: zsh-syntax-highlighting
+
+- name: Change .zshrc
+  lineinfile: dest="~/.zshrc"
+    line="{{ item.line }}"
+    regexp="{{ item.regexp }}"
+    state=present
+    insertafter=EOF
+    create=True
+    mode="u+rw"
+  with_items:
+    - { regexp: "^ZSH_THEME=", line: "ZSH_THEME=amuse" }
+    - { regexp: "^plugins=", line: "plugins=(autojump git helm)" }
+
+- name: "add some blocks to .zshrc"
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: zsh blocks taken from bash"
+    block: |
+      [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+- name: add homebrew to path
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: homebrew"
+    block: |
+      PATH="$PATH:{{ homebrew_path }}"
+
+- name: "check if zsh-autosuggestions file exists"
+  stat:
+    path: "{{ homebrew_path }}/../share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  register: zsh_autosuggestions_exists
+
+- name: "add zsh-autosuggestions"
+  when: zsh_autosuggestions_exists.stat.exists
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: add zsh-autosuggestions"
+    block: |
+      source $({{ homebrew_path }}/brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+- name: "add zsh-syntax-highlighting"
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: add zsh-syntax-highlighting"
+    block: |
+      source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+- name: template update oh-my-zsh script
+  become: true
+  template:
+    src: oh-my-zsh-upgrade.j2.sh
+    dest: "{{update_packages_script.dir}}/oh-my-zsh-upgrade"
+    mode: "u=rwx,go=rx"

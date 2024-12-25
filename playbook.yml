@@ -9,6 +9,11 @@
       register: user_command
     - set_fact:
         user: "{{ user_command.stdout.strip() }}"
+    - set_fact:
+        default_shell: /bin/bash
+    - set_fact:
+        default_shell: /bin/zsh
+      when: enable_zsh | default(false)
     - include_tasks: tasks/ubuntu_desktop.yml
       when: enable_ubuntu_desktop | default(false)
     - include_tasks: tasks/basicsetup.yml
@@ -19,6 +24,8 @@
       when: enable_ansible_ppa | default(false)
 
   roles:
+    - role: zsh
+      when: enable_zsh | default(false)
     - role: update_packages_script
     - role: homebrew
       when: enable_homebrew | default(false)

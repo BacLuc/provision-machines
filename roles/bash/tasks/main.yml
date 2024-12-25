@@ -1,4 +1,9 @@
 ---
+- name: "install autojump"
+  become: true
+  package:
+    name: autojump
+
 - name: Add bash aliases
   lineinfile: dest="~/.bash_aliases"
     line="{{ item.line }}"
@@ -28,6 +33,19 @@
     - { regexp: "^export HISTFILESIZE=", line: "export HISTFILESIZE=99999" }
     - { regexp: "^export LS_COLORS=", line: "export LS_COLORS='di=0;35'" }
 
+- name: Add zsh exports
+  when: enable_zsh | default(false)
+  lineinfile: dest="~/.zshrc"
+    line="{{ item.line }}"
+    regexp="{{ item.regexp }}"
+    state=present
+    insertafter=EOF
+    create=True
+    mode="u+rw"
+  with_items:
+    - { regexp: "^export HISTSIZE=", line: "export HISTSIZE=9999" }
+    - { regexp: "^export SAVEHIST=", line: "export SAVEHIST=9999" }
+
 - name: Source usual bash definitions
   blockinfile:
     path: "~/.bashrc"
@@ -37,6 +55,23 @@
       if [ -f /etc/bashrc ]; then
         source /etc/bashrc
       fi
+      if [ -f ~/.bash_aliases ]; then
+        source ~/.bash_aliases
+      fi
+
+- name: Source autojump
+  blockinfile:
+    path: "~/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: add autojump"
+    block: |
+      . /usr/share/autojump/autojump.sh
+
+- name: Source usual zsh definitions
+  when: enable_zsh | default(false)
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: usual bash definitions"
+    block: |
       if [ -f ~/.bash_aliases ]; then
         source ~/.bash_aliases
       fi

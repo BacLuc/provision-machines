@@ -5,7 +5,7 @@
       - tmux
 
 - name: Add tmux config
-  copy:
+  template:
     src: .tmux.conf
     dest: "~/"
     mode: "u+rw"
