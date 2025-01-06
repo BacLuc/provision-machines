@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ -z $JAVA_HOME ]; then
+  JAVA_HOME='{{ windows.java_home }}'
+fi
+export JAVA_HOME
+export WSLENV="JAVA_HOME"
+
+exec cmd.exe /c mvn.cmd "$@"

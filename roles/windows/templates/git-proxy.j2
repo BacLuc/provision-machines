@@ -1,0 +1,6 @@
+#!/bin/sh
+
+case "$(pwd)" in
+  "/mnt"*) exec cmd.exe /c git "$@" ;;
+  *) exec /usr/bin/git "$@" ;;
+esac

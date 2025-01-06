@@ -64,6 +64,36 @@ local:
         user_name: "User"
         user_email: "user@domain.org"
 
+    windows:
+      enable: false
+      # change user
+      java_home: C:\Users\<user>\scoop\apps\temurin11-jdk\current
+      scoop_packages:
+        - 7zip
+        - 7zip19.00-helper
+        - chromium
+        #- dark
+        - firefox
+        #- gcloud
+        - git
+        - googlechrome
+        #- irfanview
+        #- keepassxc
+        #- keyviz
+        #- libreoffice
+        - maven
+        #- nextcloud
+        - nodejs-lts
+        - notepadplusplus
+        - nvm
+        - okular
+        #- powertoys
+        #- signal
+        - temurin21-jdk
+        - temurin11-jdk
+        - vscode
+        - windirstat
+
     zsh:
       # This somehow forces the sudo password prompt again.
       # Enable it once to install, then disable it.

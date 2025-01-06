@@ -65,6 +65,9 @@
 
     - role: basic_utils
 
+    - role: windows
+      when: windows.enable | default(false)
+
   post_tasks:
     - include_tasks: tasks/ubuntu_cleanup.yml
       when: enable_ubuntu_cleanup | default(false)
