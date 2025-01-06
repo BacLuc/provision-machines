@@ -58,6 +58,9 @@ local:
     basic_utils:
       enable_keepassxc: false
       enable_signal: true
+      enable_ssh_config_dir: true
+      ssh_config_paths_to_include:
+        - "./config.d/*"
 
     git:
       config:

@@ -35,3 +35,17 @@
   community.general.snap:
     name:
       - signal-desktop
+
+- name: setup ssh config dir
+  when: basic_utils.enable_ssh_config_dir | default(false)
+  file:
+    path: "~/.ssh/config.d"
+    state: directory
+    mode: "u=rwx,go="
+
+- name: add ssh-config
+  when: basic_utils.enable_ssh_config_dir | default(false)
+  template:
+    src: "ssh-config.j2"
+    dest: "~/.ssh/config"
+    mode: "u=rw,go="
