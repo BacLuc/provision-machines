@@ -15,7 +15,6 @@ local:
     enable_docker: true
     enable_git_tools: true
     git_graphical_tools: false
-    enable_java: true
     enable_okular: false
     enable_tmux: true
     enable_kubectl: true
@@ -40,6 +39,7 @@ local:
         - tree
         - unzip
         - wget
+        - zip
       additional_tools:
         - apt-transport-https
         #- chromium-browser
@@ -56,11 +56,19 @@ local:
         #- xournal
 
     basic_utils:
+      enable_java: true
       enable_keepassxc: false
       enable_signal: true
       enable_ssh_config_dir: true
       ssh_config_paths_to_include:
         - "./config.d/*"
+      sdkman:
+        - "java 11.0.25-tem"
+        - "java 17.0.13-tem"
+        - "java 21.0.5-tem"
+        - "maven 3.9.9"
+        - "gradle 7.6.4"
+        - "gradle 8.12"
 
     git:
       config:

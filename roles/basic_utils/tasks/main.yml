@@ -49,3 +49,19 @@
     src: "ssh-config.j2"
     dest: "~/.ssh/config"
     mode: "u=rw,go="
+
+- name: check if sdkman is installed
+  when: basic_utils.enable_java | default(false)
+  stat:
+    path: ~/.sdkman
+  register: basic_utils__sdkman
+
+- name: install sdkman
+  when: (basic_utils.enable_java | default(false)) and (basic_utils__sdkman.stat.exists is false)
+  shell: curl -s https://get.sdkman.io | bash
+
+- name: install sdkman tools
+  when: basic_utils.enable_java | default(false)
+  shell: |
+    bash -c "source ~/.sdkman/bin/sdkman-init.sh; sdk install {{ item }}"
+  loop: "{{ basic_utils.sdkman }}"
