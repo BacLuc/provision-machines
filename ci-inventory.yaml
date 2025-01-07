@@ -56,6 +56,12 @@ local:
         #- xournal
 
     basic_utils:
+      cinc:
+        client_version: 18.5.0
+        image: cincproject/cinc:18
+        add_args:
+          - "--add-host myhost.local:192.168.1.10"
+      enable_cinc: true
       enable_java: true
       enable_keepassxc: false
       enable_signal: true
