@@ -18,22 +18,94 @@
     key: "/org/gnome/desktop/input-sources/sources"
     value: "[('xkb', 'ch'), ('xkb', 'us')]"
 
-- name: add shortcut for switching workspace down
-  dconf:
-    key: /org/gnome/desktop/wm/keybindings switch-to-workspace-down
-    value: "['<Super>Page_Down', '<Control><Super>Down']"
+# to dump the current settings:
+# gsettings list-recursively org.gnome.desktop.wm.keybindings
+# gsettings list-recursively org.gnome.mutter.keybindings
+- name: configure keyboard shortcuts
+  set_fact:
+    gnome_shortcuts:
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "switch-to-workspace-right"
+        value: "['<Control><Super>Right']"
+        description: "add shortcut for switching workspace right"
 
-- name: add shortcut for switching workspace left
-  dconf:
-    key: /org/gnome/desktop/wm/keybinding switch-to-workspace-left
-    value: "['<Control><Super>Left']"
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "switch-to-workspace-down"
+        value: "['<Control><Super>Down']"
+        description: "add shortcut for switching workspace down"
 
-- name: add shortcut for switching workspace up
-  dconf:
-    key: /org/gnome/desktop/wm/keybinding switch-to-workspace-up
-    value: "['<Control><Super>Up']"
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "switch-to-workspace-left"
+        value: "['<Control><Super>Left']"
+        description: "add shortcut for switching workspace left"
 
-- name: add shortcut for switching workspace right
-  dconf:
-    key: /org/gnome/desktop/wm/keybinding switch-to-workspace-right
-    value: "['<Control><Super>Right']"
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "switch-to-workspace-up"
+        value: "['<Control><Super>Up']"
+        description: "add shortcut for switching workspace up"
+
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "move-to-workspace-right"
+        value: "['<Control><Shift><Alt>Right']"
+        description: "add shortcut for moving window to monitor right"
+
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "move-to-workspace-down"
+        value: "['<Control><Shift><Alt>Down']"
+        description: "add shortcut for moving window to monitor down"
+
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "move-to-workspace-left"
+        value: "['<Control><Shift><Alt>Left']"
+        description: "add shortcut for moving window to monitor left"
+
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "move-to-workspace-up"
+        value: "['<Control><Shift><Alt>Up']"
+        description: "add shortcut for moving window to monitor up"
+
+      - schema: "org.gnome.mutter.keybindings"
+        key: "toggle-tiled-right"
+        value: "['<Super>Right']"
+        description: "set shortcut for tiling window right"
+
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "unmaximize"
+        value: "['<Super>Down']"
+        description: "add minimize shortcut"
+
+      - schema: "org.gnome.mutter.keybindings"
+        key: "toggle-tiled-left"
+        value: "['<Super>Left']"
+        description: "set shortcut for tiling window left"
+
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "maximize"
+        value: "['<Super>Up']"
+        description: "add maximize shortcut"
+
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "move-to-monitor-down"
+        value: "['<Shift><Super>Down']"
+        description: "add shortcut for moving window to monitor down"
+
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "move-to-monitor-left"
+        value: "['<Shift><Super>Left']"
+        description: "add shortcut for moving window to monitor left"
+
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "move-to-monitor-right"
+        value: "['<Shift><Super>Right']"
+        description: "add shortcut for moving window to monitor right"
+
+      - schema: "org.gnome.desktop.wm.keybindings"
+        key: "move-to-monitor-up"
+        value: "['<Shift><Super>Up']"
+        description: "add shortcut for moving window to monitor up"
+
+- name: set dconf shortcuts
+  command: 'gsettings set "{{ item.schema }}" "{{ item.key }}" "{{ item.value }}"'
+  loop: "{{ gnome_shortcuts }}"
+  loop_control:
+    label: "{{ item.description }}\n"
