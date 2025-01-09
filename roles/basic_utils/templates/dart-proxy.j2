@@ -1,0 +1,12 @@
+#!/bin/sh
+
+case "$(pwd)" in
+  "*.fvmrc"*) exec fvm dart "$@" ;;
+esac
+
+if [ -f "$(pwd)/.fvmrc" ]; then
+    exec fvm dart "$@"
+fi
+
+echo "No dart version specified";
+exit 1;

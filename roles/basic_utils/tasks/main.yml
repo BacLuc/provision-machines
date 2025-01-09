@@ -78,3 +78,65 @@
       {% endfor %}
       -v $(pwd):/data \
       {{ basic_utils.cinc.image }}:${CHEF_CLIENT_VERSION:-{{ basic_utils.cinc.client_version }}} knife'
+
+- name: flutter development
+  when: basic_utils.enable_flutter | default(false)
+  block:
+    - name: check if fvm is installed
+      stat:
+        path: ~/.fvm_flutter
+      register: basic_utils__fvm
+
+    - name: setup fvm
+      when: basic_utils__fvm.stat.exists is false
+      become: true
+      shell: |
+        curl -fsSL https://raw.githubusercontent.com/leoafarias/fvm/refs/tags/3.2.1/scripts/install.sh |  bash -s -- 3.2.1
+        rm -rf /usr/local/bin/fvm
+        mv /root/.fvm_flutter /home/{{ user }}/.fvm_flutter
+        chown -R {{ user }}:{{ user }} /home/{{ user }}/.fvm_flutter
+
+    - name: add fvm to path
+      blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add fvm to PATH"
+        block: |
+          export PATH="/home/{{ user }}/.fvm_flutter/bin:$PATH"
+
+    - name: install android studio
+      become: true
+      community.general.snap:
+        name:
+          - android-studio
+        classic: true
+
+    - name: Add docker user to docker group
+      user:
+        name: "{{ user }}"
+        append: true
+        groups: kvm
+
+    - name: Setup user bin dir
+      file:
+        path: "~/bin"
+        state: directory
+        mode: "u=rwx,go=rx"
+
+    - name: source user bin dir
+      blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
+        block: |
+          export PATH="/home/{{ user }}/bin:$PATH"
+
+    - name: add dart proxy
+      template:
+        src: "dart-proxy.j2"
+        dest: "~/bin/dart"
+        mode: "u=rwx,go=rx"
+
+    - name: add flutter proxy
+      template:
+        src: "flutter-proxy.j2"
+        dest: "~/bin/flutter"
+        mode: "u=rwx,go=rx"
