@@ -59,6 +59,21 @@
         source ~/.bash_aliases
       fi
 
+- name: Add snap bin to path in .bashrc
+  blockinfile:
+    path: "~/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: add snap bin to path"
+    block: |
+      export PATH="/snap/bin:$PATH"
+
+- name: Add snap bin to path in .zshrc
+  when: enable_zsh | default(false)
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: add snap bin to path"
+    block: |
+      export PATH="/snap/bin:$PATH"
+
 - name: Source autojump
   blockinfile:
     path: "~/.bashrc"
