@@ -6,13 +6,15 @@ local:
   hosts:
     localhost:
   vars:
+    docker:
+      enable: true
+      provision_daemon_json: false
     enable_ansible_ppa: true
     enable_bash: true
     enable_basicsetup: true
     enable_homebrew: true
     enable_customize_gnome: false
     customize_gnome__skip_restart_gnome_shell: false
-    enable_docker: true
     enable_git_tools: true
     git_graphical_tools: false
     enable_okular: false

@@ -54,7 +54,7 @@
         git_user_email: "{{git.config.user_email | mandatory}}"
 
     - role: docker
-      when: enable_docker | default(false)
+      when: docker.enable | default(false)
     - role: okular
       when: enable_okular | default(false)
 
