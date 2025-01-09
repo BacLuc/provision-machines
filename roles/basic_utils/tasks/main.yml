@@ -60,6 +60,24 @@
   when: (basic_utils.enable_java | default(false)) and (basic_utils__sdkman.stat.exists is false)
   shell: curl -s https://get.sdkman.io | bash
 
+- name: add sdkman to .bashrc
+  when: basic_utils.enable_java | default(false)
+  blockinfile:
+    path: "~/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: sdkman-init"
+    block: |
+      export SDKMAN_DIR="$HOME/.sdkman"
+      [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+- name: add sdkman to .zshrc
+  when: basic_utils.enable_java | default(false)
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: sdkman-init"
+    block: |
+      export SDKMAN_DIR="$HOME/.sdkman"
+      [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
 - name: install sdkman tools
   when: basic_utils.enable_java | default(false)
   shell: |
