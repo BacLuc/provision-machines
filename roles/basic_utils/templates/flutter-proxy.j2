@@ -1,0 +1,12 @@
+#!/bin/sh
+
+case "$(pwd)" in
+  "*.fvmrc"*) exec fvm flutter "$@" ;;
+esac
+
+if [ -f "$(pwd)/.fvmrc" ]; then
+    exec fvm flutter "$@"
+fi
+
+echo "No flutter version specified";
+exit 1;
