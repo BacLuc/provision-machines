@@ -74,7 +74,9 @@ local:
         image: cincproject/cinc:18
         add_args:
           - "--add-host myhost.local:192.168.1.10"
+      enable_android_studio: false
       enable_cinc: true
+      enable_flutter: true
       enable_java: true
       enable_keepassxc: false
       enable_signal: true
