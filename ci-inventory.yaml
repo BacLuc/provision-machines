@@ -49,7 +49,7 @@ local:
         #- chromium-codecs-ffmpeg
         - curl
         #- geany
-        #- git
+        - git
         #- gitk
         #- gnome-tweaks
         #- nextcloud-desktop
