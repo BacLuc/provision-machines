@@ -50,6 +50,7 @@ local:
         - curl
         #- geany
         - git
+        - graphviz
         #- gitk
         #- gnome-tweaks
         #- nextcloud-desktop
