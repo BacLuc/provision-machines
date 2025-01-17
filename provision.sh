@@ -1,5 +1,8 @@
 #! /bin/bash -e
 
+# to only run certain tags
+# sudo apt update && ansible-playbook --connection=local playbook.yml --inventory inventory/local.yaml -t user,homebrew,azure_cli
+
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 cd ${SCRIPT_DIR}
 
