@@ -55,6 +55,7 @@ local:
         #- geany
         - git
         - graphviz
+        - jq
         - libglu1-mesa
         - libgtk-3-dev
         - libstdc++-12-dev

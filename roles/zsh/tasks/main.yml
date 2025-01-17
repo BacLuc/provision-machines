@@ -70,7 +70,7 @@
     mode="u+rw"
   with_items:
     - { regexp: "^ZSH_THEME=", line: "ZSH_THEME=amuse" }
-    - { regexp: "^plugins=", line: "plugins=(autojump azure git helm)" }
+    - { regexp: "^plugins=", line: "plugins=(autojump azure git helm kubectx)" }
 
 - name: "add some blocks to .zshrc"
   blockinfile:
@@ -136,3 +136,12 @@
       source {{ zsh.completions_dir }}/_docker
 
       complete -F _docker dc
+
+- name: "set zsh prompt theme"
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: add zsh prompt theme"
+    block: |
+      PROMPT='
+      %{$fg_bold[green]%}%~%{$reset_color%}$(git_prompt_info)$(virtualenv_prompt_info)$(azure_prompt_info) k:$(kubectx_prompt_info) ⌚ %{$fg_bold[red]%}%*%{$reset_color%}
+      $ '
