@@ -5,9 +5,11 @@
 
   pre_tasks:
     - name: Get user
+      tags: user
       ansible.builtin.shell: whoami
       register: user_command
-    - set_fact:
+    - tags: user
+      set_fact:
         user: "{{ user_command.stdout.strip() }}"
     - set_fact:
         default_shell: /bin/bash
@@ -26,6 +28,7 @@
       when: enable_zsh | default(false)
     - role: update_packages_script
     - role: homebrew
+      tags: homebrew
       when: enable_homebrew | default(false)
     - role: ansible-role-customize-gnome
       when: enable_customize_gnome | default(false)
@@ -40,6 +43,7 @@
     - role: bash
       when: enable_bash | default(false)
     - role: kubectl
+      tags: kubectl
       when: enable_kubectl | default(false)
     - role: tmux
       when: enable_tmux | default(false)
@@ -65,6 +69,8 @@
 
     - role: windows
       when: windows.enable | default(false)
+
+    - role: azure_cli
 
   post_tasks:
     - include_tasks: tasks/ubuntu_cleanup.yml

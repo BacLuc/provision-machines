@@ -70,7 +70,7 @@
     mode="u+rw"
   with_items:
     - { regexp: "^ZSH_THEME=", line: "ZSH_THEME=amuse" }
-    - { regexp: "^plugins=", line: "plugins=(autojump git helm)" }
+    - { regexp: "^plugins=", line: "plugins=(autojump azure git helm)" }
 
 - name: "add some blocks to .zshrc"
   blockinfile:

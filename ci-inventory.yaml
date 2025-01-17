@@ -10,6 +10,7 @@ local:
       enable: true
       provision_daemon_json: false
     enable_ansible_ppa: true
+    enable_azure_cli: true
     enable_bash: true
     enable_basicsetup: true
     enable_homebrew: true

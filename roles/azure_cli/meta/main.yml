@@ -1,0 +1,4 @@
+---
+dependencies:
+  - role: kubectl
+  - role: homebrew
