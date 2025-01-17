@@ -1,0 +1,35 @@
+# From: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt#option-2-step-by-step-installation-instructions
+- name: "Install azure-cli"
+  when: enable_azure_cli | default(false)
+  tags: azure_cli
+  block:
+  - name: "install azure cli"
+    become: true
+    get_url:
+      url: "https://packages.microsoft.com/keys/microsoft.asc"
+      dest: "/etc/apt/keyrings/microsoft.gpg"
+      force: false
+      mode: "u=wr,go=r"
+
+  - name: "get suites"
+    command: lsb_release -cs
+    register: azure_cli_apt_suites
+
+  - name: "add azure cli repo"
+    become: true
+    copy:
+      content: |
+        Types: deb
+        URIs: https://packages.microsoft.com/repos/azure-cli/
+        Suites: {{ azure_cli_apt_suites.stdout }}
+        Components: main
+        Architectures: amd64
+        Signed-by: /etc/apt/keyrings/microsoft.gpg
+      dest: /etc/apt/sources.list.d/azure-cli.sources
+      mode: "u=wr,go=r"
+
+  - name: "apt install azure-cli"
+    become: true
+    apt:
+      update_cache: true
+      name: azure-cli
