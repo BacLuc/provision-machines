@@ -149,9 +149,17 @@
         state: directory
         mode: "u=rwx,go=rx"
 
-    - name: source user bin dir
+    - name: source user bin dir for bash
       blockinfile:
         path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
+        block: |
+          export PATH="/home/{{ user }}/bin:$PATH"
+
+    - name: source user bin dir for zsh
+      when: enable_zsh | default(false)
+      blockinfile:
+        path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
         block: |
           export PATH="/home/{{ user }}/bin:$PATH"
