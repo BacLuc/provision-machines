@@ -114,9 +114,17 @@
         mv /root/.fvm_flutter /home/{{ user }}/.fvm_flutter
         chown -R {{ user }}:{{ user }} /home/{{ user }}/.fvm_flutter
 
-    - name: add fvm to path
+    - name: add fvm to path for bash
       blockinfile:
         path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add fvm to PATH"
+        block: |
+          export PATH="/home/{{ user }}/.fvm_flutter/bin:$PATH"
+
+    - name: add fvm to path for zsh
+      when: enable_zsh | default(false)
+      blockinfile:
+        path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add fvm to PATH"
         block: |
           export PATH="/home/{{ user }}/.fvm_flutter/bin:$PATH"
