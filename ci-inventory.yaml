@@ -109,6 +109,7 @@ local:
         - chromium
         #- dark
         - firefox
+        #- flutter@3.22.0
         #- gcloud
         - git
         - googlechrome
@@ -126,7 +127,9 @@ local:
         #- signal
         - temurin21-jdk
         - temurin11-jdk
+        #- tightvnc
         - vscode
+        - vncviewer
         - windirstat
         #- add zulu8-jdk
 
