@@ -60,6 +60,7 @@ local:
         - libgtk-3-dev
         - libstdc++-12-dev
         - ninja-build
+        - ocrmypdf
         #- gitk
         #- gnome-tweaks
         #- nextcloud-desktop
