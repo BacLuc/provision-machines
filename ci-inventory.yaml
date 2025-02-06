@@ -128,6 +128,7 @@ local:
         - temurin11-jdk
         - vscode
         - windirstat
+        #- add zulu8-jdk
 
     zsh:
       # This somehow forces the sudo password prompt again.
