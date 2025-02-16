@@ -82,6 +82,7 @@ local:
       enable_flutter: true
       enable_java: true
       enable_keepassxc: false
+      enable_nvm: true
       enable_signal: true
       enable_ssh_config_dir: true
       ssh_config_paths_to_include:

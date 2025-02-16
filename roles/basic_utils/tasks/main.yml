@@ -175,3 +175,50 @@
         src: "flutter-proxy.j2"
         dest: "~/bin/flutter"
         mode: "u=rwx,go=rx"
+
+- name: nvm
+  when: basic_utils.enable_nvm | default(false)
+  block:
+    - name: check if nvm is already installed
+      stat:
+        path: ~/.nvm
+      register: basic_utils__nvm
+
+    - name: setup nvm
+      when: basic_utils__nvm.stat.exists is false
+      shell: |
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+
+    - name: add nvm to path for bash
+      blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add nvm to PATH"
+        block: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+    - name: add nvm to path for zsh
+      when: enable_zsh | default(false)
+      blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add nvm to PATH"
+        block: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+    - name: add script to update nvm
+      become: true
+      copy:
+        content: |
+          #!/bin/sh
+          set -e
+
+          user="{{ user }}"
+          nvm_version=v0.40.1
+
+          su "$user" -c "git -C /home/{{ user }}/.nvm fetch --tags"
+          su "$user" -c "git -C /home/{{ user }}/.nvm reset --hard $nvm_version"
+        dest: "{{update_packages_script.dir}}/nvm-upgrade"
+        mode: "u=rwx,go=rx"
