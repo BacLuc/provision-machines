@@ -1,0 +1,17 @@
+- name: "set facts for motd role"
+  set_fact:
+    zsh: "{{ motd | default({}) }}"
+
+- name: "Setup motd files"
+  block:
+    - name: "Show df -h at end"
+      when: motd.enable_disk_usage | default(false)
+      become: true
+      copy:
+        content: |
+          #!/bin/sh
+          set -e
+
+          df -h | grep -v snap
+        dest: "/etc/update-motd.d/a01-disk-usage"
+        mode: "u=rwx,go=rx"
