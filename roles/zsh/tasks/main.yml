@@ -1,6 +1,12 @@
+- name: "set defaults for zsh role"
+  set_fact:
+    zsh_defaults:
+      completions_dir: "~/zsh/completions"
+      motd_path: "/etc/profile.d/update-motd.sh"
+
 - name: "set facts for zsh role"
   set_fact:
-    zsh: "{{ zsh | default({}) | combine( { 'completions_dir': '~/zsh/completions' } ) }}"
+    zsh: "{{ zsh | default({}) | combine( zsh_defaults ) }}"
 
 - name: zsh print var
   debug:
@@ -145,3 +151,12 @@
       PROMPT='
       %{$fg_bold[green]%}%~%{$reset_color%}$(git_prompt_info)$(virtualenv_prompt_info)$(azure_prompt_info) k:$(kubectx_prompt_info) ⌚ %{$fg_bold[red]%}%*%{$reset_color%}
       $ '
+
+- name: "add motd banner"
+  when: zsh.motd_path is not false
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: add motd banner"
+    block: |
+      motd_path="{{ zsh.motd_path }}"
+      test -f $motd_path && source $motd_path
