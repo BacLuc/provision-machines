@@ -19,6 +19,12 @@
     regexp="LC_ALL"
     line="LC_ALL=\"en_US.UTF-8\""
 
+- name: Set lang to en_US.UTF-8
+  become: true
+  lineinfile: dest=/etc/default/locale
+    regexp="LANG"
+    line="LANG=\"en_US.UTF-8\""
+
 - name: Install additional packages
   become: true
   package:
