@@ -6,7 +6,7 @@
 
 - name: "set facts for zsh role"
   set_fact:
-    zsh: "{{ zsh | default({}) | combine( zsh_defaults ) }}"
+    zsh: "{{ zsh | default({}) | combine( zsh_defaults, recursive=true ) }}"
 
 - name: zsh print var
   debug:
