@@ -2,6 +2,20 @@
   debug:
     var: basic_utils
 
+- name: "set defaults for basic_utils role"
+  set_fact:
+    basic_utils_defaults:
+      ssh_key:
+        filename: "id_ed25519"
+
+- name: "set facts for basic_utils role"
+  set_fact:
+    basic_utils: "{{ basic_utils | default({}) | combine( basic_utils_defaults, recursive=true ) }}"
+
+- name: basic_utils print var
+  debug:
+    var: basic_utils
+
 # region keepassxc
 - name: install keepassxc flatpak
   when: basic_utils.enable_keepassxc | default(false)
@@ -49,6 +63,48 @@
     src: "ssh-config.j2"
     dest: "~/.ssh/config"
     mode: "u=rw,go="
+
+- name: setup ssh-agent
+  when: basic_utils.ssh_key.enable | default(false)
+  block:
+    - name: setup ssh-agent for bash
+      blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: start ssh agent"
+        block: |
+          if [ -z "$(pgrep ssh-agent)" ]; then
+            rm -rf /tmp/ssh-*
+            eval $(ssh-agent -s) > /dev/null
+          fi
+          export SSH_AGENT_PID=$(pgrep ssh-agent)
+          export SSH_AUTH_SOCK=$(find /tmp/ssh-* -name 'agent.*')
+
+          if [[ ! $(ssh-add -l | grep "{{ basic_utils.ssh_key.comment }}") ]]; then
+            ssh_key_path="$HOME/.ssh/{{ basic_utils.ssh_key.filename }}"
+            if [[ -f "$ssh_key_path" ]]; then
+              ssh-add "$ssh_key_path"
+            fi
+          fi
+
+    - name: setup ssh-agent for zsh
+      when: enable_zsh | default(false)
+      blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: start ssh agent"
+        block: |
+          if [ -z "$(pgrep ssh-agent)" ]; then
+            rm -rf /tmp/ssh-*
+            eval $(ssh-agent -s) > /dev/null
+          fi
+          export SSH_AGENT_PID=$(pgrep ssh-agent)
+          export SSH_AUTH_SOCK=$(find /tmp/ssh-* -name 'agent.*')
+
+          if [[ ! $(ssh-add -l | grep "{{ basic_utils.ssh_key.comment }}") ]]; then
+            ssh_key_path="$HOME/.ssh/{{ basic_utils.ssh_key.filename }}"
+            if [[ -f "$ssh_key_path" ]]; then
+              ssh-add "$ssh_key_path"
+            fi
+          fi
 
 - name: check if sdkman is installed
   when: basic_utils.enable_java | default(false)

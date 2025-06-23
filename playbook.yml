@@ -66,6 +66,7 @@
       when: enable_visula_studio_code | default(false)
 
     - role: basic_utils
+      tags: basic_utils
 
     - role: windows
       when: windows.enable | default(false)
