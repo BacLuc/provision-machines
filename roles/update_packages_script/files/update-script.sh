@@ -4,6 +4,7 @@ set -e
 
 log() {
   systemd-cat -t update-script -p info echo "'$*'"
+  echo "'$*'"
 }
 
 SCRIPT_DIR="$(dirname $(realpath "$0"))"
