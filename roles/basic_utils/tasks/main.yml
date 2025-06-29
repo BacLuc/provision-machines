@@ -7,6 +7,8 @@
     basic_utils_defaults:
       ssh_key:
         filename: "id_ed25519"
+      ssh_agent: {}
+      gcr_ssh_agent: {}
 
 - name: "set facts for basic_utils role"
   set_fact:
@@ -65,7 +67,7 @@
     mode: "u=rw,go="
 
 - name: setup ssh-agent
-  when: basic_utils.ssh_key.enable | default(false)
+  when: (basic_utils.ssh_key.enable | default(false)) or (basic_utils.ssh_agent.enable | default(false))
   block:
     - name: setup ssh-agent for bash
       blockinfile:
@@ -99,6 +101,34 @@
           export SSH_AGENT_PID=$(pgrep ssh-agent)
           export SSH_AUTH_SOCK=$(find /tmp/ssh-* -name 'agent.*')
 
+          if [[ ! $(ssh-add -l | grep "{{ basic_utils.ssh_key.comment }}") ]]; then
+            ssh_key_path="$HOME/.ssh/{{ basic_utils.ssh_key.filename }}"
+            if [[ -f "$ssh_key_path" ]]; then
+              ssh-add "$ssh_key_path"
+            fi
+          fi
+
+- name: setup gcr-ssh-agent
+  when: basic_utils.gcr_ssh_agent.enable | default(false)
+  block:
+    - name: setup gcr-ssh-agent for bash
+      blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: start gcr ssh agent"
+        block: |
+          if [[ ! $(ssh-add -l | grep "{{ basic_utils.ssh_key.comment }}") ]]; then
+            ssh_key_path="$HOME/.ssh/{{ basic_utils.ssh_key.filename }}"
+            if [[ -f "$ssh_key_path" ]]; then
+              ssh-add "$ssh_key_path"
+            fi
+          fi
+
+    - name: setup ssh-agent for zsh
+      when: enable_zsh | default(false)
+      blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: start gcr ssh agent"
+        block: |
           if [[ ! $(ssh-add -l | grep "{{ basic_utils.ssh_key.comment }}") ]]; then
             ssh_key_path="$HOME/.ssh/{{ basic_utils.ssh_key.filename }}"
             if [[ -f "$ssh_key_path" ]]; then

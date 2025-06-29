@@ -85,11 +85,15 @@ local:
       enable_nvm: true
       enable_signal: true
       enable_ssh_config_dir: true
+      gcr_ssh_agent:
+        enable: true
       ssh_config_paths_to_include:
         - "./config.d/*"
       ssh_key:
         enable: true
         comment: "name@hostname"
+      ssh_agent:
+        enable: true
       sdkman:
         - "java 11.0.25-tem"
         - "java 17.0.13-tem"
