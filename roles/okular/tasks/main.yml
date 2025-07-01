@@ -4,6 +4,14 @@
   package:
     name: okular
 
+- name: create gnome defaults file
+  become: true
+  file:
+    path: /etc/gnome/defaults.list
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+
 - name: set okular as default pdf viewer
   become: true
   lineinfile:
