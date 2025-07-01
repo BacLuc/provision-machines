@@ -83,6 +83,7 @@ local:
       enable_java: true
       enable_keepassxc: false
       enable_nvm: true
+      enable_rambox: true
       enable_signal: true
       enable_ssh_config_dir: true
       gcr_ssh_agent:

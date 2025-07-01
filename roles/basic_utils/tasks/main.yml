@@ -308,3 +308,27 @@
           su "$user" -c "git -C /home/{{ user }}/.nvm reset --hard $nvm_version"
         dest: "{{update_packages_script.dir}}/nvm-upgrade"
         mode: "u=rwx,go=rx"
+
+- name: install rambox
+  when: basic_utils.enable_rambox | default(false)
+  block:
+    - name: install the app
+      become: true
+      community.general.snap:
+        name:
+          - rambox
+
+    - name: Check if rambox:camera connection exists
+      shell: "snap connections | grep rambox"
+      register: rambox_connections
+      changed_when: false
+
+    - name: Connect rambox:camera if not already connected
+      become: true
+      shell: snap connect rambox:camera
+      when: "'rambox:camera' not in rambox_connections.stdout"
+
+    - name: Connect rambox:audio-record if not already connected
+      become: true
+      shell: snap connect rambox:audio-record
+      when: "'rambox:audio-record' not in rambox_connections.stdout"
