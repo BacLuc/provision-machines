@@ -336,3 +336,7 @@
       become: true
       shell: snap connect rambox:audio-record
       when: "'rambox:audio-record' not in rambox_connections.stdout"
+
+- name: install zoom flatpak
+  when: basic_utils.enable_zoom | default(false)
+  command: flatpak install us.zoom.Zoom --assumeyes
