@@ -75,6 +75,8 @@
 
     - role: motd
 
+    - role: displaylink_driver
+
   post_tasks:
     - include_tasks: tasks/ubuntu_cleanup.yml
       when: enable_ubuntu_cleanup | default(false)
