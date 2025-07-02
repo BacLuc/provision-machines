@@ -1,0 +1,6 @@
+- name: "customize gnome"
+  when: enable_customize_gnome | default(false)
+  block:
+    - name: "install gnome extensions app"
+      when: basic_utils.enable_keepassxc | default(false)
+      command: flatpak install flathub org.gnome.Extensions --assumeyes

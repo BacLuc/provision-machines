@@ -39,7 +39,7 @@
           - url: https://extensions.gnome.org/extension-data/wsmatrixmartin.zurowietz.de.v23.shell-extension.zip
             id: 1485
         customize_gnome__skip_restart_gnome_shell: customize_gnome__skip_restart_gnome_shell | default(false)
-
+    - role: gnome
     - role: bash
       when: enable_bash | default(false)
     - role: kubectl
