@@ -116,6 +116,8 @@
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: start gcr ssh agent"
         block: |
+          export SSH_AUTH_SOCK=/run/user/$(id -u)/gcr/ssh
+
           if [[ ! $(ssh-add -l | grep "{{ basic_utils.ssh_key.comment }}") ]]; then
             ssh_key_path="$HOME/.ssh/{{ basic_utils.ssh_key.filename }}"
             if [[ -f "$ssh_key_path" ]]; then
@@ -123,12 +125,14 @@
             fi
           fi
 
-    - name: setup ssh-agent for zsh
+    - name: setup gcr-ssh-agent for zsh
       when: enable_zsh | default(false)
       blockinfile:
         path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: start gcr ssh agent"
         block: |
+          export SSH_AUTH_SOCK=/run/user/$(id -u)/gcr/ssh
+
           if [[ ! $(ssh-add -l | grep "{{ basic_utils.ssh_key.comment }}") ]]; then
             ssh_key_path="$HOME/.ssh/{{ basic_utils.ssh_key.filename }}"
             if [[ -f "$ssh_key_path" ]]; then
