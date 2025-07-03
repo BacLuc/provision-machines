@@ -88,6 +88,7 @@ local:
       enable_rambox: true
       enable_signal: true
       enable_ssh_config_dir: true
+      enable_zed: false
       enable_zoom: false
       gcr_ssh_agent:
         enable: true
