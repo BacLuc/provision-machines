@@ -67,7 +67,7 @@
     mode: "u=rw,go="
 
 - name: setup ssh-agent
-  when: (basic_utils.ssh_key.enable | default(false)) or (basic_utils.ssh_agent.enable | default(false))
+  when: (basic_utils.ssh_key.enable | default(false)) and (basic_utils.ssh_agent.enable | default(false))
   block:
     - name: setup ssh-agent for bash
       blockinfile:
