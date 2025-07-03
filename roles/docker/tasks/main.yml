@@ -64,3 +64,21 @@
     mode: 0644
   notify:
     - restart_docker
+
+- name: remove the dc calculator that we can use the docker compose alias
+  become: true
+  apt:
+    name:
+      - dc
+    state: absent
+
+- name: Add docker compose alias
+  lineinfile: dest="~/.bash_aliases"
+    line="{{ item.line }}"
+    regexp="{{ item.regexp }}"
+    state=present
+    insertafter=EOF
+    create=True
+    mode="u+rw"
+  with_items:
+    - { regexp: "^alias dc=", line: "alias dc='docker compose'" }
