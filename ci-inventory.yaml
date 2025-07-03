@@ -84,6 +84,7 @@ local:
       enable_java: true
       enable_keepassxc: false
       enable_nvm: true
+      enable_openvpn_config_import_network_manager: true
       enable_rambox: true
       enable_signal: true
       enable_ssh_config_dir: true

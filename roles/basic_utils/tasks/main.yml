@@ -313,6 +313,14 @@
         dest: "{{update_packages_script.dir}}/nvm-upgrade"
         mode: "u=rwx,go=rx"
 
+- name: enable openvpn file import for network manager
+  when: basic_utils.enable_openvpn_config_import_network_manager | default(false)
+  become: true
+  apt:
+    name:
+      - network-manager-openvpn
+      - network-manager-openvpn-gnome
+
 - name: install rambox
   when: basic_utils.enable_rambox | default(false)
   block:
