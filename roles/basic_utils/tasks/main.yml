@@ -289,6 +289,15 @@
         dest: "~/bin/flutter"
         mode: "u=rwx,go=rx"
 
+# an ok theme is
+# theme= carbonfox
+- name: install ghostty
+  become: true
+  community.general.snap:
+    name:
+      - ghostty
+    classic: true
+
 - name: nvm
   when: basic_utils.enable_nvm | default(false)
   block:

@@ -81,6 +81,7 @@ local:
       enable_android_studio: false
       enable_cinc: true
       enable_flutter: true
+      enable_ghostty: true
       enable_java: true
       enable_keepassxc: false
       enable_nvm: true

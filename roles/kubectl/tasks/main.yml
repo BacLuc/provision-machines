@@ -7,7 +7,7 @@
              kubectl config get-contexts
              return
           fi
-          yq '.current-context="'$1'"' < ${shell_tmp_dir}/.kube/config > ${shell_tmp_dir}/.kube/config
+          cat ${shell_tmp_dir}/.kube/config | yq '.current-context="'$1'"' | cat > ${shell_tmp_dir}/.kube/config
         }
 
         KUBECONFIG="$HOME/.kube/config.d/empty"
@@ -17,7 +17,7 @@
 
         shell_tmp_dir=$(mktemp -d)
         mkdir ${shell_tmp_dir}/.kube
-        yq eval -n ' .apiVersion="v1" | .current-context="" | .contexts=[] | .users=[] | .clusters=[] ' > ${shell_tmp_dir}/.kube/config
+        yq eval -n ' .apiVersion="v1" | .current-context="" | .contexts=[] | .users=[] | .clusters=[] ' | cat  > ${shell_tmp_dir}/.kube/config
         export KUBECONFIG="$KUBECONFIG:${shell_tmp_dir}/.kube/config"
         # azure-cli modifies the first file it finds in $KUBECONFIG
         export KUBECONFIG="${shell_tmp_dir}/.kube/config:$KUBECONFIG"
