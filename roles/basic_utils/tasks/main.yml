@@ -339,6 +339,7 @@
       become: true
       ansible.builtin.shell: |
         update-alternatives --query python | grep 'current link' | awk '{print $NF}'
+      # noinspection YAMLIncompatibleTypes
       changed_when: false
       register: current_python_link
 
