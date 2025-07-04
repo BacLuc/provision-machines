@@ -20,6 +20,27 @@
   debug:
     var: basic_utils
 
+- name: Setup user bin dir
+  file:
+    path: "~/bin"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: source user bin dir in bash
+  blockinfile:
+    path: "~/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
+    block: |
+      export PATH="/home/{{ user }}/bin:$PATH"
+
+- name: source user bin dir in zsh
+  when: enable_zsh | default(false)
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
+    block: |
+      export PATH="/home/{{ user }}/bin:$PATH"
+
 # region keepassxc
 - name: install keepassxc flatpak
   when: basic_utils.enable_keepassxc | default(false)
