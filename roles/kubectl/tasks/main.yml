@@ -90,15 +90,11 @@
         line: 'alias kn=''f() { [ "$1" ] && kubectl config set-context --current --namespace $1 || kubectl config view --minify | grep namespace | cut -d" " -f6 ; } ; f''',
       }
 
-- name: Check if k9s is installed
-  stat:
-    path: "{{ homebrew_path }}/k9s"
-  register: k9s_installed
-
 - name: install k9s
-  when: k9s_installed.stat.exists is false
-  command: |
-    {{ homebrew_path }}/brew install k9s
+  command:
+    cmd: |
+      {{ homebrew_path }}/brew install k9s
+    creates: "{{ homebrew_path }}/k9s"
 
 - name: install oidc_plugin
   when: kubectl.enable_oidc_plugin | default(false)
