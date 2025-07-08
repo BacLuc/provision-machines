@@ -41,6 +41,30 @@
     block: |
       export PATH="/home/{{ user }}/bin:$PATH"
 
+- name: setup dirvenv
+  when: basic_utils.enable_direnv | default(false)
+  block:
+    - name: install direnv package
+      become: true
+      apt:
+        name:
+          - direnv
+
+    - name: source direnv bash
+      blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: source direnv"
+        block: |
+          eval "$(direnv hook bash)"
+
+    - name: source direnv zsh
+      when: enable_zsh | default(false)
+      blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: source direnv"
+        block: |
+          eval "$(direnv hook zsh)"
+
 # region keepassxc
 - name: install keepassxc flatpak
   when: basic_utils.enable_keepassxc | default(false)

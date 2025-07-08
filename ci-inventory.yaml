@@ -79,6 +79,7 @@ local:
         add_args:
           - "--add-host myhost.local:192.168.1.10"
       enable_android_studio: false
+      enable_direnv: true
       enable_cinc: true
       enable_flutter: true
       enable_ghostty: true
