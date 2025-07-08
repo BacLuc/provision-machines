@@ -2,15 +2,11 @@
   set_fact:
     homebrew_path: "/home/linuxbrew/.linuxbrew/Homebrew/bin"
 
-- name: Check if Homebrew is installed
-  stat:
-    path: "{{ homebrew_path }}/brew"
-  register: homebrew_installed
-
 - name: install homebrew
-  when: homebrew_installed.stat.exists is false
-  shell: |
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  shell:
+    cmd: |
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    creates: "{{ homebrew_path }}/brew"
 
 - name: add homebrew to path
   blockinfile:
