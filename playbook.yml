@@ -7,6 +7,7 @@
     - name: Get user
       tags: user
       ansible.builtin.shell: whoami
+      changed_when: false
       register: user_command
     - tags: user
       set_fact:
