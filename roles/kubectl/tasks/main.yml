@@ -1,6 +1,6 @@
-- name: "set facts for kubectl role"
+- name: "set defaults for kubectl role"
   set_fact:
-    kubectl:
+    kubectl_defaults:
       contex_management_part: |
         function ktx() {
           if [ $# -eq 0 ]; then
@@ -21,6 +21,14 @@
         export KUBECONFIG="$KUBECONFIG:${shell_tmp_dir}/.kube/config"
         # azure-cli modifies the first file it finds in $KUBECONFIG
         export KUBECONFIG="${shell_tmp_dir}/.kube/config:$KUBECONFIG"
+
+- name: "set facts for kubectl role"
+  set_fact:
+    kubectl: "{{ kubectl_defaults | combine( (kubectl | default({})), recursive=true ) }}"
+
+- name: kubectl print var
+  debug:
+    var: kubectl
 
 - name: Install kubectl and helm
   become: true
@@ -91,3 +99,10 @@
   when: k9s_installed.stat.exists is false
   command: |
     {{ homebrew_path }}/brew install k9s
+
+- name: install oidc_plugin
+  when: kubectl.enable_oidc_plugin | default(false)
+  command:
+    cmd: |
+      {{ homebrew_path }}/brew install kubelogin
+    creates: "{{ homebrew_path }}/kubectl-oidc_login"

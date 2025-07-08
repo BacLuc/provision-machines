@@ -26,6 +26,8 @@ local:
     enable_ubuntu_desktop: false
     enable_visual_studio_code: true
     enable_zsh: true
+    kubectl:
+      enable_oidc_plugin: true
 
     ansible:
       apt_list_file: /etc/apt/sources.list.d/ansible-ubuntu-ansible-jammy.list
