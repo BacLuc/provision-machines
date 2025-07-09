@@ -108,3 +108,9 @@
     cmd: |
       {{ homebrew_path }}/brew install kubeconform
     creates: "{{ homebrew_path }}/kubeconform"
+
+- name: install kustomize
+  command:
+    cmd: |
+      {{ homebrew_path }}/brew install kustomize
+    creates: "{{ homebrew_path }}/kustomize"
