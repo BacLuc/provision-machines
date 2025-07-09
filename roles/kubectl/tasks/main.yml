@@ -114,3 +114,9 @@
     cmd: |
       {{ homebrew_path }}/brew install kustomize
     creates: "{{ homebrew_path }}/kustomize"
+
+- name: install kubeseal
+  command:
+    cmd: |
+      {{ homebrew_path }}/brew install kubeseal
+    creates: "{{ homebrew_path }}/kubeseal"
