@@ -102,3 +102,9 @@
     cmd: |
       {{ homebrew_path }}/brew install kubelogin
     creates: "{{ homebrew_path }}/kubectl-oidc_login"
+
+- name: install kubeconform
+  command:
+    cmd: |
+      {{ homebrew_path }}/brew install kubeconform
+    creates: "{{ homebrew_path }}/kubeconform"
