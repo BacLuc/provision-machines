@@ -459,3 +459,30 @@
 - name: install zoom flatpak
   when: basic_utils.enable_zoom | default(false)
   command: flatpak install us.zoom.Zoom --assumeyes
+
+# see https://github.com/go-nv/goenv
+- name: setup go
+  when: basic_utils.enable_go | default(false)
+  block:
+    - name: install goenv
+      command:
+        cmd: |
+          {{ homebrew_path }}/brew install goenv
+        creates: "{{ homebrew_path }}/goenv"
+
+    - name: Setup goenv for bash
+      blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add goenv"
+        block: |
+          $({{ homebrew_path }}/goenv init -)
+
+    - name: Setup goenv for zsh
+      when: enable_zsh | default(false)
+      blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add goenv"
+        block: |
+          export GOENV_ROOT="$HOME/.goenv"
+          export PATH="$GOENV_ROOT/bin:$PATH"
+          eval "$({{ homebrew_path }}/goenv init -)"

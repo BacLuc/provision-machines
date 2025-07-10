@@ -85,6 +85,7 @@ local:
       enable_cinc: true
       enable_flutter: true
       enable_ghostty: true
+      enable_go: true
       enable_java: true
       enable_keepassxc: false
       enable_nvm: true
