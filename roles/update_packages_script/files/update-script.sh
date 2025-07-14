@@ -19,6 +19,6 @@ update_scripts_dir=${SCRIPT_DIR}/update-script.d
 for script in $(ls ${update_scripts_dir}); do
   log "Running ${update_scripts_dir}/${script}"
   if [ -x "${update_scripts_dir}/${script}" ]; then
-    systemd-cat -t update-script -p info ${update_scripts_dir}/${script}
+    log $(${update_scripts_dir}/${script} 2>&1)
   fi
 done
