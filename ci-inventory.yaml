@@ -57,6 +57,7 @@ local:
         - curl
         #- geany
         - git
+        #- gpaste-2
         - graphviz
         - jq
         - libglu1-mesa
