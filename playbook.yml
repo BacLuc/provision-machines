@@ -23,9 +23,14 @@
     - include_tasks: tasks/basicsetup.yml
       when: enable_basicsetup | default(false)
       tags: basicsetup
-    - include_tasks: tasks/ansible-ppa.yml
+    - name: Add ansible ppa
       when: enable_ansible_ppa | default(false)
       tags: ansible-ppa
+      become: true
+      command:
+        cmd: |
+          sudo add-apt-repository -y ppa:ansible/ansible
+        creates: "{{ ansible.apt_list_file }}"
 
   roles:
     - role: zsh
