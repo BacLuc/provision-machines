@@ -66,6 +66,15 @@
   package:
     name: zsh-syntax-highlighting
 
+- name: "autostart tmux in zsh"
+  blockinfile:
+    path: "~/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: autostart tmux"
+    insertbefore: ^plugins=
+    block: |
+      ZSH_TMUX_AUTOSTART=true
+      ZSH_TMUX_AUTOSTART_ONCE=false
+
 - name: Change .zshrc
   lineinfile: dest="~/.zshrc"
     line="{{ item.line }}"
@@ -76,7 +85,10 @@
     mode="u+rw"
   with_items:
     - { regexp: "^ZSH_THEME=", line: "ZSH_THEME=amuse" }
-    - { regexp: "^plugins=", line: "plugins=(autojump azure git helm kubectx)" }
+    - {
+        regexp: "^plugins=",
+        line: "plugins=(autojump azure git helm kubectx tmux)",
+      }
 
 - name: "add some blocks to .zshrc"
   blockinfile:
