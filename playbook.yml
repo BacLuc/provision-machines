@@ -5,11 +5,11 @@
 
   pre_tasks:
     - name: Get user
-      tags: user
+      tags: always
       ansible.builtin.shell: whoami
       changed_when: false
       register: user_command
-    - tags: user
+    - tags: always
       set_fact:
         user: "{{ user_command.stdout.strip() }}"
     - set_fact:
@@ -19,20 +19,25 @@
       when: enable_zsh | default(false)
     - include_tasks: tasks/ubuntu_desktop.yml
       when: enable_ubuntu_desktop | default(false)
+      tags: ubuntu_desktop
     - include_tasks: tasks/basicsetup.yml
       when: enable_basicsetup | default(false)
+      tags: basicsetup
     - include_tasks: tasks/ansible-ppa.yml
       when: enable_ansible_ppa | default(false)
+      tags: ansible-ppa
 
   roles:
     - role: zsh
       tags: zsh
       when: enable_zsh | default(false)
     - role: update_packages_script
+      tags: update_packages_script
     - role: homebrew
       tags: homebrew
       when: enable_homebrew | default(false)
     - role: ansible-role-customize-gnome
+      tags: customize_gnome
       when: enable_customize_gnome | default(false)
       vars:
         gnome_extensions:
@@ -42,15 +47,19 @@
             id: 1485
         customize_gnome__skip_restart_gnome_shell: customize_gnome__skip_restart_gnome_shell | default(false)
     - role: gnome
+      tags: gnome
     - role: bash
+      tags: bash
       when: enable_bash | default(false)
     - role: kubectl
       tags: kubectl
       when: enable_kubectl | default(false)
     - role: tmux
+      tags: tmux
       when: enable_tmux | default(false)
 
     - role: git-tools
+      tags: git
       when: enable_git_tools | default(false)
       vars:
         git_aliases: true
@@ -60,11 +69,14 @@
         git_user_email: "{{git.config.user_email | mandatory}}"
 
     - role: docker
+      tags: docker
       when: docker.enable | default(false)
     - role: okular
+      tags: okular
       when: enable_okular | default(false)
 
     - role: ansible-role-visual-studio-code
+      tags: visual-studio-code
       when: enable_visula_studio_code | default(false)
 
     - role: basic_utils
@@ -74,10 +86,13 @@
       when: windows.enable | default(false)
 
     - role: azure_cli
+      tags: azure_cli
 
     - role: motd
+      tags: motd
 
     - role: displaylink_driver
+      tags: displaylink_driver
 
   post_tasks:
     - include_tasks: tasks/ubuntu_cleanup.yml
