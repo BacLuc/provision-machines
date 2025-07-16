@@ -26,6 +26,7 @@
 
   roles:
     - role: zsh
+      tags: zsh
       when: enable_zsh | default(false)
     - role: update_packages_script
     - role: homebrew
