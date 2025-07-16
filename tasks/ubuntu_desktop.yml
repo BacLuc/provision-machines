@@ -109,3 +109,19 @@
   loop: "{{ gnome_shortcuts }}"
   loop_control:
     label: "{{ item.description }}\n"
+
+- name: disable gpaste shortcuts
+  when: "'gpaste-2' in apt_packages.additional_tools"
+  block:
+    - name: reset all these shortcuts with gsettings
+      command: "gsettings reset {{ item.schema }} {{ item.key }}"
+      loop:
+        - { schema: "org.gnome.GPaste", key: "history-name" }
+        - { schema: "org.gnome.GPaste", key: "images-support" }
+        - { schema: "org.gnome.GPaste", key: "launch-ui" }
+        - { schema: "org.gnome.GPaste", key: "make-password" }
+        - { schema: "org.gnome.GPaste", key: "pop" }
+        - { schema: "org.gnome.GPaste", key: "show-history" }
+        - { schema: "org.gnome.GPaste", key: "sync-clipboard-to-primary" }
+        - { schema: "org.gnome.GPaste", key: "sync-primary-to-clipboard" }
+        - { schema: "org.gnome.GPaste", key: "upload" }
