@@ -362,7 +362,7 @@
           set -e
 
           user="{{ user }}"
-          nvm_version=v0.40.1
+          nvm_version=v0.40.3
 
           su "$user" -c "git -C /home/{{ user }}/.nvm fetch --tags"
           su "$user" -c "git -C /home/{{ user }}/.nvm reset --hard $nvm_version"
