@@ -76,6 +76,10 @@
     - role: docker
       tags: docker
       when: docker.enable | default(false)
+
+    - role: php_development
+      tags: php_development
+
     - role: okular
       tags: okular
       when: enable_okular | default(false)

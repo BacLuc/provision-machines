@@ -22,6 +22,7 @@ local:
     enable_okular: false
     enable_tmux: true
     enable_kubectl: true
+    enable_php_development: true
     enable_ubuntu_cleanup: true
     enable_ubuntu_desktop: false
     enable_visual_studio_code: true

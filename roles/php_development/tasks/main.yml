@@ -1,0 +1,115 @@
+- name: Install phpenv
+  when: enable_php_development | default(false)
+  block:
+    - name: set php version
+      set_fact:
+        php_version: "{{ php_version | default('8.4.10') }}"
+        php_versions_to_delete: []
+    - name: install phpenv package
+      shell:
+        cmd: |
+          git clone https://github.com/phpenv/phpenv.git ~/.phpenv
+        creates: ~/.phpenv
+
+    - name: add phpenv to path
+      blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add phpenv to PATH"
+        block: |
+          export PATH="$HOME/.phpenv/bin:$PATH"
+          eval "$(phpenv init -)"
+
+    - name: add phpenv to zsh
+      when: enable_zsh | default(false)
+      blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add phpenv to PATH"
+        block: |
+          export PATH="$HOME/.phpenv/bin:$PATH"
+          eval "$(phpenv init -)"
+
+    - name: add script to update phpenv
+      become: true
+      copy:
+        content: |
+          #!/bin/sh
+          set -e
+
+          user="{{ user }}"
+          phpenv_version=adc99a7
+
+          su "$user" -c "git -C /home/{{ user }}/.phpenv fetch --tags"
+          su "$user" -c "git -C /home/{{ user }}/.phpenv reset --hard $phpenv_version"
+        dest: "{{update_packages_script.dir}}/phpenv-upgrade"
+        mode: "u=rwx,go=rx"
+
+    - name: add php build dependencies
+      become: true
+      apt:
+        install_recommends: false
+        name:
+          #          - libcurl4-openssl-dev
+          - libssl-dev
+          - libxml2-dev
+          - pkg-config
+          - libsqlite3-dev
+          - libbz2-dev
+          - libpng-dev
+          - libjpeg-dev
+          - autoconf2.13
+          - autoconf2.64
+          - autoconf
+          - bison
+          - build-essential
+          - ca-certificates
+          - findutils
+          - libbz2-dev
+          - libcurl4-gnutls-dev
+          - libicu-dev
+          - libmcrypt-dev
+          - libonig-dev
+          - libreadline-dev
+          - libssl-dev
+          - libzip-dev
+          - libtidy-dev
+          - libxslt1-dev
+          - pkg-config
+          - re2c
+          - zlib1g-dev
+
+    - name: add phpbuild
+      shell:
+        cmd: |
+          git clone https://github.com/php-build/php-build $HOME/.phpenv/plugins/php-build
+        creates: $HOME/.phpenv/plugins/php-build
+
+    - name: add script to update phpbuild
+      become: true
+      copy:
+        content: |
+          #!/bin/sh
+          set -e
+
+          user="{{ user }}"
+          phpbuild_version=e602902         
+
+          su "$user" -c "git -C /home/{{ user }}/.phpenv/plugins/php-build fetch --tags"
+          su "$user" -c "git -C /home/{{ user }}/.phpenv/plugins/php-build reset --hard $phpenv_version"
+        dest: "{{update_packages_script.dir}}/phpbuild-upgrade"
+        mode: "u=rwx,go=rx"
+
+    - name: build and install php
+      command:
+        cmd: |
+          /home/{{ user }}/.phpenv/bin/phpenv install {{ php_version }}
+          /home/{{ user }}/.phpenv/bin/phpenv global {{ php_version }}
+        creates: /home/{{ user }}/.phpenv/versions/{{ php_version }}/bin/php
+
+    - name: add composer
+      shell:
+        chdir: /tmp
+        cmd: |
+          curl -s "https://getcomposer.org/installer" | /home/{{ user }}/.phpenv/versions/{{ php_version }}/bin/php
+          mkdir -p /home/{{ user }}/bin
+          mv composer.phar /home/{{ user }}/bin/composer
+        creates: /home/{{ user }}/bin/composer
