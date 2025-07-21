@@ -68,7 +68,9 @@
 # region keepassxc
 - name: install keepassxc flatpak
   when: basic_utils.enable_keepassxc | default(false)
-  command: flatpak install flathub org.keepassxc.KeePassXC --assumeyes
+  flatpak:
+    name:
+      - org.keepassxc.KeePassXC
 
 - name: Modify Desktop file
   when: basic_utils.enable_keepassxc | default(false)
@@ -454,7 +456,9 @@
 
 - name: install zoom flatpak
   when: basic_utils.enable_zoom | default(false)
-  command: flatpak install us.zoom.Zoom --assumeyes
+  flatpak:
+    name:
+      - us.zoom.Zoom
 
 # see https://github.com/go-nv/goenv
 - name: setup go
