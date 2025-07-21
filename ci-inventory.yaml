@@ -27,6 +27,7 @@ local:
     enable_ubuntu_desktop: false
     enable_vagrant: true
     enable_visual_studio_code: true
+    enable_zed: false
     enable_zsh: true
     kubectl:
       enable_oidc_plugin: true
@@ -96,7 +97,6 @@ local:
       enable_rambox: true
       enable_signal: true
       enable_ssh_config_dir: true
-      enable_zed: false
       enable_zoom: false
       gcr_ssh_agent:
         enable: true

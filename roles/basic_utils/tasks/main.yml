@@ -452,10 +452,6 @@
       shell: snap connect rambox:audio-record
       when: "'rambox:audio-record' not in rambox_connections.stdout"
 
-- name: install zed
-  when: basic_utils.enable_zed | default(false)
-  command: flatpak install dev.zed.Zed --assumeyes
-
 - name: install zoom flatpak
   when: basic_utils.enable_zoom | default(false)
   command: flatpak install us.zoom.Zoom --assumeyes
