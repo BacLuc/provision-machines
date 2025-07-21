@@ -103,6 +103,9 @@
     - role: displaylink_driver
       tags: displaylink_driver
 
+    - role: vagrant
+      tags: vagrant
+
   post_tasks:
     - include_tasks: tasks/ubuntu_cleanup.yml
       when: enable_ubuntu_cleanup | default(false)
