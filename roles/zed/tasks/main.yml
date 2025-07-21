@@ -1,7 +1,63 @@
 - name: setup zed
   when: enable_zed | default(false)
   block:
+    - name: zed print var
+      debug:
+        var: zed
+
+    - name: set defaults for zed role
+      set_fact:
+        zed_defaults:
+          enable_helm_support: false
+          zed_config:
+            {
+              "base_keymap": "JetBrains",
+              "telemetry": {
+                "metrics": false,
+                "diagnostics": false
+              },
+              "ui_font_size": 16,
+              "buffer_font_size": 16,
+              "theme": {
+                "mode": "system",
+                "light": "One Dark",
+                "dark": "One Dark"
+              },
+              "drag_and_drop_selection": {
+                "enabled": false
+              },
+              "autosave": {
+                "after_delay": {
+                  "milliseconds": 100
+                }
+              },
+              "auto_install_extensions": {
+                "docker-compose": true,
+                "dockerfile": true,
+                "helm": true,
+                "html": true,
+              }
+            }
+
+    - name: set facts for zed role
+      set_fact:
+        zed: "{{ zed_defaults | combine( (zed | default({})), recursive=true ) }}"
+
     - name: install zed
       flatpak:
         name:
           - dev.zed.Zed
+
+    - name: setup helm language support
+      when: zed.enable_helm_support
+      block:
+        - name: install helm language server
+          homebrew:
+            name:
+              - helm-ls
+
+    - name: provision zed config
+      copy:
+        content: |
+          {{ zed.zed_config | to_nice_json }}
+        dest: "/home/{{ user }}/.var/app/dev.zed.Zed/config/zed/settings.json"
