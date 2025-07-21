@@ -2,4 +2,6 @@
   when: enable_zed | default(false)
   block:
     - name: install zed
-      command: flatpak install dev.zed.Zed --assumeyes
+      flatpak:
+        name:
+          - dev.zed.Zed
