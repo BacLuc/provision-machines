@@ -19,7 +19,7 @@
     - name: set defaults for zed role
       ansible.builtin.set_fact:
         zed_defaults:
-          enable_helm_support: false
+          enable_helm_support: true
           enable_memory_monitor: true
           memory_monitor_limit_gb: 10
           memory_monitor_cron_frequency: "*/5 * * * *"
@@ -36,6 +36,7 @@
                   "ansible": true,
                   "docker-compose": true,
                   "dockerfile": true,
+                  "helm": true,
                   "yaml": true,
                   "html": true,
                 },
@@ -74,6 +75,15 @@
                       "**/playbooks/*.yml",
                       "**playbook*.yaml",
                       "**playbook*.yml",
+                    ],
+                  "Helm":
+                    [
+                      "**/templates/**/*.tpl",
+                      "**/templates/**/*.yaml",
+                      "**/templates/**/*.yml",
+                      "**/helmfile.d/**/*.yaml",
+                      "**/helmfile.d/**/*.yml",
+                      "**/values*.yaml",
                     ],
                 },
               "languages": { "YAML": { "format_on_save": "off" } },
@@ -149,3 +159,10 @@
           become: true
           when: zed_resource_limits_file.changed
           ansible.builtin.command: systemctl daemon-reload
+
+    - name: install helm language server
+      when: zed.enable_helm_support | default(false)
+      ansible.builtin.command:
+        cmd: |
+          {{ homebrew_path }}/brew install helm-ls
+        creates: "/home/linuxbrew/.linuxbrew/Homebrew/Cellar/helm-ls"

@@ -186,6 +186,9 @@ local:
     snaps:
       - rclone
 
+    zed:
+      enable_helm_support: true
+
     zsh:
       # This somehow forces the sudo password prompt again.
       # Enable it once to install, then disable it.
