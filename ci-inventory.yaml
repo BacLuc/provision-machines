@@ -51,6 +51,7 @@ local:
         - zip
       additional_tools:
         - apt-transport-https
+        - bat
         - clang
         - cmake
         - build-essential

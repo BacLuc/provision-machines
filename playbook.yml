@@ -23,6 +23,9 @@
     - include_tasks: tasks/basicsetup.yml
       when: enable_basicsetup | default(false)
       tags: basicsetup
+    - name: Gather the package facts
+      tags: always
+      ansible.builtin.package_facts:
     - name: Add ansible ppa
       when: enable_ansible_ppa | default(false)
       tags: ansible-ppa
