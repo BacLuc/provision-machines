@@ -1,0 +1,25 @@
+- name: install fzf
+  when: enable_fzf | default(false)
+  block:
+    - name: install fzf package
+      command:
+        cmd: |
+          {{ homebrew_path }}/brew install fzf
+        creates: "{{ homebrew_path }}/fzf"
+
+    - name: add fzf completion to bash
+      blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add fzf completion"
+        block: |
+          FZF_DEFAULT_OPTS="--tmux"
+          eval $({{ homebrew_path }}/fzf --bash)
+
+    - name: add fzf completion to zsh
+      when: enable_zsh | default(false)
+      blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add fzf completion"
+        block: |
+          FZF_DEFAULT_OPTS="--tmux"
+          source <(fzf --zsh)

@@ -14,6 +14,7 @@ local:
     enable_displaylink_driver: false
     enable_bash: true
     enable_basicsetup: true
+    enable_fzf: true
     enable_homebrew: true
     enable_customize_gnome: false
     customize_gnome__skip_restart_gnome_shell: false

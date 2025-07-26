@@ -112,6 +112,9 @@
     - role: zed
       tags: zed
 
+    - role: fzf
+      tags: fzf
+
   post_tasks:
     - include_tasks: tasks/ubuntu_cleanup.yml
       when: enable_ubuntu_cleanup | default(false)
