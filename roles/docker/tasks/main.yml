@@ -9,7 +9,9 @@
       - software-properties-common
 
 - name: Install keyrings
-  ansible.builtin.shell: install -m 0755 -d /etc/apt/keyrings
+  shell:
+    cmd: install -m 0755 -d /etc/apt/keyrings
+    creates: /etc/apt/keyrings
 
 - name: "download key"
   become: true
@@ -22,15 +24,25 @@
 - name: Get arch
   ansible.builtin.shell: dpkg --print-architecture
   register: arch
+  changed_when: false
 
 - name: Get release
   ansible.builtin.shell: . /etc/os-release && echo "$VERSION_CODENAME"
   register: os_release
+  changed_when: false
 
 - name: Add docker apt repository with signature
   become: true
-  apt_repository:
-    repo: "deb [arch={{ arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ os_release.stdout }} stable"
+  copy:
+    content: |
+      deb [arch={{ arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ os_release.stdout }} stable
+    dest: /etc/apt/sources.list.d/docker.list
+  register: docker_apt_repository_added
+
+- name: Update apt cache
+  become: true
+  when: docker_apt_repository_added.changed
+  shell: apt-get update
 
 - name: Install docker-ce and dependencies
   become: true
