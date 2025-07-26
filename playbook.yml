@@ -115,6 +115,9 @@
     - role: fzf
       tags: fzf
 
+    - role: yazi
+      tags: yazi
+
   post_tasks:
     - include_tasks: tasks/ubuntu_cleanup.yml
       when: enable_ubuntu_cleanup | default(false)
