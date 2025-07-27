@@ -17,12 +17,12 @@
     - set_fact:
         default_shell: /bin/zsh
       when: enable_zsh | default(false)
-    - include_tasks: tasks/ubuntu_desktop.yml
-      when: enable_ubuntu_desktop | default(false)
-      tags: ubuntu_desktop
-    - include_tasks: tasks/basicsetup.yml
+    - ansible.builtin.import_tasks: tasks/basicsetup.yml
       when: enable_basicsetup | default(false)
       tags: basicsetup
+    - ansible.builtin.import_tasks: tasks/ubuntu_desktop.yml
+      when: enable_ubuntu_desktop | default(false)
+      tags: ubuntu_desktop
     - name: Gather the package facts
       tags: always
       ansible.builtin.package_facts:
