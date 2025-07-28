@@ -47,6 +47,9 @@
         creates: "{{ ansible.apt_list_file }}"
 
   roles:
+    - role: backup_burp
+      tags: backup_burp
+
     - role: zsh
       tags: zsh
       when: enable_zsh | default(false)

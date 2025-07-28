@@ -1,0 +1,217 @@
+- name: backup_burp print var
+  ansible.builtin.debug:
+    var: backup_burp
+
+- name: "set defaults for backup_burp role"
+  ansible.builtin.set_fact:
+    backup_burp_defaults:
+      ppa: ppa:vshn/backup
+      ppa_list_filename: vshn-ubuntu-backup-noble.sources
+      secret_store_app_name: burp
+      secret_store_local_pw_instance: personal-laptop-instance
+      secret_store_server_instance: personal-server-laptop-server
+
+- name: "set facts for backup_burp role"
+  ansible.builtin.set_fact:
+    backup_burp: "{{ backup_burp_defaults | combine((backup_burp | default({})), recursive=true) }}"
+
+- name: backup_burp print var
+  ansible.builtin.debug:
+    var: backup_burp
+
+- name: setup burp
+  when: enable_backup_burp | default(false)
+  block:
+    - name: add apt repo for burp
+      become: true
+      ansible.builtin.command:
+        cmd: "add-apt-repository {{ backup_burp.ppa }}"
+        creates: "/etc/apt/sources.list.d/{{ backup_burp.ppa_list_filename }}"
+      register: backup_burp_ppa_created
+
+    - name: update apt cache # noqa command-instead-of-module
+      become: true
+      when: backup_burp_ppa_created.changed
+      ansible.builtin.command: apt-get update
+
+    - name: install burp
+      become: true
+      ansible.builtin.apt:
+        name:
+          - burp
+          - libsecret-tools
+          - pwgen
+
+    - name: add symlink to burp_ca
+      become: true
+      ansible.builtin.file:
+        src: /usr/sbin/burp_ca
+        dest: /usr/bin/burp_ca
+        state: link
+
+    - name: fetch server backup password from store
+      ansible.builtin.shell: |
+        secret-tool lookup app {{ backup_burp.secret_store_app_name }} instance {{ backup_burp.secret_store_server_instance }}
+      register: backup_burp_fetch_server_pw
+      no_log: true
+      ignore_errors: true
+      changed_when: false
+
+    - name: store backup server password in var
+      when: backup_burp_fetch_server_pw.rc == 0
+      ansible.builtin.set_fact:
+        backup_burp_server_pw: "{{ backup_burp_fetch_server_pw.stdout | trim }}"
+      no_log: true
+
+    - name: Validate needed parameters are defined
+      ansible.builtin.assert:
+        that:
+          - backup_burp_server_pw is defined and backup_burp_server_pw | length > 12
+        fail_msg: |
+          Please add the server password with:
+          secret-tool store --label="Burp server password" app {{ backup_burp.secret_store_app_name }} instance {{ backup_burp.secret_store_server_instance }}
+
+    - name: fetch backup password from store
+      ansible.builtin.shell: |
+        secret-tool lookup app {{ backup_burp.secret_store_app_name }} instance {{ backup_burp.secret_store_local_pw_instance }}
+      register: backup_burp_fetch_backup_pw
+      no_log: true
+      ignore_errors: true
+      failed_when: false
+      changed_when: false
+
+    - name: store backup password in var
+      when: backup_burp_fetch_backup_pw.rc == 0
+      ansible.builtin.set_fact:
+        backup_burp_pw: "{{ backup_burp_fetch_backup_pw.stdout | trim }}"
+      no_log: true
+
+    - name: generate backup password if not exists
+      when: backup_burp_fetch_backup_pw.rc != 0
+      block:
+        - name: generate password
+          ansible.builtin.command: pwgen 32 1
+          register: backup_burp_generate_pw
+          no_log: true
+
+        - name: store backup password in var
+          ansible.builtin.set_fact:
+            backup_burp_pw: "{{ backup_burp_generate_pw.stdout | trim }}"
+          no_log: true
+
+        - name: store backup password in secret_store
+          ansible.builtin.shell: |
+            secret-tool store --label="Burp local password" app {{ backup_burp.secret_store_app_name }} instance {{ backup_burp.secret_store_local_pw_instance }}
+          args:
+            stdin: "{{ backup_burp_pw }}"
+            stdin_add_newline: false
+          no_log: true
+
+        - name: Print message to backup the generated password
+          ansible.builtin.debug:
+            var: "Please backup the generated password to your password manager. You find it with: secret-tool lookup app {{ backup_burp.secret_store_app_name }} instance {{ backup_burp.secret_store_local_pw_instance }}"
+
+    - name: create /etc/burp dir
+      become: true
+      ansible.builtin.file:
+        dest: /etc/burp
+        state: directory
+        owner: "root"
+        mode: "ug=rwx,o=r"
+
+    - name: configure burp
+      become: true
+      ansible.builtin.copy:
+        content: |
+          mode = client
+          port = 4971
+          status_port = 4972
+          port_backup = 4971
+          port_restore = 4973
+          port_verify = 4973
+          port_list = 4973
+          port_delete = 4973
+          server = {{ backup_burp.backup_host }}
+          password = {{ backup_burp_server_pw }}
+          cname = {{ backup_burp.client_name }}
+          protocol = 1
+          pidfile = /var/run/burp.client.pid
+          syslog = 0
+          stdout = 1
+          progress_counter = 1
+          server_can_restore = 0
+          cross_filesystem=/home
+          cross_all_filesystems=0
+          ca_burp_ca = /usr/bin/burp_ca
+          ca_csr_dir = /etc/burp/CA-client
+          ssl_cert_ca = /etc/burp/ssl_cert_ca.pem
+          ssl_cert = /etc/burp/ssl_cert-client.pem
+          ssl_key = /etc/burp/ssl_cert-client.key
+          ssl_peer_cn = {{ backup_burp.ssl_peer_cn }}
+          include = /home
+          include = /etc
+          include = /usr/local
+          include = /var/local
+          exclude = '/home/{{ user }}/VirtualBox VMs'
+          exclude = /home/{{ user }}/NextCloud
+          exclude = /home/{{ user }}/.vagrant.d/boxes
+          {% for exclude in backup_burp.excludes %}
+          exclude = {{ exclude }}
+          {% endfor %}
+          exclude_fs = debugfs
+          exclude_fs = devpts
+          exclude_fs = devtmpfs
+          exclude_fs = proc
+          exclude_fs = securityfs
+          exclude_fs = sysfs
+          exclude_fs = tmpfs
+          exclude_regex = \.cache
+          exclude_regex = \.burpignore
+          exclude_comp=bz2
+          exclude_comp=gz
+          exclude_comp=xz
+          encryption_password = {{ backup_burp_pw }}
+        dest: /etc/burp/burp.conf
+        owner: "root"
+        mode: "ug=rw,o=r"
+
+    - name: configure burp-runner.service
+      become: true
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=Run burp command
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/sbin/burp -c /etc/burp/burp.conf -a t
+        dest: /etc/systemd/system/burp-runner.service
+        owner: "root"
+        mode: "ug=rw,o=r"
+      register: backup_burp_systemd_service
+
+    - name: configure burp-runner.timer
+      become: true
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=Schedule burp agent
+
+          [Timer]
+          OnCalendar=*:0/15
+          RandomizedDelaySec=10
+          Persistent=false
+
+          [Install]
+          WantedBy=timers.target
+        dest: /etc/systemd/system/burp-runner.timer
+        owner: "root"
+        mode: "ug=rw,o=r"
+      register: backup_burp_systemd_timer
+
+    - name: enable burp-runner service
+      become: true
+      ansible.builtin.systemd_service:
+        name: burp-runner.timer
+        enabled: true
+        daemon_reload: "{{ backup_burp_systemd_service.changed or backup_burp_systemd_timer.changed }}"
