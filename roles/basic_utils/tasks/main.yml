@@ -65,34 +65,44 @@
         block: |
           eval "$(direnv hook zsh)"
 
-# region keepassxc
+# manually to do:
+# enable auto type for shortcut
 - name: install keepassxc flatpak
   when: basic_utils.enable_keepassxc | default(false)
-  flatpak:
-    name:
-      - org.keepassxc.KeePassXC
+  block:
+    - name:
+      flatpak:
+        name:
+          - org.keepassxc.KeePassXC
 
-- name: Modify Desktop file
-  when: basic_utils.enable_keepassxc | default(false)
-  become: true
-  lineinfile:
-    dest="/var/lib/flatpak/exports/share/applications/org.keepassxc.KeePassXC.desktop"
-    line="{{ item.line }}"
-    regexp="{{ item.regexp }}"
-    state=present
-    insertafter=EOF
-    create=True
-    mode="u+rw"
-  with_items:
-    - {
-        regexp: "^Exec=",
-        line: "Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=keepassxc --file-forwarding org.keepassxc.KeePassXC --platform xcb @@ %f @@",
-      }
-# manually to do:
-# enable ssh-agent integration
-# enable auto type for shortcut
+    - name: Modify Desktop file
+      become: true
+      lineinfile:
+        dest="/var/lib/flatpak/exports/share/applications/org.keepassxc.KeePassXC.desktop"
+        line="{{ item.line }}"
+        regexp="{{ item.regexp }}"
+        state=present
+        insertafter=EOF
+        create=True
+        mode="u+rw"
+      with_items:
+        - {
+            regexp: "^Exec=",
+            line: "Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=keepassxc --file-forwarding org.keepassxc.KeePassXC --platform xcb @@ %f @@",
+          }
 
-# endregion
+    - name: Add ssh agent integration
+      when: basic_utils.gcr_ssh_agent.enable | default(false)
+      block:
+        - name: check if override already exists
+          shell: flatpak override org.keepassxc.KeePassXC --show
+          register: basic_utils_keepass_flatpak_overrides
+          changed_when: false
+
+        - name: give flatpak app access to ssh-agent
+          when: "not 'sockets=ssh-auth;' in basic_utils_keepass_flatpak_overrides.stdout"
+          become: true
+          shell: flatpak override org.keepassxc.KeePassXC --socket=ssh-auth
 
 - name: install signal snap
   when: basic_utils.enable_signal | default(false)
