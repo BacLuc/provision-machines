@@ -65,8 +65,6 @@
         block: |
           eval "$(direnv hook zsh)"
 
-# manually to do:
-# enable auto type for shortcut
 - name: install keepassxc flatpak
   when: basic_utils.enable_keepassxc | default(false)
   block:
@@ -103,6 +101,15 @@
           when: "not 'sockets=ssh-auth;' in basic_utils_keepass_flatpak_overrides.stdout"
           become: true
           shell: flatpak override org.keepassxc.KeePassXC --socket=ssh-auth
+
+        - name: configure auto type
+          blockinfile:
+            path: "~/.var/app/org.keepassxc.KeePassXC/config/keepassxc/keepassxc.ini"
+            marker: "# {mark} ANSIBLE MANAGED BLOCK: configure auto type"
+            insertafter: ^[General]
+            block: |
+              GlobalAutoTypeKey=65
+              GlobalAutoTypeModifiers=201326592
 
 - name: install signal snap
   when: basic_utils.enable_signal | default(false)
