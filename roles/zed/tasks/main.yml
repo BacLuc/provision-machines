@@ -5,3 +5,15 @@
       flatpak:
         name:
           - dev.zed.Zed
+
+    - name: Setup user bin dir
+      file:
+        path: "~/bin"
+        state: directory
+        mode: "u=rwx,go=rx"
+
+    - name: Create a symbolic link for zed
+      ansible.builtin.file:
+        src: "/var/lib/flatpak/exports/bin/dev.zed.Zed"
+        dest: "/home/{{ user }}/bin/zed"
+        state: link
