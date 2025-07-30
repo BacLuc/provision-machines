@@ -19,6 +19,10 @@
         regexp: "^alias bigdirs=",
         line: "alias bigdirs='du --max-depth=1 2> /dev/null | sort -n -r | head -n20'",
       }
+    - {
+        regexp: "^alias prettier=",
+        line: "alias prettier='docker run --rm -v $PWD:/workdir -w /workdir -u $UID ghcr.io/bacluc/prettier-image/prettier-image:3.3.3'",
+      }
 
 - name: Add bash exports
   lineinfile: dest="~/.bashrc"
