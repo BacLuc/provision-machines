@@ -97,6 +97,17 @@
       {{ homebrew_path }}/brew install k9s
     creates: "{{ homebrew_path }}/k9s"
 
+- name: Add k9s aliases
+  lineinfile: dest="~/.bash_aliases"
+    line="{{ item.line }}"
+    regexp="{{ item.regexp }}"
+    state=present
+    insertafter=EOF
+    create=True
+    mode="u+rw"
+  with_items:
+    - { regexp: "^alias k9sa=", line: "alias k9sa='k9s --as cluster-admin'" }
+
 - name: install oidc_plugin
   when: kubectl.enable_oidc_plugin | default(false)
   command:
