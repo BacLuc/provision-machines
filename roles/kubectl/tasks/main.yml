@@ -140,3 +140,9 @@
     cmd: |
       {{ homebrew_path }}/brew install kubeseal
     creates: "{{ homebrew_path }}/kubeseal"
+
+- name: install helmfile
+  command:
+    cmd: |
+      {{ homebrew_path }}/brew install helmfile
+    creates: "{{ homebrew_path }}/helmfile"
