@@ -90,6 +90,14 @@
         regexp: "^alias kn=",
         line: 'alias kn=''f() { [ "$1" ] && kubectl config set-context --current --namespace $1 || kubectl config view --minify | grep namespace | cut -d" " -f6 ; } ; f''',
       }
+    - {
+        regexp: "^alias kgworld=",
+        line: 'alias kgworld=''kubectl get $(kubectl api-resources --verbs=list --namespaced -o name | paste -sd ",")''',
+      }
+    - {
+        regexp: "^alias kagworld=",
+        line: 'alias kagworld=''kubectl --as cluster-admin get $(kubectl api-resources --verbs=list --namespaced -o name | paste -sd ",")''',
+      }
 
 - name: install k9s
   command:
