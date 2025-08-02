@@ -9,9 +9,15 @@
       ansible.builtin.shell: whoami
       changed_when: false
       register: user_command
+    - name: Get user id
+      tags: always
+      ansible.builtin.shell: id -u
+      changed_when: false
+      register: user_id_command
     - tags: always
       set_fact:
         user: "{{ user_command.stdout.strip() }}"
+        user_id: "{{ user_id_command.stdout.strip() }}"
     - set_fact:
         default_shell: /bin/bash
     - set_fact:
