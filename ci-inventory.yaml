@@ -102,7 +102,7 @@ local:
       enable_ssh_config_dir: true
       enable_zoom: false
       gcr_ssh_agent:
-        enable: true
+        enable: false
       python:
         enable: true
         venvs: []

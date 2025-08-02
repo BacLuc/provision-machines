@@ -206,6 +206,37 @@
 - name: setup gcr-ssh-agent
   when: basic_utils.gcr_ssh_agent.enable | default(false)
   block:
+    - name: check if ssh-key already exists
+      stat:
+        path: "~/.ssh/{{ basic_utils.ssh_key.filename }}"
+      register: ssh_key_exists
+
+    - name: create ssh-key and add it to ssh-agent on login
+      when: ssh_key_exists.stat.exists is false
+      block:
+        - name: install pwgen
+          become: true
+          apt:
+            name:
+              - pwgen
+              - libsecret-tools
+
+        - name: generate password
+          shell: pwgen 32 1
+          register: basic_utils_ssh_key_password
+          no_log: true
+
+        - name: create ssh-key
+          shell: ssh-keygen -f ~/.ssh/{{ basic_utils.ssh_key.filename }} -C "{{ basic_utils.ssh_key.comment }}" -N "{{ basic_utils_ssh_key_password.stdout }}"
+          no_log: true
+
+        - name: add ssh-key to ssh-agent on login
+          shell: secret-tool store --label="Unlock ssh key {{ basic_utils.ssh_key.filename }}" unique ssh-store:/home/{{ user }}/.ssh/{{ basic_utils.ssh_key.filename }}
+          args:
+            stdin: "{{ basic_utils_ssh_key_password.stdout }}"
+            stdin_add_newline: false
+          no_log: true
+
     - name: setup gcr-ssh-agent for bash
       blockinfile:
         path: "~/.bashrc"
