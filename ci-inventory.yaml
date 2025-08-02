@@ -124,6 +124,9 @@ local:
     motd:
       enable_disk_usage: false
 
+    ghostty:
+      font_size: 20
+
     git:
       config:
         user_name: "User"

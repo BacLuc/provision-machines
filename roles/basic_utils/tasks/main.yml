@@ -411,6 +411,7 @@
     - name: provision config
       copy:
         content: |
+          font-size={{ ghostty.font_size }}
           maximize=true
           theme=carbonfox
         dest: "~/.config/ghostty/config"
