@@ -17,7 +17,7 @@
     - { regexp: "^alias cdp=", line: "alias cdp='cd $(pwd)'" }
     - {
         regexp: "^alias bigdirs=",
-        line: "alias bigdirs='du --max-depth=1 2> /dev/null | sort -n -r | head -n20'",
+        line: "alias bigdirs='du --human-readable --max-depth=1 2> /dev/null | sort --human-numeric-sort -r | head -n20'",
       }
     - {
         regexp: "^alias prettier=",
