@@ -49,6 +49,10 @@
   with_items:
     - { regexp: "^export HISTSIZE=", line: "export HISTSIZE=9999" }
     - { regexp: "^export SAVEHIST=", line: "export SAVEHIST=9999" }
+    - {
+        regexp: "DISABLE_MAGIC_FUNCTIONS=",
+        line: "DISABLE_MAGIC_FUNCTIONS=true",
+      }
 
 - name: Source usual bash definitions
   blockinfile:
