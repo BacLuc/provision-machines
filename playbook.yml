@@ -106,6 +106,9 @@
     - role: azure_cli
       tags: azure_cli
 
+    - role: nvim
+      tags: nvim
+
     - role: motd
       tags: motd
 

@@ -1,0 +1,3 @@
+dependencies:
+  - homebrew
+  - update_packages_script

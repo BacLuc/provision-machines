@@ -1,0 +1,91 @@
+- name: install nvim
+  when: enable_nvim | default(false)
+  block:
+    - name: install neovim
+      command:
+        cmd: |
+          {{ homebrew_path }}/brew install neovim
+        creates: "{{ homebrew_path }}/nvim"
+
+    - name: install NormalNeovim distribution
+      ansible.builtin.git:
+        repo: "https://github.com/BacLuc/NormalNvim.git"
+        dest: ~/.config/nvim
+
+    - name: add script to update nvim
+      become: true
+      copy:
+        content: |
+          user="{{ user }}"
+          version=origin/main
+
+          su "$user" -c "git -C /home/{{ user }}/.config/nvim fetch"
+          su "$user" -c "git -C /home/{{ user }}/.config/nvim reset --hard $version"
+        dest: "{{update_packages_script.dir}}/normal-neovim-upgrade"
+        mode: "u=rwx,go=rx"
+
+    - name: Check current vim alternatives
+      become: true
+      ansible.builtin.shell: |
+        update-alternatives --query vim
+      # noinspection YAMLIncompatibleTypes
+      changed_when: false
+      register: current_vim_alternatives
+
+    - name: Add vim to update-alternatives if it doesn't exist
+      become: true
+      when: '"nvim" not in current_vim_alternatives.stdout'
+      ansible.builtin.command: |
+        update-alternatives --install /usr/bin/vim vim {{ homebrew_path }}/nvim 1
+      register: nvim_alternative_added
+      changed_when: nvim_alternative_added.rc == 0
+      failed_when: nvim_alternative_added.rc != 0 and "alternative nvim already exists" not in nvim_alternative_added.stderr
+
+    - name: Check current default vim alternative
+      become: true
+      ansible.builtin.shell: |
+        update-alternatives --query vim | grep 'current link' | awk '{print $NF}'
+      # noinspection YAMLIncompatibleTypes
+      changed_when: false
+      register: current_vim_link
+
+    - name: Set nvim as the default vim alternative
+      become: true
+      ansible.builtin.command: |
+        update-alternatives --set vim {{ homebrew_path }}/nvim
+      when: '"nvim" not in current_vim_link.stdout'
+      register: vim_default_set
+      changed_when: vim_default_set.rc == 0
+
+    - name: Check current vi alternatives
+      become: true
+      ansible.builtin.shell: |
+        update-alternatives --query vi
+      # noinspection YAMLIncompatibleTypes
+      changed_when: false
+      register: current_vi_alternatives
+
+    - name: Add vi to update-alternatives if it doesn't exist
+      become: true
+      when: '"nvim" not in current_vi_alternatives.stdout'
+      ansible.builtin.command: |
+        update-alternatives --install /usr/bin/vi vi {{ homebrew_path }}/nvim 1
+      register: nvim_vi_alternative_added
+      changed_when: nvim_vi_alternative_added.rc == 0
+      failed_when: nvim_vi_alternative_added.rc != 0 and "alternative nvim already exists" not in nvim_vi_alternative_added.stderr
+
+    - name: Check current default vi alternative
+      become: true
+      ansible.builtin.shell: |
+        update-alternatives --query vi | grep 'current link' | awk '{print $NF}'
+      # noinspection YAMLIncompatibleTypes
+      changed_when: false
+      register: current_vi_link
+
+    - name: Set nvim as the default vi alternative
+      become: true
+      ansible.builtin.command: |
+        update-alternatives --set vi {{ homebrew_path }}/nvim
+      when: '"nvim" not in current_vi_link.stdout'
+      register: vi_default_set
+      changed_when: vi_default_set.rc == 0
