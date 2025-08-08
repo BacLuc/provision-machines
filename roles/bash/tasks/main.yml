@@ -24,6 +24,15 @@
         line: "alias prettier='docker run --rm -v $PWD:/workdir -w /workdir -u $UID ghcr.io/bacluc/prettier-image/prettier-image:3.3.3'",
       }
 
+- name: Add aws-cli
+  blockinfile:
+    path: "~/.bash_aliases"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: aws-cli alias"
+    block: |
+      alias aws='docker run --rm -it \
+      -v $(pwd):/data \
+      amazon/aws-cli:2.28.5 aws'
+
 - name: Add bash exports
   lineinfile: dest="~/.bashrc"
     line="{{ item.line }}"
