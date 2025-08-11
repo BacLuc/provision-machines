@@ -1,6 +1,49 @@
 - name: setup zed
   when: enable_zed | default(false)
   block:
+    - name: zed print var
+      debug:
+        var: zed
+
+    - name: set defaults for zed role
+      set_fact:
+        zed_defaults:
+          enable_helm_support: false
+          zed_config:
+            {
+              "auto_install_extensions":
+                {
+                  "docker-compose": true,
+                  "dockerfile": true,
+                  "yaml": true,
+                  "html": true,
+                },
+              "autosave": { "after_delay": { "milliseconds": 100 } },
+              "base_keymap": "JetBrains",
+              "buffer_font_size": 16,
+              "drag_and_drop_selection": { "enabled": false },
+              "edit_predictions":
+                {
+                  "mode": "subtle",
+                  "copilot":
+                    {
+                      "proxy": null,
+                      "proxy_no_verify": null,
+                      "enterprise_uri": null,
+                    },
+                  "enabled_in_text_threads": false,
+                },
+              "languages": { "YAML": { "format_on_save": "off" } },
+              "show_edit_predictions": false,
+              "telemetry": { "metrics": false, "diagnostics": false },
+              "theme":
+                { "mode": "system", "light": "One Dark", "dark": "One Dark" },
+              "ui_font_size": 16,
+            }
+
+    - name: set facts for zed role
+      set_fact:
+        zed: "{{ zed_defaults | combine( (zed | default({})), recursive=true ) }}"
     - name: install zed
       flatpak:
         name:
@@ -41,3 +84,9 @@
       become: true
       when: zed_resource_limits_file.changed
       shell: systemctl daemon-reload
+
+    - name: provision zed config
+      copy:
+        content: |
+          {{ zed.zed_config | to_nice_json }}
+        dest: "/home/{{ user }}/.var/app/dev.zed.Zed/config/zed/settings.json"
