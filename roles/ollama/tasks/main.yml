@@ -1,0 +1,55 @@
+- name: install ollama
+  when: enable_ollama | default(false)
+  block:
+    - name: ollama print var
+      debug:
+        var: ollama
+
+    - name: set defaults for ollama role
+      set_fact:
+        ollama_defaults:
+          ollama_version: 0.11.4
+          model: mistral:7b
+
+    - name: set facts for ollama role
+      set_fact:
+        ollama: "{{ ollama_defaults | combine( (ollama | default({})), recursive=true ) }}"
+
+    - name: Install ollama
+      become: true
+      shell:
+        cmd: curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION={{ ollama.ollama_version }} sh
+        creates: /usr/local/bin/ollama
+
+    - name: add script to update ollama
+      become: true
+      copy:
+        content: |
+          curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION={{ ollama.ollama_version }} sh
+        dest: "{{update_packages_script.dir}}/ollama-upgrade"
+        mode: "u=rwx,go=rx"
+
+    - name: create models directory
+      become: true
+      file:
+        dest: /var/ollama/models
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: "u=rwx,go=rx"
+
+    - name: create a model to map fully into ram
+      copy:
+        content: |
+          FROM {{ ollama.model }}
+          PARAMETER use_mmap false
+        dest: "/var/ollama/models/{{ ollama.model | replace(':', '_') }}-mmap"
+      register: ollama_model_mmap_file
+
+    - name: create model from file
+      when: ollama_model_mmap_file.changed
+      shell: "ollama create {{ ollama.model }}-mmap -f {{ ollama_model_mmap_file.dest }}"
+
+    - name: run the model
+      when: ollama_model_mmap_file.changed
+      shell: ollama run {{ ollama.model }}-mmap

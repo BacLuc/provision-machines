@@ -14,6 +14,12 @@
           memory_monitor_cron_frequency: "*/5 * * * *"
           zed_config:
             {
+              "agent":
+                {
+                  "default_model":
+                    { "provider": "ollama", "model": "llama3.2:3b" },
+                },
+              "features": { "edit_prediction_provider": "none" },
               "auto_install_extensions":
                 {
                   "ansible": true,
@@ -73,7 +79,7 @@
                         { "yaml": { "format": { "singleQuote": true } } },
                     },
                 },
-              "show_edit_predictions": false,
+              "show_edit_predictions": true,
               "telemetry": { "metrics": false, "diagnostics": false },
               "theme":
                 { "mode": "system", "light": "One Dark", "dark": "One Dark" },

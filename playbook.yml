@@ -89,6 +89,9 @@
     - role: php_development
       tags: php_development
 
+    - role: ollama
+      tags: ollama
+
     - role: okular
       tags: okular
       when: enable_okular | default(false)

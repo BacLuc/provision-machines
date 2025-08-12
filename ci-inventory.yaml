@@ -21,6 +21,7 @@ local:
     enable_git_tools: true
     git_graphical_tools: false
     enable_okular: false
+    enable_ollama: false
     enable_tmux: true
     enable_kubectl: true
     enable_nvim: true
