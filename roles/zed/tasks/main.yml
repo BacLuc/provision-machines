@@ -9,6 +9,9 @@
       set_fact:
         zed_defaults:
           enable_helm_support: false
+          enable_memory_monitor: true
+          memory_monitor_limit_gb: 10
+          memory_monitor_cron_frequency: "*/5 * * * *"
           zed_config:
             {
               "auto_install_extensions":
@@ -61,32 +64,101 @@
         dest: "/home/{{ user }}/bin/zed"
         state: link
 
-    - name: Create drop in dir for flatpak-system-helper
-      become: true
-      ansible.builtin.file:
-        dest: "/etc/systemd/system/flatpak-system-helper.service.d"
-        state: directory
-        owner: root
-        mode: "u=rwx,go=rx"
-
-    - name: Limit resources of zed flatpak
-      become: true
-      copy:
-        content: |
-          [Service]
-          MemoryAccounting=true
-          MemoryHigh=5G
-          MemoryMax=10G
-        dest: /etc/systemd/system/flatpak-system-helper.service.d/resource-limits.conf
-      register: zed_resource_limits_file
-
-    - name: Reload daemons
-      become: true
-      when: zed_resource_limits_file.changed
-      shell: systemctl daemon-reload
-
     - name: provision zed config
       copy:
         content: |
           {{ zed.zed_config | to_nice_json }}
         dest: "/home/{{ user }}/.var/app/dev.zed.Zed/config/zed/settings.json"
+
+    - name: ensure Zed memory monitor is configured
+      when: zed.enable_memory_monitor
+      block:
+        - name: ensure the log directory for Zed monitor exists and has correct permissions
+          become: true
+          ansible.builtin.file:
+            path: "/var/log/zed"
+            state: directory
+            owner: "{{ user }}"
+            group: "{{ user }}"
+            mode: "u=rwx,go=rx"
+
+        - name: copy the Zed memory monitoring script
+          become: true
+          ansible.builtin.copy:
+            content: |
+              #!/bin/bash
+
+              PROCESS_PATH="/var/lib/flatpak/app/dev.zed.Zed"
+              HOME_DIR=/home/{{ user }}
+              LOG_SOURCE="$HOME_DIR/.var/app/dev.zed.Zed/data/zed/logs/Zed.log"
+              LOG_DEST_DIR="/var/log/zed"
+              MEMORY_LIMIT_GB={{ zed.memory_monitor_limit_gb }}
+              MEMORY_LIMIT_KB=$((MEMORY_LIMIT_GB * 1024 * 1024))
+
+              mkdir -p "$LOG_DEST_DIR"
+
+              PID=$(pgrep -f "^$PROCESS_PATH")
+
+              if [ -z "$PID" ]; then
+                  echo "$(date): Zed process not found. Exiting."
+                  exit 0
+              fi
+
+              MEM_KB=$(ps -p "$PID" -o rss= | tr -d ' ')
+
+              if [ -z "$MEM_KB" ]; then
+                  echo "$(date): Could not get memory usage for PID $PID. Exiting."
+                  exit 0
+              fi
+
+              echo "$(date): Zed (PID: $PID) memory consumption: $(echo "scale=2; $MEM_KB / 1024 / 1024" | bc) GB"
+
+              if (( MEM_KB > MEMORY_LIMIT_KB )); then
+                  DATETIME=$(date +"%Y-%m-%d_%H-%M-%S")
+                  DEST_LOG_FILE="${LOG_DEST_DIR}/${DATETIME}_zed_killed_too_much_memory.log"
+
+                  echo "$(date): Memory consumption for Zed (PID: $PID) is over ${MEMORY_LIMIT_GB} GB (${MEM_KB} KB). Killing process..."
+
+                  kill "$PID"
+
+                  sleep 2
+
+                  if [ -f "$LOG_SOURCE" ]; then
+                      cp "$LOG_SOURCE" "$DEST_LOG_FILE"
+                      echo "$(date): Copied Zed log to $DEST_LOG_FILE"
+                  else
+                      echo "$(date): Warning: Zed log file not found at $LOG_SOURCE"
+                  fi
+
+                  echo "$(date): Zed process (PID: $PID) killed due to excessive memory usage."
+              fi
+            dest: "/usr/local/bin/monitor-zed-memory"
+            owner: root
+            group: root
+            mode: "u=rwx,go=rx"
+
+        - name: Add or update the cron job for Zed memory monitoring
+          ansible.builtin.cron:
+            name: "Monitor Zed memory and kill if over {{ zed.memory_monitor_limit_gb }}GB"
+            user: "{{ user }}"
+            minute: "{{ zed.memory_monitor_cron_frequency.split(' ')[0] }}"
+            hour: "{{ zed.memory_monitor_cron_frequency.split(' ')[1] }}"
+            day: "{{ zed.memory_monitor_cron_frequency.split(' ')[2] }}"
+            month: "{{ zed.memory_monitor_cron_frequency.split(' ')[3] }}"
+            weekday: "{{ zed.memory_monitor_cron_frequency.split(' ')[4] }}"
+            job: "/usr/local/bin/monitor-zed-memory 2>&1 | logger -t monitor-zed-memory"
+            state: present
+
+    - name: Ensure Zed memory monitor is absent if disabled
+      when: not zed.enable_memory_monitor | default(false)
+      block:
+        - name: Remove the Zed memory monitoring script
+          ansible.builtin.file:
+            path: "/usr/local/bin/monitor-zed-memory"
+            state: absent
+
+        - name: Remove the cron job for Zed memory monitoring
+          ansible.builtin.cron:
+            name: "Monitor Zed memory and kill if over *"
+            user: "{{ user }}"
+            state: absent
