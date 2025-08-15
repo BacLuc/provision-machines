@@ -1,16 +1,16 @@
 - name: install flatpak
   become: true
-  package:
+  ansible.builtin.package:
     name: flatpak
 
 - name: add flathub repository
   become: true
-  command: |
+  ansible.builtin.command: |
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 - name: add update script
   become: true
-  copy:
+  ansible.builtin.copy:
     src: flatpak-upgrade.sh
-    dest: "{{update_packages_script.dir}}/flatpak-upgrade"
+    dest: "{{ update_packages_script.dir }}/flatpak-upgrade"
     mode: "u=rwx,go=rx"

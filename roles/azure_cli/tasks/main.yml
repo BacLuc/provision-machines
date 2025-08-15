@@ -4,33 +4,34 @@
   tags: azure_cli
   block:
     - name: "check if azure cli is installed"
-      stat:
+      ansible.builtin.stat:
         path: "{{ homebrew_path }}/az"
       register: azure_cli_installed
 
     - name: "install azure cli"
       when: azure_cli_installed.stat.exists is false
-      command: |
+      ansible.builtin.command: |
         {{ homebrew_path }}/brew install azure-cli
 
     - name: "check if kubelogin is installed"
-      stat:
+      ansible.builtin.stat:
         path: "{{ homebrew_path }}/kubelogin"
       register: azure_cli_kubelogin_installed
 
     - name: "install kubelogin"
       when: azure_cli_kubelogin_installed.stat.exists is false
-      command: |
+      ansible.builtin.command: |
         {{ homebrew_path }}/brew install azure-cli Azure/kubelogin/kubelogin
 
     - name: Add aliases
-      lineinfile: dest="~/.bash_aliases"
-        line="{{ item.line }}"
-        regexp="{{ item.regexp }}"
-        state=present
-        insertafter=EOF
-        create=True
-        mode="u+rw"
+      ansible.builtin.lineinfile:
+        dest: "~/.bash_aliases"
+        line: "{{ item.line }}"
+        regexp: "{{ item.regexp }}"
+        state: present
+        insertafter: EOF
+        create: true
+        mode: "u+rw"
       with_items:
         - {
             regexp: "^alias azl=",

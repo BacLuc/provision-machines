@@ -3,6 +3,6 @@
   block:
     - name: "install gnome extensions app"
       when: basic_utils.enable_keepassxc | default(false)
-      flatpak:
+      community.general.flatpak:
         name:
           - org.gnome.Extensions

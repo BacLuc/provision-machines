@@ -1,20 +1,20 @@
 - name: Install psutil that is needed for dconf module below
   become: true
-  apt:
+  ansible.builtin.apt:
     name: python3-psutil
 
 - name: Install xfce-terminal
   become: true
-  apt:
+  ansible.builtin.apt:
     name: xfce4-terminal
 
 - name: define all gnome favorite apps
-  dconf:
+  community.general.dconf:
     key: "/org/gnome/shell/favorite-apps"
     value: "['nemo.desktop', 'chromium-browser.desktop', 'ghostty.desktop', 'code.desktop']"
 
 - name: add german keyboard layouts
-  dconf:
+  community.general.dconf:
     key: "/org/gnome/desktop/input-sources/sources"
     value: "[('xkb', 'ch'), ('xkb', 'us')]"
 
@@ -105,7 +105,7 @@
         description: "add shortcut for moving window to monitor up"
 
 - name: set dconf shortcuts
-  command: 'gsettings set "{{ item.schema }}" "{{ item.key }}" "{{ item.value }}"'
+  ansible.builtin.command: 'gsettings set "{{ item.schema }}" "{{ item.key }}" "{{ item.value }}"'
   loop: "{{ gnome_shortcuts }}"
   loop_control:
     label: "{{ item.description }}\n"
@@ -114,7 +114,7 @@
   when: "'gpaste-2' in apt_packages.additional_tools"
   block:
     - name: reset all these shortcuts with gsettings
-      command: "gsettings set {{ item.schema }} {{ item.key }} ''"
+      ansible.builtin.command: "gsettings set {{ item.schema }} {{ item.key }} ''" # noqa syntax-check
       loop:
         - { schema: "org.gnome.GPaste", key: "history-name" }
         - { schema: "org.gnome.GPaste", key: "launch-ui" }

@@ -24,7 +24,7 @@
 
 - name: "set facts for kubectl role"
   ansible.builtin.set_fact:
-    kubectl: "{{ kubectl_defaults | combine( (kubectl | default({})), recursive=true ) }}"
+    kubectl: "{{ kubectl_defaults | combine((kubectl | default({})), recursive=true) }}"
 
 - name: kubectl print var
   ansible.builtin.debug:
@@ -76,13 +76,14 @@
       [[ $commands[kubectl] ]] && source <(kubectl completion zsh)
 
 - name: Add bash aliases
-  lineinfile: dest="~/.bash_aliases"
-    line="{{ item.line }}"
-    regexp="{{ item.regexp }}"
-    state=present
-    insertafter=EOF
-    create=True
-    mode="u+rw"
+  ansible.builtin.lineinfile:
+    dest: "~/.bash_aliases"
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    state: present
+    insertafter: EOF
+    create: true
+    mode: "u+rw"
   with_items:
     - { regexp: "^alias k=", line: "alias k=kubectl" }
     - { regexp: "^alias ka=", line: "alias ka='kubectl --as cluster-admin'" }
@@ -100,49 +101,50 @@
       }
 
 - name: install k9s
-  command:
+  ansible.builtin.command:
     cmd: |
       {{ homebrew_path }}/brew install k9s
     creates: "{{ homebrew_path }}/k9s"
 
 - name: Add k9s aliases
-  lineinfile: dest="~/.bash_aliases"
-    line="{{ item.line }}"
-    regexp="{{ item.regexp }}"
-    state=present
-    insertafter=EOF
-    create=True
-    mode="u+rw"
+  ansible.builtin.lineinfile:
+    dest: "~/.bash_aliases"
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    state: present
+    insertafter: EOF
+    create: true
+    mode: "u+rw"
   with_items:
     - { regexp: "^alias k9sa=", line: "alias k9sa='k9s --as cluster-admin'" }
 
 - name: install oidc_plugin
   when: kubectl.enable_oidc_plugin | default(false)
-  command:
+  ansible.builtin.command:
     cmd: |
       {{ homebrew_path }}/brew install kubelogin
     creates: "{{ homebrew_path }}/kubectl-oidc_login"
 
 - name: install kubeconform
-  command:
+  ansible.builtin.command:
     cmd: |
       {{ homebrew_path }}/brew install kubeconform
     creates: "{{ homebrew_path }}/kubeconform"
 
 - name: install kustomize
-  command:
+  ansible.builtin.command:
     cmd: |
       {{ homebrew_path }}/brew install kustomize
     creates: "{{ homebrew_path }}/kustomize"
 
 - name: install kubeseal
-  command:
+  ansible.builtin.command:
     cmd: |
       {{ homebrew_path }}/brew install kubeseal
     creates: "{{ homebrew_path }}/kubeseal"
 
 - name: install helmfile
-  command:
+  ansible.builtin.command:
     cmd: |
       {{ homebrew_path }}/brew install helmfile
     creates: "{{ homebrew_path }}/helmfile"

@@ -1,5 +1,5 @@
 name: "Run provisioning on ubuntu"
-on:
+"on":
   push:
   pull_request:
   schedule:
@@ -52,3 +52,13 @@ jobs:
         run: |
           docker compose run --rm prettier
           git diff --exit-code
+
+  lint:
+    name: "lint"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - run: docker compose run --rm --quiet-pull yamllint
+
+      - run: docker compose run --rm --quiet-pull ansible-lint

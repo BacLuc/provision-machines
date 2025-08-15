@@ -1,0 +1,7 @@
+skip_list:
+  - name[casing]
+  - no-changed-when
+  - no-handler
+  - risky-shell-pipe
+  - var-naming
+  - yaml[indentation]

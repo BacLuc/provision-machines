@@ -2,7 +2,7 @@
   when: enable_fzf | default(false)
   block:
     - name: install fzf package
-      command:
+      ansible.builtin.command:
         cmd: |
           {{ homebrew_path }}/brew install fzf
         creates: "{{ homebrew_path }}/fzf"

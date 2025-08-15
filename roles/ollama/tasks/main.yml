@@ -13,25 +13,26 @@
 
     - name: set facts for ollama role
       ansible.builtin.set_fact:
-        ollama: "{{ ollama_defaults | combine( (ollama | default({})), recursive=true ) }}"
+        ollama: "{{ ollama_defaults | combine((ollama | default({})), recursive=true) }}"
 
-    - name: Install ollama
+    - name: Install ollama # noqa command-instead-of-module
       become: true
-      shell:
-        cmd: curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION={{ ollama.ollama_version }} sh
+      ansible.builtin.shell:
+        cmd: |
+          curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION={{ ollama.ollama_version }} sh
         creates: /usr/local/bin/ollama
 
     - name: add script to update ollama
       become: true
-      copy:
+      ansible.builtin.copy:
         content: |
           curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION={{ ollama.ollama_version }} sh
-        dest: "{{update_packages_script.dir}}/ollama-upgrade"
+        dest: "{{ update_packages_script.dir }}/ollama-upgrade"
         mode: "u=rwx,go=rx"
 
     - name: create models directory
       become: true
-      file:
+      ansible.builtin.file:
         dest: /var/ollama/models
         state: directory
         owner: "{{ user }}"
@@ -39,17 +40,18 @@
         mode: "u=rwx,go=rx"
 
     - name: create a model to map fully into ram
-      copy:
+      ansible.builtin.copy:
         content: |
           FROM {{ ollama.model }}
           PARAMETER use_mmap false
         dest: "/var/ollama/models/{{ ollama.model | replace(':', '_') }}-mmap"
+        mode: "u=rwx,go=rx"
       register: ollama_model_mmap_file
 
     - name: create model from file
       when: ollama_model_mmap_file.changed
-      shell: "ollama create {{ ollama.model }}-mmap -f {{ ollama_model_mmap_file.dest }}"
+      ansible.builtin.command: "ollama create {{ ollama.model }}-mmap -f {{ ollama_model_mmap_file.dest }}"
 
     - name: run the model
       when: ollama_model_mmap_file.changed
-      shell: ollama run {{ ollama.model }}-mmap
+      ansible.builtin.command: ollama run {{ ollama.model }}-mmap

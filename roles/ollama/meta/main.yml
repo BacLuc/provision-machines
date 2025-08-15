@@ -1,2 +1,2 @@
 dependencies:
-  - update_packages_script
+  - role: update_packages_script

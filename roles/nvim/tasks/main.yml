@@ -2,26 +2,27 @@
   when: enable_nvim | default(false)
   block:
     - name: install neovim
-      command:
+      ansible.builtin.command:
         cmd: |
           {{ homebrew_path }}/brew install neovim
         creates: "{{ homebrew_path }}/nvim"
 
+    # noqa: latest
     - name: install NormalNeovim distribution
       ansible.builtin.git:
-        repo: "https://github.com/BacLuc/NormalNvim.git"
+        repo: "https://github.com/BacLuc/NormalNvim.git" # noqa latest
         dest: ~/.config/nvim
 
     - name: add script to update nvim
       become: true
-      copy:
+      ansible.builtin.copy:
         content: |
           user="{{ user }}"
           version=origin/main
 
           su "$user" -c "git -C /home/{{ user }}/.config/nvim fetch"
           su "$user" -c "git -C /home/{{ user }}/.config/nvim reset --hard $version"
-        dest: "{{update_packages_script.dir}}/normal-neovim-upgrade"
+        dest: "{{ update_packages_script.dir }}/normal-neovim-upgrade"
         mode: "u=rwx,go=rx"
 
     - name: Check current vim alternatives

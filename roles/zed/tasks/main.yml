@@ -83,14 +83,15 @@
 
     - name: set facts for zed role
       ansible.builtin.set_fact:
-        zed: "{{ zed_defaults | combine( (zed | default({})), recursive=true ) }}"
+        zed: "{{ zed_defaults | combine((zed | default({})), recursive=true) }}"
+
     - name: install zed
-      flatpak:
+      community.general.flatpak:
         name:
           - dev.zed.Zed
 
     - name: Setup user bin dir
-      file:
+      ansible.builtin.file:
         path: "~/bin"
         state: directory
         mode: "u=rwx,go=rx"
@@ -102,10 +103,11 @@
         state: link
 
     - name: provision zed config
-      copy:
+      ansible.builtin.copy:
         content: |
           {{ zed.zed_config | to_nice_json }}
         dest: "/home/{{ user }}/.var/app/dev.zed.Zed/config/zed/settings.json"
+        mode: "u=rwx,go=rx"
 
     - name: ensure Zed memory monitor is configured
       when: zed.enable_memory_monitor

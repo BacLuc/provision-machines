@@ -1,7 +1,7 @@
 ---
 - name: Install dependencies to add docker repository
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - apt-transport-https
       - ca-certificates
@@ -9,20 +9,20 @@
       - software-properties-common
 
 - name: Install keyrings
-  shell:
+  ansible.builtin.command:
     cmd: install -m 0755 -d /etc/apt/keyrings
     creates: /etc/apt/keyrings
 
 - name: "download key"
   become: true
-  get_url:
+  ansible.builtin.get_url:
     url: "https://download.docker.com/linux/ubuntu/gpg"
     dest: "/etc/apt/keyrings/docker.asc"
     force: false
     mode: "ugo=r"
 
 - name: Get arch
-  ansible.builtin.shell: dpkg --print-architecture
+  ansible.builtin.command: dpkg --print-architecture
   register: arch
   changed_when: false
 
@@ -33,20 +33,21 @@
 
 - name: Add docker apt repository with signature
   become: true
-  copy:
+  ansible.builtin.copy:
     content: |
       deb [arch={{ arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ os_release.stdout }} stable
     dest: /etc/apt/sources.list.d/docker.list
+    mode: "u=rwx,go=r"
   register: docker_apt_repository_added
 
 - name: Update apt cache
   become: true
   when: docker_apt_repository_added.changed
-  shell: apt-get update
+  ansible.builtin.command: apt-get update # noqa command-instead-of-module
 
 - name: Install docker-ce and dependencies
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - docker-ce
       - docker-ce-cli
@@ -57,40 +58,41 @@
 
 - name: Create group docker
   become: true
-  group:
+  ansible.builtin.group:
     name: docker
 
 - name: Add docker user to docker group
   become: true
-  user:
+  ansible.builtin.user:
     name: "{{ ansible_env.USER }}"
     append: true
     groups: docker
 
-- name: "Add docker daemon network config: {{ docker_daemon_config_folder }}/daemon.json"
+- name: "Add docker daemon network config: {{ docker_daemon_config_folder }}/daemon.json" # noqa name
   when: docker.provision_daemon_json | default(false)
   become: true
-  copy:
+  ansible.builtin.copy:
     src: daemon.json
     dest: "{{ docker_daemon_config_folder }}/daemon.json"
-    mode: 0644
+    mode: "0644"
   notify:
     - restart_docker
 
 - name: remove the dc calculator that we can use the docker compose alias
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - dc
     state: absent
 
 - name: Add docker compose alias
-  lineinfile: dest="~/.bash_aliases"
-    line="{{ item.line }}"
-    regexp="{{ item.regexp }}"
-    state=present
-    insertafter=EOF
-    create=True
-    mode="u+rw"
+  ansible.builtin.lineinfile:
+    dest: "~/.bash_aliases"
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    state: present
+    insertafter: EOF
+    create: true
+    mode: "u+rw"
   with_items:
     - { regexp: "^alias dc=", line: "alias dc='docker compose'" }

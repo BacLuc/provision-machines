@@ -5,11 +5,11 @@
       ansible.builtin.set_fact:
         php_version: "{{ php_version | default('8.4.10') }}"
         php_versions_to_delete: []
+
     - name: install phpenv package
-      shell:
-        cmd: |
-          git clone https://github.com/phpenv/phpenv.git ~/.phpenv
-        creates: ~/.phpenv
+      ansible.builtin.git:
+        repo: https://github.com/phpenv/phpenv.git # noqa: latest
+        dest: ~/.phpenv
 
     - name: add phpenv to path
       ansible.builtin.blockinfile:
@@ -30,7 +30,7 @@
 
     - name: add script to update phpenv
       become: true
-      copy:
+      ansible.builtin.copy:
         content: |
           #!/bin/sh
           set -e
@@ -40,12 +40,12 @@
 
           su "$user" -c "git -C /home/{{ user }}/.phpenv fetch --tags"
           su "$user" -c "git -C /home/{{ user }}/.phpenv reset --hard $phpenv_version"
-        dest: "{{update_packages_script.dir}}/phpenv-upgrade"
+        dest: "{{ update_packages_script.dir }}/phpenv-upgrade"
         mode: "u=rwx,go=rx"
 
     - name: add php build dependencies
       become: true
-      apt:
+      ansible.builtin.apt:
         install_recommends: false
         name:
           #          - libcurl4-openssl-dev
@@ -78,35 +78,34 @@
           - zlib1g-dev
 
     - name: add phpbuild
-      shell:
-        cmd: |
-          git clone https://github.com/php-build/php-build $HOME/.phpenv/plugins/php-build
-        creates: $HOME/.phpenv/plugins/php-build
+      ansible.builtin.git:
+        repo: https://github.com/php-build/php-build # noqa: latest
+        dest: ~/.phpenv/plugins/php-build
 
     - name: add script to update phpbuild
       become: true
-      copy:
+      ansible.builtin.copy:
         content: |
           #!/bin/sh
           set -e
 
           user="{{ user }}"
-          phpbuild_version=e602902         
+          phpbuild_version=e602902
 
           su "$user" -c "git -C /home/{{ user }}/.phpenv/plugins/php-build fetch --tags"
           su "$user" -c "git -C /home/{{ user }}/.phpenv/plugins/php-build reset --hard $phpenv_version"
-        dest: "{{update_packages_script.dir}}/phpbuild-upgrade"
+        dest: "{{ update_packages_script.dir }}/phpbuild-upgrade"
         mode: "u=rwx,go=rx"
 
     - name: build and install php
-      command:
+      ansible.builtin.command:
         cmd: |
           /home/{{ user }}/.phpenv/bin/phpenv install {{ php_version }}
           /home/{{ user }}/.phpenv/bin/phpenv global {{ php_version }}
         creates: /home/{{ user }}/.phpenv/versions/{{ php_version }}/bin/php
 
-    - name: add composer
-      shell:
+    - name: add composer # noqa command-instead-of-module
+      ansible.builtin.shell:
         chdir: /tmp
         cmd: |
           curl -s "https://getcomposer.org/installer" | /home/{{ user }}/.phpenv/versions/{{ php_version }}/bin/php

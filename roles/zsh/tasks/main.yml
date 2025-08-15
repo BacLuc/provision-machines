@@ -6,7 +6,7 @@
 
 - name: "set facts for zsh role"
   ansible.builtin.set_fact:
-    zsh: "{{ zsh_defaults | combine( (zsh | default({})), recursive=true ) }}"
+    zsh: "{{ zsh_defaults | combine((zsh | default({})), recursive=true) }}"
 
 - name: zsh print var
   ansible.builtin.debug:
@@ -14,23 +14,24 @@
 
 - name: "install zsh"
   become: true
-  package:
+  ansible.builtin.package:
     name: zsh
 
 - name: "check if .zshrc exists"
-  stat:
+  ansible.builtin.stat:
     path: "~/.zshrc"
   register: zshrc_exists
 
 - name: "setup initial zshrc"
   when: zshrc_exists.stat.exists is false
-  copy:
+  ansible.builtin.copy:
     src: initial.zshrc
     dest: "~/.zshrc"
+    mode: "u=rwx,go=rx"
 
 - name: "add fonts-powerline"
   become: true
-  package:
+  ansible.builtin.package:
     name: fonts-powerline
 
 # you need to log out and log in again for this to have effect
@@ -42,28 +43,28 @@
     shell: /bin/zsh
 
 - name: "check if oh-my-zsh is installed"
-  stat:
+  ansible.builtin.stat:
     path: ~/.oh-my-zsh
   register: ohmyzsh_exists
 
 - name: "install oh-my-zsh"
   when: ohmyzsh_exists.stat.exists is false
-  shell: |
+  ansible.builtin.shell: |
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
 - name: "install autojump"
   become: true
-  package:
+  ansible.builtin.package:
     name: autojump
 
 - name: "install zsh-autosuggestions"
   when: zsh.enable_zsh_autosuggestions | default(false)
-  command: |
+  ansible.builtin.command: |
     {{ homebrew_path }}/brew install zsh-autosuggestions
 
 - name: "install zsh-syntax-highlighting"
   become: true
-  package:
+  ansible.builtin.package:
     name: zsh-syntax-highlighting
 
 - name: "autostart tmux in zsh"
@@ -77,13 +78,14 @@
       ZSH_TMUX_AUTOCONNECT=false
 
 - name: Change .zshrc
-  lineinfile: dest="~/.zshrc"
-    line="{{ item.line }}"
-    regexp="{{ item.regexp }}"
-    state=present
-    insertafter=EOF
-    create=True
-    mode="u+rw"
+  ansible.builtin.lineinfile:
+    dest: "~/.zshrc"
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    state: present
+    insertafter: EOF
+    create: true
+    mode: "u+rw"
   with_items:
     - { regexp: "^ZSH_THEME=", line: "ZSH_THEME=amuse" }
     - {
@@ -106,7 +108,7 @@
       PATH="$PATH:{{ homebrew_path }}"
 
 - name: "check if zsh-autosuggestions file exists"
-  stat:
+  ansible.builtin.stat:
     path: "{{ homebrew_path }}/../share/zsh-autosuggestions/zsh-autosuggestions.zsh"
   register: zsh_autosuggestions_exists
 
@@ -127,25 +129,25 @@
 
 - name: template update oh-my-zsh script
   become: true
-  template:
+  ansible.builtin.template:
     src: oh-my-zsh-upgrade.j2.sh
-    dest: "{{update_packages_script.dir}}/oh-my-zsh-upgrade"
+    dest: "{{ update_packages_script.dir }}/oh-my-zsh-upgrade"
     mode: "u=rwx,go=rx"
 
 - name: "create completions script"
-  file:
+  ansible.builtin.file:
     path: "{{ zsh.completions_dir }}"
     state: directory
     mode: "u=rwx,go=rx"
 
 - name: "check if docker completion script exists"
-  stat:
+  ansible.builtin.stat:
     path: "{{ zsh.completions_dir }}/_docker"
   register: zsh_completion_exists
 
 - name: "install docker completion script"
   when: zsh_completion_exists.stat.exists is false
-  shell: "docker completion zsh > {{ zsh.completions_dir }}/_docker"
+  ansible.builtin.shell: "docker completion zsh > {{ zsh.completions_dir }}/_docker"
 
 - name: "source docker completion script"
   ansible.builtin.blockinfile:

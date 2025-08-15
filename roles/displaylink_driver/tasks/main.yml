@@ -4,31 +4,32 @@
   tags: displaylink_driver
   block:
     - name: Check if DisplayLink driver is installed
-      shell: dpkg -l | grep displaylink-driver && echo 'true' || echo 'false'
+      ansible.builtin.shell: dpkg -l | grep displaylink-driver && echo 'true' || echo 'false'
       register: displaylink_driver_check
       ignore_errors: true
+      changed_when: false
 
     - name: "install driver"
       when: displaylink_driver_check.stdout == 'false'
       block:
         - name: Download Synaptics repository keyring if DisplayLink driver is not installed
-          get_url:
+          ansible.builtin.get_url:
             url: https://www.synaptics.com/sites/default/files/Ubuntu/pool/stable/main/all/synaptics-repository-keyring.deb
             dest: /tmp/synaptics-repository-keyring.deb
             mode: "0644"
 
         - name: Install Synaptics repository keyring
           become: true
-          apt:
+          ansible.builtin.apt:
             deb: /tmp/synaptics-repository-keyring.deb
 
         - name: Update APT cache
           become: true
-          apt:
+          ansible.builtin.apt:
             update_cache: true
 
         - name: Install DisplayLink driver
           become: true
-          apt:
+          ansible.builtin.apt:
             name: displaylink-driver
             state: present

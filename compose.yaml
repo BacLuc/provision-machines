@@ -3,3 +3,16 @@ services:
     image: ${REGISTRY:-ghcr.io}/${REPO_OWNER:-bacluc}/${REPO_NAME:-prettier-image}/prettier-image:3.3.3
     volumes:
       - ./:/workspace
+
+  ansible-lint:
+    image: ${REGISTRY:-registry.gitlab.com}/${REPO_NAME:-pipeline-components}/ansible-lint:amd64-469fada
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+
+  yamllint:
+    image: ${REGISTRY:-registry.gitlab.com}/${REPO_NAME:-pipeline-components}/yamllint:amd64-7487732
+    working_dir: /workspace
+    command: "-s --list-files ."
+    volumes:
+      - ./:/workspace

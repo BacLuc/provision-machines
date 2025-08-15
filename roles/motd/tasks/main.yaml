@@ -7,7 +7,7 @@
     - name: "Show df -h at end"
       when: motd.enable_disk_usage | default(false)
       become: true
-      copy:
+      ansible.builtin.copy:
         content: |
           #!/bin/sh
           set -e

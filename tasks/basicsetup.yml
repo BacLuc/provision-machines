@@ -1,25 +1,26 @@
 - name: Install basic tools
   become: true
-  package:
+  ansible.builtin.package:
     name: "{{ apt_packages.basic_tools }}"
 
 - name: Set timezone to Europe/Zurich
   become: true
-  timezone:
+  community.general.timezone:
     name: Europe/Zurich
 
 - name: Set locale to en_US.UTF-8
   become: true
-  locale_gen:
+  community.general.locale_gen:
     name: en_US.UTF-8
 
 - name: Set default locale to en_US.UTF-8
   become: true
-  lineinfile: dest=/etc/default/locale
-    regexp="LC_ALL"
-    line="LC_ALL=\"en_US.UTF-8\""
+  ansible.builtin.lineinfile:
+    dest: /etc/default/locale
+    regexp: "LC_ALL"
+    line: 'LC_ALL="en_US.UTF-8"'
 
 - name: Install additional packages
   become: true
-  package:
+  ansible.builtin.package:
     name: "{{ apt_packages.additional_tools }}"

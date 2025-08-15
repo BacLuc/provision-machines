@@ -1,4 +1,5 @@
-- hosts: all
+- name: Provision machines
+  hosts: all
   vars:
     update_packages_script:
       dir: /usr/local/bin/update-script.d
@@ -6,27 +7,32 @@
   pre_tasks:
     - name: Get user
       tags: always
-      ansible.builtin.shell: whoami
+      ansible.builtin.command: whoami
       changed_when: false
       register: user_command
     - name: Get user id
       tags: always
-      ansible.builtin.shell: id -u
+      ansible.builtin.command: id -u
       changed_when: false
       register: user_id_command
-    - tags: always
+    - name: Set user facts
+      tags: always
       ansible.builtin.set_fact:
         user: "{{ user_command.stdout.strip() }}"
         user_id: "{{ user_id_command.stdout.strip() }}"
-    - ansible.builtin.set_fact:
+    - name: Set default shell to bash
+      ansible.builtin.set_fact:
         default_shell: /bin/bash
-    - ansible.builtin.set_fact:
+    - name: Set default shell to zsh
+      ansible.builtin.set_fact:
         default_shell: /bin/zsh
       when: enable_zsh | default(false)
-    - ansible.builtin.import_tasks: tasks/basicsetup.yml
+    - name: Import basic setup tasks
+      ansible.builtin.import_tasks: tasks/basicsetup.yml
       when: enable_basicsetup | default(false)
       tags: basicsetup
-    - ansible.builtin.import_tasks: tasks/ubuntu_desktop.yml
+    - name: Import ubuntu desktop tasks
+      ansible.builtin.import_tasks: tasks/ubuntu_desktop.yml
       when: enable_ubuntu_desktop | default(false)
       tags: ubuntu_desktop
     - name: Gather the package facts
@@ -36,9 +42,8 @@
       when: enable_ansible_ppa | default(false)
       tags: ansible-ppa
       become: true
-      command:
-        cmd: |
-          sudo add-apt-repository -y ppa:ansible/ansible
+      ansible.builtin.command:
+        cmd: add-apt-repository -y ppa:ansible/ansible
         creates: "{{ ansible.apt_list_file }}"
 
   roles:
@@ -131,5 +136,6 @@
       tags: yazi
 
   post_tasks:
-    - include_tasks: tasks/ubuntu_cleanup.yml
+    - name: Include ubuntu cleanup tasks
+      ansible.builtin.include_tasks: tasks/ubuntu_cleanup.yml
       when: enable_ubuntu_cleanup | default(false)

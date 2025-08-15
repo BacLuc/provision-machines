@@ -43,8 +43,8 @@ local:
       basic_tools:
         - dos2unix
         - fd-find
-        #- firefox
-        #- geany
+        # - firefox
+        # - geany
         - htop
         - nano
         - rsync
@@ -54,18 +54,19 @@ local:
         - wget
         - zip
       additional_tools:
+        - ansible-lint
         - apt-transport-https
         - bat
         - clang
         - cmake
         - build-essential
-        #- chromium-browser
-        #- chromium-browser-l10n
-        #- chromium-codecs-ffmpeg
+        # - chromium-browser
+        # - chromium-browser-l10n
+        # - chromium-codecs-ffmpeg
         - curl
-        #- geany
+        # - geany
         - git
-        #- gpaste-2
+        # - gpaste-2
         - graphviz
         - jq
         - libglu1-mesa
@@ -73,14 +74,14 @@ local:
         - libstdc++-12-dev
         - ninja-build
         - ocrmypdf
-        #- gitk
-        #- gnome-tweaks
-        #- nextcloud-desktop
+        # - gitk
+        # - gnome-tweaks
+        # - nextcloud-desktop
         - pkg-config
         - procps
         - tig
-        #- vlc
-        #- xournal
+        # - vlc
+        # - xournal
         - yamllint
         - xz-utils
 
@@ -143,34 +144,34 @@ local:
         - 7zip
         - 7zip19.00-helper
         - chromium
-        #- dark
+        # - dark
         - firefox
-        #- flutter@3.22.0
-        #- gcloud
+        # - flutter@3.22.0
+        # - gcloud
         - git
         - googlechrome
-        #- irfanview
-        #- keepassxc
-        #- keyviz
-        #- libreoffice
+        # - irfanview
+        # - keepassxc
+        # - keyviz
+        # - libreoffice
         - maven
-        #- nextcloud
+        # - nextcloud
         - nodejs-lts
         - notepadplusplus
         - nvm
         - okular
-        #- powertoys
-        #- signal
+        # - powertoys
+        # - signal
         - temurin21-jdk
         - temurin11-jdk
-        #- tightvnc
+        # - tightvnc
         - vscode
         - vncviewer
         - windirstat
-        #- add zulu8-jdk
+        # - add zulu8-jdk
 
     zsh:
       # This somehow forces the sudo password prompt again.
       # Enable it once to install, then disable it.
       enable_zsh_autosuggestions: false
-      #motd_path: false #or alternative path
+      # motd_path: false # or alternative path

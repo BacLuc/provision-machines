@@ -3,7 +3,7 @@
     homebrew_path: "/home/linuxbrew/.linuxbrew/Homebrew/bin"
 
 - name: install homebrew
-  shell:
+  ansible.builtin.shell:
     cmd: |
       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     creates: "{{ homebrew_path }}/brew"
@@ -17,7 +17,7 @@
 
 - name: template update homebrew script
   become: true
-  template:
+  ansible.builtin.template:
     src: homebrew-upgrade.j2.sh
-    dest: "{{update_packages_script.dir}}/homebrew-upgrade"
+    dest: "{{ update_packages_script.dir }}/homebrew-upgrade"
     mode: "u=rwx,go=rx"

@@ -15,14 +15,14 @@
 
 - name: "set facts for basic_utils role"
   ansible.builtin.set_fact:
-    basic_utils: "{{ basic_utils_defaults | combine( (basic_utils | default({})), recursive=true ) }}"
+    basic_utils: "{{ basic_utils_defaults | combine((basic_utils | default({})), recursive=true) }}"
 
 - name: basic_utils print var
   ansible.builtin.debug:
     var: basic_utils
 
 - name: Setup user bin dir
-  file:
+  ansible.builtin.file:
     path: "~/bin"
     state: directory
     mode: "u=rwx,go=rx"
@@ -47,7 +47,7 @@
   block:
     - name: install direnv package
       become: true
-      apt:
+      ansible.builtin.apt:
         name:
           - direnv
 
@@ -69,21 +69,21 @@
 - name: install keepassxc flatpak
   when: basic_utils.enable_keepassxc | default(false)
   block:
-    - name:
-      flatpak:
+    - name: Install KeePassXC via flatpak
+      community.general.flatpak:
         name:
           - org.keepassxc.KeePassXC
 
     - name: Modify Desktop file
       become: true
-      lineinfile:
-        dest="/var/lib/flatpak/exports/share/applications/org.keepassxc.KeePassXC.desktop"
-        line="{{ item.line }}"
-        regexp="{{ item.regexp }}"
-        state=present
-        insertafter=EOF
-        create=True
-        mode="u+rw"
+      ansible.builtin.lineinfile:
+        dest: "/var/lib/flatpak/exports/share/applications/org.keepassxc.KeePassXC.desktop"
+        line: "{{ item.line }}"
+        regexp: "{{ item.regexp }}"
+        state: present
+        insertafter: EOF
+        create: true
+        mode: "u+rw"
       with_items:
         - {
             regexp: "^Exec=",
@@ -94,23 +94,23 @@
       when: basic_utils.gcr_ssh_agent.enable | default(false)
       block:
         - name: check if override already exists
-          shell: flatpak override org.keepassxc.KeePassXC --show
+          ansible.builtin.command: flatpak override org.keepassxc.KeePassXC --show
           register: basic_utils_keepass_flatpak_overrides
           changed_when: false
 
         - name: remove ssh-socket if there because this did not work
           when: "'sockets=ssh-auth;' in basic_utils_keepass_flatpak_overrides.stdout"
           become: true
-          shell: flatpak override org.keepassxc.KeePassXC --nosocket=ssh-auth
+          ansible.builtin.command: flatpak override org.keepassxc.KeePassXC --nosocket=ssh-auth
 
         - name: generate ssh-socket filessystem flatpak entry
-          set_fact:
+          ansible.builtin.set_fact:
             basic_utils_keepass_flatpak_ssh_socket_filesystem_override: "filesystems={{ basic_utils.gcr_ssh_agent.socket }};"
 
         - name: give flatpak app access to gcr-ssh-agent
           when: "not basic_utils_keepass_flatpak_ssh_socket_filesystem_override in basic_utils_keepass_flatpak_overrides.stdout"
           become: true
-          shell: "flatpak override org.keepassxc.KeePassXC --filesystem={{ basic_utils.gcr_ssh_agent.socket }}"
+          ansible.builtin.command: "flatpak override org.keepassxc.KeePassXC --filesystem={{ basic_utils.gcr_ssh_agent.socket }}"
 
         - name: configure auto type
           ansible.builtin.blockinfile:
@@ -122,13 +122,14 @@
               GlobalAutoTypeModifiers=201326592
 
         - name: add SSHAgent section to keepassxc.ini in cache
-          lineinfile:
-            dest=~/.var/app/org.keepassxc.KeePassXC/cache/keepassxc/keepassxc.ini
-            line="{{ item.line }}"
-            regexp="{{ item.regexp }}"
-            state=present
-            insertafter=EOF
-            create=True
+          ansible.builtin.lineinfile:
+            dest: ~/.var/app/org.keepassxc.KeePassXC/cache/keepassxc/keepassxc.ini
+            line: "{{ item.line }}"
+            regexp: "{{ item.regexp }}"
+            state: present
+            insertafter: EOF
+            create: true
+            mode: "u=rwx,go=rx"
           with_items:
             - { regexp: "^\\[SSHAgent\\]", line: "[SSHAgent]" }
 
@@ -149,14 +150,14 @@
 
 - name: setup ssh config dir
   when: basic_utils.enable_ssh_config_dir | default(false)
-  file:
+  ansible.builtin.file:
     path: "~/.ssh/config.d"
     state: directory
     mode: "u=rwx,go="
 
 - name: add ssh-config
   when: basic_utils.enable_ssh_config_dir | default(false)
-  template:
+  ansible.builtin.template:
     src: "ssh-config.j2"
     dest: "~/.ssh/config"
     mode: "u=rw,go="
@@ -207,7 +208,7 @@
   when: basic_utils.gcr_ssh_agent.enable | default(false)
   block:
     - name: check if ssh-key already exists
-      stat:
+      ansible.builtin.stat:
         path: "~/.ssh/{{ basic_utils.ssh_key.filename }}"
       register: ssh_key_exists
 
@@ -216,22 +217,24 @@
       block:
         - name: install pwgen
           become: true
-          apt:
+          ansible.builtin.apt:
             name:
               - pwgen
               - libsecret-tools
 
         - name: generate password
-          shell: pwgen 32 1
+          ansible.builtin.command: pwgen 32 1
           register: basic_utils_ssh_key_password
           no_log: true
 
         - name: create ssh-key
-          shell: ssh-keygen -f ~/.ssh/{{ basic_utils.ssh_key.filename }} -C "{{ basic_utils.ssh_key.comment }}" -N "{{ basic_utils_ssh_key_password.stdout }}"
+          ansible.builtin.command: |
+            ssh-keygen -f ~/.ssh/{{ basic_utils.ssh_key.filename }} -C "{{ basic_utils.ssh_key.comment }}" -N "{{ basic_utils_ssh_key_password.stdout }}"
           no_log: true
 
         - name: add ssh-key to ssh-agent on login
-          shell: secret-tool store --label="Unlock ssh key {{ basic_utils.ssh_key.filename }}" unique ssh-store:/home/{{ user }}/.ssh/{{ basic_utils.ssh_key.filename }}
+          ansible.builtin.command: |
+            secret-tool store --label="Unlock ssh key {{ basic_utils.ssh_key.filename }}" unique ssh-store:/home/{{ user }}/.ssh/{{ basic_utils.ssh_key.filename }}
           args:
             stdin: "{{ basic_utils_ssh_key_password.stdout }}"
             stdin_add_newline: false
@@ -268,13 +271,14 @@
 
 - name: check if sdkman is installed
   when: basic_utils.enable_java | default(false)
-  stat:
+  ansible.builtin.stat:
     path: ~/.sdkman
   register: basic_utils__sdkman
 
-- name: install sdkman
+- name: install sdkman # noqa command-instead-of-module
   when: (basic_utils.enable_java | default(false)) and (basic_utils__sdkman.stat.exists is false)
-  shell: curl -s https://get.sdkman.io | bash
+  ansible.builtin.shell: |
+    curl -s https://get.sdkman.io | bash
 
 - name: add sdkman to .bashrc
   when: basic_utils.enable_java | default(false)
@@ -296,7 +300,7 @@
 
 - name: install sdkman tools
   when: basic_utils.enable_java | default(false)
-  shell: |
+  ansible.builtin.shell: |
     bash -c "source ~/.sdkman/bin/sdkman-init.sh; sdk install {{ item }}"
   loop: "{{ basic_utils.sdkman }}"
 
@@ -317,14 +321,14 @@
   when: basic_utils.enable_flutter | default(false)
   block:
     - name: check if fvm is installed
-      stat:
+      ansible.builtin.stat:
         path: ~/.fvm_flutter
       register: basic_utils__fvm
 
-    - name: setup fvm
+    - name: setup fvm # noqa command-instead-of-module
       when: basic_utils__fvm.stat.exists is false
       become: true
-      shell: |
+      ansible.builtin.shell: |
         curl -fsSL https://raw.githubusercontent.com/leoafarias/fvm/refs/tags/3.2.1/scripts/install.sh |  bash -s -- 3.2.1
         rm -rf /usr/local/bin/fvm
         mv /root/.fvm_flutter /home/{{ user }}/.fvm_flutter
@@ -354,13 +358,13 @@
 
     - name: Add docker user to kvm group
       become: true
-      user:
+      ansible.builtin.user:
         name: "{{ user }}"
         append: true
         groups: kvm
 
     - name: Setup user bin dir
-      file:
+      ansible.builtin.file:
         path: "~/bin"
         state: directory
         mode: "u=rwx,go=rx"
@@ -381,13 +385,13 @@
           export PATH="/home/{{ user }}/bin:$PATH"
 
     - name: add dart proxy
-      template:
+      ansible.builtin.template:
         src: "dart-proxy.j2"
         dest: "~/bin/dart"
         mode: "u=rwx,go=rx"
 
     - name: add flutter proxy
-      template:
+      ansible.builtin.template:
         src: "flutter-proxy.j2"
         dest: "~/bin/flutter"
         mode: "u=rwx,go=rx"
@@ -403,30 +407,31 @@
         classic: true
 
     - name: create ghostty config dir
-      file:
+      ansible.builtin.file:
         path: "~/.config/ghostty/"
         state: directory
         mode: "u=rwx,go=rx"
 
     - name: provision config
-      copy:
+      ansible.builtin.copy:
         content: |
           font-size={{ ghostty.font_size }}
           maximize=true
           theme=carbonfox
         dest: "~/.config/ghostty/config"
+        mode: "0644"
 
 - name: nvm
   when: basic_utils.enable_nvm | default(false)
   block:
     - name: check if nvm is already installed
-      stat:
+      ansible.builtin.stat:
         path: ~/.nvm
       register: basic_utils__nvm
 
-    - name: setup nvm
+    - name: setup nvm # noqa command-instead-of-module
       when: basic_utils__nvm.stat.exists is false
-      shell: |
+      ansible.builtin.shell: |
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
 
     - name: add nvm to path for bash
@@ -450,7 +455,7 @@
 
     - name: add script to update nvm
       become: true
-      copy:
+      ansible.builtin.copy:
         content: |
           #!/bin/sh
           set -e
@@ -460,7 +465,7 @@
 
           su "$user" -c "git -C /home/{{ user }}/.nvm fetch --tags"
           su "$user" -c "git -C /home/{{ user }}/.nvm reset --hard $nvm_version"
-        dest: "{{update_packages_script.dir}}/nvm-upgrade"
+        dest: "{{ update_packages_script.dir }}/nvm-upgrade"
         mode: "u=rwx,go=rx"
 
 - name: Setup python
@@ -501,9 +506,10 @@
 
     - name: setup pyenv dir
       when: basic_utils.enable_ssh_config_dir | default(false)
-      file:
+      ansible.builtin.file:
         path: "~/pyenv"
         state: directory
+        mode: "u=rwx,go=rx"
 
     - name: Create Python virtual environments
       ansible.builtin.command: |
@@ -517,7 +523,7 @@
 - name: enable openvpn file import for network manager
   when: basic_utils.enable_openvpn_config_import_network_manager | default(false)
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - network-manager-openvpn
       - network-manager-openvpn-gnome
@@ -532,23 +538,24 @@
           - rambox
 
     - name: Check if rambox:camera connection exists
-      shell: "snap connections | grep rambox"
+      ansible.builtin.shell: |
+        snap connections | grep rambox
       register: rambox_connections
       changed_when: false
 
     - name: Connect rambox:camera if not already connected
       become: true
-      shell: snap connect rambox:camera
+      ansible.builtin.command: snap connect rambox:camera
       when: "'rambox:camera' not in rambox_connections.stdout"
 
     - name: Connect rambox:audio-record if not already connected
       become: true
-      shell: snap connect rambox:audio-record
+      ansible.builtin.command: snap connect rambox:audio-record
       when: "'rambox:audio-record' not in rambox_connections.stdout"
 
 - name: install zoom flatpak
   when: basic_utils.enable_zoom | default(false)
-  flatpak:
+  community.general.flatpak:
     name:
       - us.zoom.Zoom
 
@@ -557,7 +564,7 @@
   when: basic_utils.enable_go | default(false)
   block:
     - name: install goenv
-      command:
+      ansible.builtin.command:
         cmd: |
           {{ homebrew_path }}/brew install goenv
         creates: "{{ homebrew_path }}/goenv"
