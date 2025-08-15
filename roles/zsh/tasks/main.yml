@@ -9,7 +9,7 @@
     zsh: "{{ zsh_defaults | combine( (zsh | default({})), recursive=true ) }}"
 
 - name: zsh print var
-  debug:
+  ansible.builtin.debug:
     var: zsh
 
 - name: "install zsh"

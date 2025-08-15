@@ -2,7 +2,7 @@
   when: enable_zed | default(false)
   block:
     - name: zed print var
-      debug:
+      ansible.builtin.debug:
         var: zed
 
     - name: set defaults for zed role

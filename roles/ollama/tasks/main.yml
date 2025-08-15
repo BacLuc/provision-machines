@@ -2,7 +2,7 @@
   when: enable_ollama | default(false)
   block:
     - name: ollama print var
-      debug:
+      ansible.builtin.debug:
         var: ollama
 
     - name: set defaults for ollama role

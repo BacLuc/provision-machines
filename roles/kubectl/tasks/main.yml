@@ -27,7 +27,7 @@
     kubectl: "{{ kubectl_defaults | combine( (kubectl | default({})), recursive=true ) }}"
 
 - name: kubectl print var
-  debug:
+  ansible.builtin.debug:
     var: kubectl
 
 - name: Install kubectl and helm

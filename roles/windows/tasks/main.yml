@@ -1,5 +1,5 @@
 - name: windows print var
-  debug:
+  ansible.builtin.debug:
     var: windows
 
 - name: install scoop packages
