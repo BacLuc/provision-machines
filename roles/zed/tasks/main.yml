@@ -68,11 +68,6 @@
               "languages": { "YAML": { "format_on_save": "off" } },
               "lsp":
                 {
-                  "ansible-language-server":
-                    {
-                      "settings":
-                        { "validation": { "lint": { "enabled": false } } },
-                    },
                   "yaml-language-server":
                     {
                       "settings":

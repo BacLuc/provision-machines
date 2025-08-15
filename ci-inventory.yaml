@@ -81,6 +81,7 @@ local:
         - tig
         #- vlc
         #- xournal
+        - yamllint
         - xz-utils
 
     basic_utils:
