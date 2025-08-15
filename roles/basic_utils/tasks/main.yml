@@ -3,7 +3,7 @@
     var: basic_utils
 
 - name: "set defaults for basic_utils role"
-  set_fact:
+  ansible.builtin.set_fact:
     basic_utils_defaults:
       ssh_key:
         filename: "id_ed25519"
@@ -14,7 +14,7 @@
         venvs: []
 
 - name: "set facts for basic_utils role"
-  set_fact:
+  ansible.builtin.set_fact:
     basic_utils: "{{ basic_utils_defaults | combine( (basic_utils | default({})), recursive=true ) }}"
 
 - name: basic_utils print var
@@ -104,7 +104,7 @@
           shell: flatpak override org.keepassxc.KeePassXC --nosocket=ssh-auth
 
         - name: generate ssh-socket filessystem flatpak entry
-          set_fact:
+          ansible.builtin.set_fact:
             basic_utils_keepass_flatpak_ssh_socket_filesystem_override: "filesystems={{ basic_utils.gcr_ssh_agent.socket }};"
 
         - name: give flatpak app access to gcr-ssh-agent

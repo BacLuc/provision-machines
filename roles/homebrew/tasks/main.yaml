@@ -1,5 +1,5 @@
 - name: set facts homebrew role
-  set_fact:
+  ansible.builtin.set_fact:
     homebrew_path: "/home/linuxbrew/.linuxbrew/Homebrew/bin"
 
 - name: install homebrew

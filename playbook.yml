@@ -15,12 +15,12 @@
       changed_when: false
       register: user_id_command
     - tags: always
-      set_fact:
+      ansible.builtin.set_fact:
         user: "{{ user_command.stdout.strip() }}"
         user_id: "{{ user_id_command.stdout.strip() }}"
-    - set_fact:
+    - ansible.builtin.set_fact:
         default_shell: /bin/bash
-    - set_fact:
+    - ansible.builtin.set_fact:
         default_shell: /bin/zsh
       when: enable_zsh | default(false)
     - ansible.builtin.import_tasks: tasks/basicsetup.yml

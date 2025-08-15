@@ -6,13 +6,13 @@
         var: ollama
 
     - name: set defaults for ollama role
-      set_fact:
+      ansible.builtin.set_fact:
         ollama_defaults:
           ollama_version: 0.11.4
           model: mistral:7b
 
     - name: set facts for ollama role
-      set_fact:
+      ansible.builtin.set_fact:
         ollama: "{{ ollama_defaults | combine( (ollama | default({})), recursive=true ) }}"
 
     - name: Install ollama

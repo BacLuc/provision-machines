@@ -1,5 +1,5 @@
 - name: "set facts for motd role"
-  set_fact:
+  ansible.builtin.set_fact:
     zsh: "{{ motd | default({}) }}"
 
 - name: "Setup motd files"

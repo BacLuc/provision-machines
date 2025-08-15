@@ -1,5 +1,5 @@
 - name: "set defaults for kubectl role"
-  set_fact:
+  ansible.builtin.set_fact:
     kubectl_defaults:
       contex_management_part: |
         function ktx() {
@@ -23,7 +23,7 @@
         export KUBECONFIG="${shell_tmp_dir}/.kube/config:$KUBECONFIG"
 
 - name: "set facts for kubectl role"
-  set_fact:
+  ansible.builtin.set_fact:
     kubectl: "{{ kubectl_defaults | combine( (kubectl | default({})), recursive=true ) }}"
 
 - name: kubectl print var

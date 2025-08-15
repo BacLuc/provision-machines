@@ -22,7 +22,7 @@
 # gsettings list-recursively org.gnome.desktop.wm.keybindings
 # gsettings list-recursively org.gnome.mutter.keybindings
 - name: configure keyboard shortcuts
-  set_fact:
+  ansible.builtin.set_fact:
     gnome_shortcuts:
       - schema: "org.gnome.desktop.wm.keybindings"
         key: "switch-to-workspace-right"

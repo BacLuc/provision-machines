@@ -1,11 +1,11 @@
 - name: "set defaults for zsh role"
-  set_fact:
+  ansible.builtin.set_fact:
     zsh_defaults:
       completions_dir: "~/zsh/completions"
       motd_path: "/etc/profile.d/update-motd.sh"
 
 - name: "set facts for zsh role"
-  set_fact:
+  ansible.builtin.set_fact:
     zsh: "{{ zsh_defaults | combine( (zsh | default({})), recursive=true ) }}"
 
 - name: zsh print var

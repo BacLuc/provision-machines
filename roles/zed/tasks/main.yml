@@ -6,7 +6,7 @@
         var: zed
 
     - name: set defaults for zed role
-      set_fact:
+      ansible.builtin.set_fact:
         zed_defaults:
           enable_helm_support: false
           enable_memory_monitor: true
@@ -82,7 +82,7 @@
             }
 
     - name: set facts for zed role
-      set_fact:
+      ansible.builtin.set_fact:
         zed: "{{ zed_defaults | combine( (zed | default({})), recursive=true ) }}"
     - name: install zed
       flatpak:
