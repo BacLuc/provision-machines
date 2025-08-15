@@ -80,6 +80,7 @@
                 { "mode": "system", "light": "One Dark", "dark": "One Dark" },
               "ui_font_size": 16,
             }
+          zed_keymap: [{ "context": "Editor", "bindings": { "ctrl-k": null } }]
 
     - name: set facts for zed role
       ansible.builtin.set_fact:
@@ -107,6 +108,13 @@
         content: |
           {{ zed.zed_config | to_nice_json }}
         dest: "/home/{{ user }}/.var/app/dev.zed.Zed/config/zed/settings.json"
+        mode: "u=rwx,go=rx"
+
+    - name: provision zed keymap
+      ansible.builtin.copy:
+        content: |
+          {{ zed.zed_keymap | to_nice_json }}
+        dest: "/home/{{ user }}/.var/app/dev.zed.Zed/config/zed/keymap.json"
         mode: "u=rwx,go=rx"
 
     - name: ensure Zed memory monitor is configured
