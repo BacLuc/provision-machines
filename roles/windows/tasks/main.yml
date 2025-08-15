@@ -13,7 +13,7 @@
     mode: "u=rwx,go=rx"
 
 - name: source user bin dir
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
     block: |

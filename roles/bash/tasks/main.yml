@@ -55,7 +55,7 @@
       }
 
 - name: Source usual bash definitions
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: usual bash definitions"
     block: |
@@ -68,7 +68,7 @@
       fi
 
 - name: Add snap bin to path in .bashrc
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: add snap bin to path"
     block: |
@@ -76,14 +76,14 @@
 
 - name: Add snap bin to path in .zshrc
   when: enable_zsh | default(false)
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: add snap bin to path"
     block: |
       export PATH="/snap/bin:$PATH"
 
 - name: Source autojump
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: add autojump"
     block: |
@@ -91,7 +91,7 @@
 
 - name: Source usual zsh definitions
   when: enable_zsh | default(false)
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: usual bash definitions"
     block: |

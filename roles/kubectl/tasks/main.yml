@@ -45,20 +45,20 @@
       - yq
 
 - name: Source kubectl tools bash
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: kubectl context"
     block: "{{ kubectl.contex_management_part }}"
 
 - name: Source kubectl tools zsh
   when: enable_zsh | default(false)
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: kubectl context"
     block: "{{ kubectl.contex_management_part }}"
 
 - name: Add kubectl completion for alias for bash
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: kubectl completion"
     block: |
@@ -67,7 +67,7 @@
 
 - name: Add kubectl completion for alias for zsh
   when: enable_zsh | default(false)
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: kubectl completion"
     block: |

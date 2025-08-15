@@ -8,7 +8,7 @@
         creates: "{{ homebrew_path }}/fzf"
 
     - name: add fzf completion to bash
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add fzf completion"
         block: |
@@ -17,7 +17,7 @@
 
     - name: add fzf completion to zsh
       when: enable_zsh | default(false)
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add fzf completion"
         block: |

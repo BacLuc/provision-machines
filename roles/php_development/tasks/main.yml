@@ -12,7 +12,7 @@
         creates: ~/.phpenv
 
     - name: add phpenv to path
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add phpenv to PATH"
         block: |
@@ -21,7 +21,7 @@
 
     - name: add phpenv to zsh
       when: enable_zsh | default(false)
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add phpenv to PATH"
         block: |

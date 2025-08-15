@@ -28,7 +28,7 @@
     mode: "u=rwx,go=rx"
 
 - name: source user bin dir in bash
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
     block: |
@@ -36,7 +36,7 @@
 
 - name: source user bin dir in zsh
   when: enable_zsh | default(false)
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
     block: |
@@ -52,7 +52,7 @@
           - direnv
 
     - name: source direnv bash
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: source direnv"
         block: |
@@ -60,7 +60,7 @@
 
     - name: source direnv zsh
       when: enable_zsh | default(false)
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: source direnv"
         block: |
@@ -113,7 +113,7 @@
           shell: "flatpak override org.keepassxc.KeePassXC --filesystem={{ basic_utils.gcr_ssh_agent.socket }}"
 
         - name: configure auto type
-          blockinfile:
+          ansible.builtin.blockinfile:
             path: "~/.var/app/org.keepassxc.KeePassXC/config/keepassxc/keepassxc.ini"
             marker: "# {mark} ANSIBLE MANAGED BLOCK: configure auto type"
             insertafter: ^[General]
@@ -133,7 +133,7 @@
             - { regexp: "^\\[SSHAgent\\]", line: "[SSHAgent]" }
 
         - name: configure ssh-agent sock
-          blockinfile:
+          ansible.builtin.blockinfile:
             path: "~/.var/app/org.keepassxc.KeePassXC/cache/keepassxc/keepassxc.ini"
             marker: "# {mark} ANSIBLE MANAGED BLOCK: configure ssh-agent"
             insertafter: ^\[SSHAgent\]
@@ -165,7 +165,7 @@
   when: (basic_utils.ssh_key.enable | default(false)) and (basic_utils.ssh_agent.enable | default(false))
   block:
     - name: setup ssh-agent for bash
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: start ssh agent"
         block: |
@@ -185,7 +185,7 @@
 
     - name: setup ssh-agent for zsh
       when: enable_zsh | default(false)
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: start ssh agent"
         block: |
@@ -238,7 +238,7 @@
           no_log: true
 
     - name: setup gcr-ssh-agent for bash
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: start gcr ssh agent"
         block: |
@@ -253,7 +253,7 @@
 
     - name: setup gcr-ssh-agent for zsh
       when: enable_zsh | default(false)
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: start gcr ssh agent"
         block: |
@@ -278,7 +278,7 @@
 
 - name: add sdkman to .bashrc
   when: basic_utils.enable_java | default(false)
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: sdkman-init"
     block: |
@@ -287,7 +287,7 @@
 
 - name: add sdkman to .zshrc
   when: basic_utils.enable_java | default(false)
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: sdkman-init"
     block: |
@@ -302,7 +302,7 @@
 
 - name: setup cinc-client alias
   when: basic_utils.enable_cinc | default(false)
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.bash_aliases"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: cinc-client alias"
     block: |
@@ -331,7 +331,7 @@
         chown -R {{ user }}:{{ user }} /home/{{ user }}/.fvm_flutter
 
     - name: add fvm to path for bash
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add fvm to PATH"
         block: |
@@ -339,7 +339,7 @@
 
     - name: add fvm to path for zsh
       when: enable_zsh | default(false)
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add fvm to PATH"
         block: |
@@ -366,7 +366,7 @@
         mode: "u=rwx,go=rx"
 
     - name: source user bin dir for bash
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
         block: |
@@ -374,7 +374,7 @@
 
     - name: source user bin dir for zsh
       when: enable_zsh | default(false)
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
         block: |
@@ -430,7 +430,7 @@
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
 
     - name: add nvm to path for bash
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add nvm to PATH"
         block: |
@@ -440,7 +440,7 @@
 
     - name: add nvm to path for zsh
       when: enable_zsh | default(false)
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add nvm to PATH"
         block: |
@@ -563,7 +563,7 @@
         creates: "{{ homebrew_path }}/goenv"
 
     - name: Setup goenv for bash
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add goenv"
         block: |
@@ -571,7 +571,7 @@
 
     - name: Setup goenv for zsh
       when: enable_zsh | default(false)
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "~/.zshrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add goenv"
         block: |

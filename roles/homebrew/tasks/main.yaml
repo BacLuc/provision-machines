@@ -9,7 +9,7 @@
     creates: "{{ homebrew_path }}/brew"
 
 - name: add homebrew to path
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: homebrew"
     block: |

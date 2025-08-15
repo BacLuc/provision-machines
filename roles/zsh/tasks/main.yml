@@ -67,7 +67,7 @@
     name: zsh-syntax-highlighting
 
 - name: "autostart tmux in zsh"
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: autostart tmux"
     insertbefore: ^plugins=
@@ -92,14 +92,14 @@
       }
 
 - name: "add some blocks to .zshrc"
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: zsh blocks taken from bash"
     block: |
       [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
 - name: add homebrew to path
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: homebrew"
     block: |
@@ -112,14 +112,14 @@
 
 - name: "add zsh-autosuggestions"
   when: zsh_autosuggestions_exists.stat.exists
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: add zsh-autosuggestions"
     block: |
       source $({{ homebrew_path }}/brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 - name: "add zsh-syntax-highlighting"
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: add zsh-syntax-highlighting"
     block: |
@@ -148,7 +148,7 @@
   shell: "docker completion zsh > {{ zsh.completions_dir }}/_docker"
 
 - name: "source docker completion script"
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: add docker completion script"
     block: |
@@ -157,7 +157,7 @@
       complete -F _docker dc
 
 - name: "set zsh prompt theme"
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: add zsh prompt theme"
     block: |
@@ -167,7 +167,7 @@
 
 - name: "add motd banner"
   when: zsh.motd_path is not false
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: add motd banner"
     block: |
