@@ -17,7 +17,7 @@
               "agent":
                 {
                   "default_model":
-                    { "provider": "ollama", "model": "llama3.2:3b" },
+                    { "provider": "ollama", "model": "mistral:7b-mmap" },
                 },
               "features": { "edit_prediction_provider": "none" },
               "auto_install_extensions":
