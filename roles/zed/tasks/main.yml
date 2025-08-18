@@ -151,34 +151,38 @@
                   exit 0
               fi
 
-              MEM_KB=$(ps -p "$PID" -o rss= | tr -d ' ')
+              for id in $PID; do
 
-              if [ -z "$MEM_KB" ]; then
-                  echo "$(date): Could not get memory usage for PID $PID. Exiting."
-                  exit 0
-              fi
+                  MEM_KB=$(ps -p "$id" -o rss= | tr -d ' ')
 
-              echo "$(date): Zed (PID: $PID) memory consumption: $(echo "scale=2; $MEM_KB / 1024 / 1024" | bc) GB"
-
-              if (( MEM_KB > MEMORY_LIMIT_KB )); then
-                  DATETIME=$(date +"%Y-%m-%d_%H-%M-%S")
-                  DEST_LOG_FILE="${LOG_DEST_DIR}/${DATETIME}_zed_killed_too_much_memory.log"
-
-                  echo "$(date): Memory consumption for Zed (PID: $PID) is over ${MEMORY_LIMIT_GB} GB (${MEM_KB} KB). Killing process..."
-
-                  kill "$PID"
-
-                  sleep 2
-
-                  if [ -f "$LOG_SOURCE" ]; then
-                      cp "$LOG_SOURCE" "$DEST_LOG_FILE"
-                      echo "$(date): Copied Zed log to $DEST_LOG_FILE"
-                  else
-                      echo "$(date): Warning: Zed log file not found at $LOG_SOURCE"
+                  if [ -z "$MEM_KB" ]; then
+                      echo "$(date): Could not get memory usage for PID $id. Exiting."
+                      exit 0
                   fi
 
-                  echo "$(date): Zed process (PID: $PID) killed due to excessive memory usage."
-              fi
+                  echo "$(date): Zed (PID: $id) memory consumption: $(echo "scale=2; $MEM_KB / 1024 / 1024" | bc) GB"
+
+                  if (( MEM_KB > MEMORY_LIMIT_KB )); then
+                      DATETIME=$(date +"%Y-%m-%d_%H-%M-%S")
+                      DEST_LOG_FILE="${LOG_DEST_DIR}/${DATETIME}_zed_killed_too_much_memory.log"
+
+                      echo "$(date): Memory consumption for Zed (PID: $id) is over ${MEMORY_LIMIT_GB} GB (${MEM_KB} KB). Killing process..."
+
+                      kill "$id"
+
+                      sleep 2
+
+                      if [ -f "$LOG_SOURCE" ]; then
+                          cp "$LOG_SOURCE" "$DEST_LOG_FILE"
+                          echo "$(date): Copied Zed log to $DEST_LOG_FILE"
+                      else
+                          echo "$(date): Warning: Zed log file not found at $LOG_SOURCE"
+                      fi
+
+                      echo "$(date): Zed process (PID: $id) killed due to excessive memory usage."
+                  fi
+
+              done
             dest: "/usr/local/bin/monitor-zed-memory"
             owner: root
             group: root
