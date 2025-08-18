@@ -200,6 +200,32 @@
             job: "/usr/local/bin/monitor-zed-memory 2>&1 | logger -t monitor-zed-memory"
             state: present
 
+        - name: Create drop in dir for flatpak-system-helper
+          become: true
+          ansible.builtin.file:
+            dest: "/etc/systemd/system/flatpak-system-helper.service.d"
+            state: directory
+            owner: root
+            mode: "u=rwx,go=rx"
+
+        - name: Limit resources of zed flatpak
+          become: true
+          ansible.builtin.copy:
+            content: |
+              [Service]
+              MemoryAccounting=true
+              MemoryHigh=5G
+              MemoryMax=10G
+            dest: /etc/systemd/system/flatpak-system-helper.service.d/resource-limits.conf
+            owner: root
+            mode: "u=rwx,go=rx"
+          register: zed_resource_limits_file
+
+        - name: Reload daemons # noqa command-instead-of-module
+          become: true
+          when: zed_resource_limits_file.changed
+          ansible.builtin.command: systemctl daemon-reload
+
     - name: Ensure Zed memory monitor is absent if disabled
       when: not zed.enable_memory_monitor | default(false)
       block:
@@ -213,3 +239,15 @@
             name: "Monitor Zed memory and kill if over *"
             user: "{{ user }}"
             state: absent
+
+        - name: Remove drop in dir for flatpak-system-helper
+          become: true
+          ansible.builtin.file:
+            path: "/etc/systemd/system/flatpak-system-helper.service.d"
+            state: absent
+          register: zed_resource_limits_file
+
+        - name: Reload daemons # noqa command-instead-of-module
+          become: true
+          when: zed_resource_limits_file.changed
+          ansible.builtin.command: systemctl daemon-reload
