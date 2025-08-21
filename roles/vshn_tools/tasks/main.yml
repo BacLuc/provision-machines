@@ -1,0 +1,49 @@
+- name: vshn-tools
+  when: enable_vshn_tools | default(false)
+  block:
+    - name: vshn_tools print var
+      ansible.builtin.debug:
+        var: vshn_tools
+
+    - name: set defaults for vshn_tools role
+      ansible.builtin.set_fact:
+        vshn_tools_defaults:
+          appcat_cli_version: 0.5.0
+          appcat_cli_checksum: 2141bf312b56ff7baf7727a98bbe0488dab7769162fb88e63255209e3e8140f1
+
+    - name: set facts for vshn_tools role
+      ansible.builtin.set_fact:
+        vshn_tools: "{{ vshn_tools_defaults | combine((vshn_tools | default({})), recursive=true) }}"
+
+    - name: ensure ~/bin directory exists
+      ansible.builtin.file:
+        path: "~/bin"
+        state: directory
+        mode: "u=rwx,go=rx"
+
+    - name: install appcat-cli
+      block:
+        - name: try to get checksum of appcat_cli
+          ansible.builtin.stat:
+            path: "~/bin/appcat-cli"
+            checksum_algorithm: sha256
+          register: vshn_tools_current_appcat_cli
+
+        - name: download appcat-cli tarball
+          when: "not vshn_tools_current_appcat_cli.stat.exists or vshn_tools_current_appcat_cli.stat.checksum != vshn_tools.appcat_cli_checksum"
+          ansible.builtin.get_url:
+            url: "https://github.com/vshn/appcat-cli/releases/download/v{{ vshn_tools.appcat_cli_version }}/appcat-cli_{{ vshn_tools.appcat_cli_version }}_linux_amd64.tar.gz"
+            dest: "/tmp/appcat-cli.tar.gz"
+            mode: "u=rw,go=r"
+            checksum: "{{ vshn_tools.appcat_cli_checksum }}"
+
+        - name: extract appcat-cli to ~/bin
+          ansible.builtin.unarchive:
+            src: "/tmp/appcat-cli.tar.gz"
+            dest: "~/bin"
+            remote_src: true
+
+        - name: make appcat executable
+          ansible.builtin.file:
+            path: "~/bin/appcat-cli"
+            mode: "u=rwx,go=rx"

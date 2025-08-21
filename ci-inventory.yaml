@@ -30,6 +30,7 @@ local:
     enable_ubuntu_desktop: false
     enable_vagrant: true
     enable_visual_studio_code: true
+    enable_vshn_tools: true
     enable_yazi: true
     enable_zed: false
     enable_zsh: true

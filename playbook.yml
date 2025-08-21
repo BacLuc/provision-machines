@@ -126,6 +126,9 @@
     - role: vagrant
       tags: vagrant
 
+    - role: vshn_tools
+      tags: vshn_tools
+
     - role: zed
       tags: zed
 
