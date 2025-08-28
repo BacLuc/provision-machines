@@ -148,3 +148,27 @@
     cmd: |
       {{ homebrew_path }}/brew install helmfile
     creates: "{{ homebrew_path }}/helmfile"
+
+- name: install helm-chartsnap
+  block:
+    - name: set chartsnap facts
+      ansible.builtin.set_fact:
+        kubectl_helm_chartsnap_path: ~/.local/share/helm/plugins/helm-chartsnap/bin/chartsnap
+        kubectl_helm_chartsnap_checksum: 3891bacb914c3f17f39c405682358f6c609720bd00387723723929c1053e8952
+
+    - name: try to get checksum of chartsnap
+      ansible.builtin.stat:
+        path: "{{ kubectl_helm_chartsnap_path }}"
+        checksum_algorithm: sha256
+      register: kubectl_helm_chartsnap_file_stats
+
+    - name: Print current checksum
+      when: "not kubectl_helm_chartsnap_file_stats.stat.exists or kubectl_helm_chartsnap_file_stats.stat.checksum != kubectl_helm_chartsnap_checksum"
+      ansible.builtin.debug:
+        var: kubectl_helm_chartsnap_file_stats.stat.checksum
+
+    - name: install helm-chartsnap
+      when: "not kubectl_helm_chartsnap_file_stats.stat.exists or kubectl_helm_chartsnap_file_stats.stat.checksum != kubectl_helm_chartsnap_checksum"
+      ansible.builtin.shell: |
+        helm plugin uninstall chartsnap || true
+        helm plugin install --version 0.6.0 https://github.com/jlandowner/helm-chartsnap
