@@ -574,7 +574,8 @@
         path: "~/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add goenv"
         block: |
-          $({{ homebrew_path }}/goenv init -)
+          export GOENV_ROOT="$HOME/.goenv
+          eval "$({{ homebrew_path }}/goenv init -)"
 
     - name: Setup goenv for zsh
       when: enable_zsh | default(false)
