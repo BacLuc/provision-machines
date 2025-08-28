@@ -25,7 +25,7 @@
       changed_when: false
 
     - name: get release
-      ansible.builtin.command: . /etc/os-release && echo "$VERSION_CODENAME"
+      ansible.builtin.shell: . /etc/os-release && echo "$VERSION_CODENAME"
       register: os_release
       changed_when: false
 
