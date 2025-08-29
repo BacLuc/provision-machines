@@ -35,7 +35,6 @@
             url: "https://github.com/vshn/appcat-cli/releases/download/v{{ vshn_tools.appcat_cli_version }}/appcat-cli_{{ vshn_tools.appcat_cli_version }}_linux_amd64.tar.gz"
             dest: "/tmp/appcat-cli.tar.gz"
             mode: "u=rw,go=r"
-            checksum: "{{ vshn_tools.appcat_cli_checksum }}"
 
         - name: extract appcat-cli to ~/bin
           ansible.builtin.unarchive:
