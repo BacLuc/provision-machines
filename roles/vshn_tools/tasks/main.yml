@@ -29,18 +29,24 @@
             checksum_algorithm: sha256
           register: vshn_tools_current_appcat_cli
 
-        - name: download appcat-cli tarball
+        - name: install or update appcat-cli
           when: "not vshn_tools_current_appcat_cli.stat.exists or vshn_tools_current_appcat_cli.stat.checksum != vshn_tools.appcat_cli_checksum"
-          ansible.builtin.get_url:
-            url: "https://github.com/vshn/appcat-cli/releases/download/v{{ vshn_tools.appcat_cli_version }}/appcat-cli_{{ vshn_tools.appcat_cli_version }}_linux_amd64.tar.gz"
-            dest: "/tmp/appcat-cli.tar.gz"
-            mode: "u=rw,go=r"
+          block:
+            - name: Print current checksum
+              ansible.builtin.debug:
+                var: vshn_tools_current_appcat_cli.stat.checksum
 
-        - name: extract appcat-cli to ~/bin
-          ansible.builtin.unarchive:
-            src: "/tmp/appcat-cli.tar.gz"
-            dest: "~/bin"
-            remote_src: true
+            - name: download appcat-cli tarball
+              ansible.builtin.get_url:
+                url: "https://github.com/vshn/appcat-cli/releases/download/v{{ vshn_tools.appcat_cli_version }}/appcat-cli_{{ vshn_tools.appcat_cli_version }}_linux_amd64.tar.gz"
+                dest: "/tmp/appcat-cli.tar.gz"
+                mode: "u=rw,go=r"
+
+            - name: extract appcat-cli to ~/bin
+              ansible.builtin.unarchive:
+                src: "/tmp/appcat-cli.tar.gz"
+                dest: "~/bin"
+                remote_src: true
 
         - name: make appcat executable
           ansible.builtin.file:
