@@ -74,6 +74,7 @@
                         { "yaml": { "format": { "singleQuote": true } } },
                     },
                 },
+              "restore_on_startup": "none",
               "show_edit_predictions": true,
               "telemetry": { "metrics": false, "diagnostics": false },
               "theme":
