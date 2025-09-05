@@ -91,6 +91,9 @@
       tags: docker
       when: docker.enable | default(false)
 
+    - role: flatpak
+      tags: flatpak
+
     - role: php_development
       tags: php_development
 

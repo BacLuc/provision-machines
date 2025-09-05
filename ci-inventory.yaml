@@ -126,6 +126,9 @@ local:
         - "gradle 7.6.4"
         - "gradle 8.12"
 
+    flatpaks:
+      # - io.missioncenter.MissionCenter
+
     motd:
       enable_disk_usage: false
 

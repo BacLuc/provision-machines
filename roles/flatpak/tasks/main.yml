@@ -8,6 +8,10 @@
   ansible.builtin.command: |
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
+- name: install flatpaks
+  community.general.flatpak:
+    name: "{{ flatpaks | default([]) }}"
+
 - name: add update script
   become: true
   ansible.builtin.copy:
