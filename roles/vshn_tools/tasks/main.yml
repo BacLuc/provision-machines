@@ -24,65 +24,17 @@
         mode: "u=rwx,go=rx"
 
     - name: install appcat-cli
-      block:
-        - name: try to get checksum of appcat_cli
-          ansible.builtin.stat:
-            path: "~/bin/appcat-cli"
-            checksum_algorithm: sha256
-          register: vshn_tools_current_appcat_cli
-
-        - name: install or update appcat-cli
-          when: "not vshn_tools_current_appcat_cli.stat.exists or vshn_tools_current_appcat_cli.stat.checksum != vshn_tools.appcat_cli_checksum"
-          block:
-            - name: Print current checksum
-              ansible.builtin.debug:
-                var: vshn_tools_current_appcat_cli.stat.checksum
-
-            - name: download appcat-cli tarball
-              ansible.builtin.get_url:
-                url: "https://github.com/vshn/appcat-cli/releases/download/v{{ vshn_tools.appcat_cli_version }}/appcat-cli_{{ vshn_tools.appcat_cli_version }}_linux_amd64.tar.gz"
-                dest: "/tmp/appcat-cli.tar.gz"
-                mode: "u=rw,go=r"
-
-            - name: extract appcat-cli to ~/bin
-              ansible.builtin.unarchive:
-                src: "/tmp/appcat-cli.tar.gz"
-                dest: "~/bin"
-                remote_src: true
-
-        - name: make appcat executable
-          ansible.builtin.file:
-            path: "~/bin/appcat-cli"
-            mode: "u=rwx,go=rx"
+      ansible.builtin.include_role:
+        name: github_release_binary
+      vars:
+        url: "https://github.com/vshn/appcat-cli/releases/download/v{{ vshn_tools.appcat_cli_version }}/appcat-cli_{{ vshn_tools.appcat_cli_version }}_linux_amd64.tar.gz"
+        binary_name: appcat-cli
+        binary_checksum: "{{ vshn_tools.appcat_cli_checksum }}"
 
     - name: install k8ify
-      block:
-        - name: try to get checksum of k8ify
-          ansible.builtin.stat:
-            path: "~/bin/k8ify"
-            checksum_algorithm: sha256
-          register: vshn_tools_current_k8ify
-
-        - name: install or update k8ify
-          when: "not vshn_tools_current_k8ify.stat.exists or vshn_tools_current_k8ify.stat.checksum != vshn_tools.k8ify_checksum"
-          block:
-            - name: Print current checksum
-              ansible.builtin.debug:
-                var: vshn_tools_current_k8ify.stat.checksum
-
-            - name: download k8ify tarball
-              ansible.builtin.get_url:
-                url: "https://github.com/vshn/k8ify/releases/download/{{ vshn_tools.k8ify_version }}/k8ify_{{ vshn_tools.k8ify_version }}_linux_amd64.tar.gz"
-                dest: "/tmp/k8ify.tar.gz"
-                mode: "u=rw,go=r"
-
-            - name: extract k8ify to ~/bin
-              ansible.builtin.unarchive:
-                src: "/tmp/k8ify.tar.gz"
-                dest: "~/bin"
-                remote_src: true
-
-        - name: make k8ify executable
-          ansible.builtin.file:
-            path: "~/bin/appcat-cli"
-            mode: "u=rwx,go=rx"
+      ansible.builtin.include_role:
+        name: github_release_binary
+      vars:
+        url: "https://github.com/vshn/k8ify/releases/download/{{ vshn_tools.k8ify_version }}/k8ify_{{ vshn_tools.k8ify_version }}_linux_amd64.tar.gz"
+        binary_name: k8ify
+        binary_checksum: "{{ vshn_tools.k8ify_checksum }}"

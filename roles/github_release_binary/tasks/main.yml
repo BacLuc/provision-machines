@@ -1,0 +1,54 @@
+- name: Display variables
+  ansible.builtin.debug:
+    msg: "Installing {{ binary_name }} from {{ url }} with checksum {{ binary_checksum }}"
+
+- name: Validate parameters
+  ansible.builtin.assert:
+    that:
+      - url is defined and url | length > 0
+      - binary_name is defined and binary_name | length > 0
+      - binary_checksum is defined and binary_checksum | length > 0
+    fail_msg: |
+      One or more required variables are missing
+
+- name: ensure ~/bin directory exists
+  ansible.builtin.file:
+    path: "~/bin"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: install {{ binary_name }}
+  block:
+    - name: try to get checksum of {{ binary_name }}
+      ansible.builtin.stat:
+        path: "~/bin/{{ binary_name }}"
+        checksum_algorithm: sha256
+      register: github_release_binary_file
+
+    - name: install or update {{ binary_name }}
+      when: "not github_release_binary_file.stat.exists or github_release_binary_file.stat.checksum != binary_checksum"
+      block:
+        - name: Print current checksum
+          ansible.builtin.debug:
+            var: github_release_binary_file.stat.checksum
+
+        - name: generate name for tmp file
+          ansible.builtin.set_fact:
+            github_release_binary_tmp_path: "/tmp/{{ lookup('community.general.random_string') }}.tar.gz"
+
+        - name: download {{ binary_name }} tarball
+          ansible.builtin.get_url:
+            url: "{{ url }}"
+            dest: "{{ github_release_binary_tmp_path }}"
+            mode: "u=rw,go=r"
+
+        - name: extract {{ binary_name }} to ~/bin
+          ansible.builtin.unarchive:
+            src: "{{ github_release_binary_tmp_path }}"
+            dest: "~/bin"
+            remote_src: true
+
+    - name: make {{ binary_name }} executable
+      ansible.builtin.file:
+        path: "~/bin/{{ binary_name }}"
+        mode: "u=rwx,go=rx"
