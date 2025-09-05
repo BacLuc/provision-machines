@@ -1,40 +1,9 @@
 - name: Install vagrant
   when: enable_vagrant | default(false)
   block:
-    - name: download key
-      become: true
-      ansible.builtin.shell:
-        cmd: |
-          keyfile=/usr/share/keyrings/hashicorp-archive-keyring.gpg
-          checksum_before="5890794459b76f45c3a25d2ecffa11477d689386bc593d1d470047f3dfef9faa91e61c1d55f89ffd6c718f8fafd181604f717b8c2dc4f374d132ae324808d54b"
-          if [ -f $keyfile ]; then
-            checksum_before=$(shasum -a 512 $keyfile | awk '{print ""$1""}')
-          fi
-          wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o $keyfile
-          if [ -n "$checksum_before" ]; then
-            if [ ! $checksum_before = $(shasum -a 512 $keyfile | awk '{print ""$1""}') ]; then
-              echo "Checksum of $keyfile changed"
-              exit 1
-            fi
-          fi
-        creates: /usr/share/keyrings/hashicorp-archive-keyring.gpg
-
-    - name: get arch
-      ansible.builtin.command: dpkg --print-architecture
-      register: arch
-      changed_when: false
-
-    - name: get release
-      ansible.builtin.shell: . /etc/os-release && echo "$VERSION_CODENAME"
-      register: os_release
-      changed_when: false
-
-    - name: add hashicorp apt repository with signature
-      become: true
-      ansible.builtin.apt_repository:
-        repo: "deb [arch={{ arch.stdout }} signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ os_release.stdout }} main"
-        update_cache: true
-        filename: hashicorp.list
+    - name: add hashicorp apt repo
+      ansible.builtin.include_role:
+        name: hashicorp_apt_repo
 
     - name: install vagrant
       become: true
