@@ -177,6 +177,30 @@
         helm plugin uninstall chartsnap || true
         helm plugin install --version 0.6.0 https://github.com/jlandowner/helm-chartsnap
 
+- name: install helm-diff
+  block:
+    - name: set helm-diff facts
+      ansible.builtin.set_fact:
+        kubectl_helm_diff_path: ~/.local/share/helm/plugins/helm-diff/bin/diff
+        kubectl_helm_diff_checksum: e3800f74f6271ded023fdf4cee56f8b314bbef3c20d360625610031349f4b63c
+
+    - name: try to get checksum of helm-diff
+      ansible.builtin.stat:
+        path: "{{ kubectl_helm_diff_path }}"
+        checksum_algorithm: sha256
+      register: kubectl_helm_diff_file_stats
+
+    - name: Print current checksum
+      when: "not kubectl_helm_diff_file_stats.stat.exists or kubectl_helm_diff_file_stats.stat.checksum != kubectl_helm_diff_checksum"
+      ansible.builtin.debug:
+        var: kubectl_helm_diff_file_stats.stat.checksum
+
+    - name: install helm-diff
+      when: "not kubectl_helm_diff_file_stats.stat.exists or kubectl_helm_diff_file_stats.stat.checksum != kubectl_helm_diff_checksum"
+      ansible.builtin.shell: |
+        helm plugin uninstall diff || true
+        helm plugin install --version 3.12.5 https://github.com/databus23/helm-diff
+
 - name: install kubectl-neat
   ansible.builtin.include_role:
     name: github_release_binary
