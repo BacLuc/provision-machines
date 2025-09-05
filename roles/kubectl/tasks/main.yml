@@ -92,6 +92,10 @@
         line: 'alias kn=''f() { [ "$1" ] && kubectl config set-context --current --namespace $1 || kubectl config view --minify | grep namespace | cut -d" " -f6 ; } ; f''',
       }
     - {
+        regexp: "^alias helma=",
+        line: "alias helma='helm --kube-as-user cluster-admin'",
+      }
+    - {
         regexp: "^alias kgworld=",
         line: 'alias kgworld=''kubectl get $(kubectl api-resources --verbs=list --namespaced -o name | paste -sd ",")''',
       }
