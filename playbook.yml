@@ -111,6 +111,9 @@
     - role: basic_utils
       tags: basic_utils
 
+    - role: hashicorp_vault_cli
+      tags: hashicorp_vault_cli
+
     - role: windows
       when: windows.enable | default(false)
 

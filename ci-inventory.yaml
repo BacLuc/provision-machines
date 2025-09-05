@@ -15,6 +15,7 @@ local:
     enable_bash: true
     enable_basicsetup: true
     enable_fzf: true
+    enable_hashicorp_vault_cli: true
     enable_homebrew: true
     enable_customize_gnome: false
     customize_gnome__skip_restart_gnome_shell: false
