@@ -172,3 +172,11 @@
       ansible.builtin.shell: |
         helm plugin uninstall chartsnap || true
         helm plugin install --version 0.6.0 https://github.com/jlandowner/helm-chartsnap
+
+- name: install kubectl-neat
+  ansible.builtin.include_role:
+    name: github_release_binary
+  vars:
+    url: "https://github.com/itaysk/kubectl-neat/releases/download/v2.0.4/kubectl-neat_linux_amd64.tar.gz"
+    binary_name: kubectl-neat
+    binary_checksum: "8dc3086fa8e7f5390f35a0b257566af478575ae3cc0d5b4614fbebbee5f35352"
