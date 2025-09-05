@@ -173,6 +173,8 @@ local:
         - vncviewer
         - windirstat
         # - add zulu8-jdk
+    snaps:
+      - rclone
 
     zsh:
       # This somehow forces the sudo password prompt again.

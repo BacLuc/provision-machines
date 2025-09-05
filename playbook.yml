@@ -126,6 +126,9 @@
     - role: displaylink_driver
       tags: displaylink_driver
 
+    - role: snap
+      tags: snap
+
     - role: vagrant
       tags: vagrant
 
