@@ -1,3 +1,22 @@
+- name: set defaults for snap
+  ansible.builtin.set_fact:
+    snap_defaults:
+      refresh:
+        timer: 4:00-9:00
+
+- name: "set facts for snap role"
+  ansible.builtin.set_fact:
+    snap: "{{ snap_defaults | combine((snap | default({})), recursive=true) }}"
+
+- name: snap
+  ansible.builtin.debug:
+    var: snap
+
+- name: set snap refresh timer
+  become: true
+  ansible.builtin.command: sudo snap set system refresh.timer={{ snap.refresh.timer }}
+  changed_when: false
+
 - name: install snaps
   become: true
   community.general.snap:
