@@ -17,15 +17,15 @@
     state: directory
     mode: "u=rwx,go=rx"
 
-- name: install {{ binary_name }}
+- name: install binary
   block:
-    - name: try to get checksum of {{ binary_name }}
+    - name: try to get checksum of binary
       ansible.builtin.stat:
         path: "~/bin/{{ binary_name }}"
         checksum_algorithm: sha256
       register: github_release_binary_file
 
-    - name: install or update {{ binary_name }}
+    - name: install or update binary
       when: "not github_release_binary_file.stat.exists or github_release_binary_file.stat.checksum != binary_checksum"
       block:
         - name: Print current checksum
@@ -36,19 +36,19 @@
           ansible.builtin.set_fact:
             github_release_binary_tmp_path: "/tmp/{{ lookup('community.general.random_string') }}.tar.gz"
 
-        - name: download {{ binary_name }} tarball
+        - name: download binary tarball
           ansible.builtin.get_url:
             url: "{{ url }}"
             dest: "{{ github_release_binary_tmp_path }}"
             mode: "u=rw,go=r"
 
-        - name: extract {{ binary_name }} to ~/bin
+        - name: extract binary to ~/bin
           ansible.builtin.unarchive:
             src: "{{ github_release_binary_tmp_path }}"
             dest: "~/bin"
             remote_src: true
 
-    - name: make {{ binary_name }} executable
+    - name: make binary executable
       ansible.builtin.file:
         path: "~/bin/{{ binary_name }}"
         mode: "u=rwx,go=rx"
