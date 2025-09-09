@@ -34,7 +34,7 @@
 
         - name: generate name for tmp file
           ansible.builtin.set_fact:
-            github_release_binary_tmp_path: "/tmp/{{ lookup('community.general.random_string') }}.tar.gz"
+            github_release_binary_tmp_path: "/tmp/{{ lookup('community.general.random_string', special=false) }}.tar.gz"
 
         - name: download binary tarball
           ansible.builtin.get_url:
