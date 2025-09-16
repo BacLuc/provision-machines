@@ -417,7 +417,7 @@
         content: |
           font-size={{ ghostty.font_size }}
           maximize=true
-          theme=carbonfox
+          theme=Catppuccin Frappe
         dest: "~/.config/ghostty/config"
         mode: "0644"
 
