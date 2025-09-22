@@ -38,3 +38,15 @@
         url: "https://github.com/vshn/k8ify/releases/download/{{ vshn_tools.k8ify_version }}/k8ify_{{ vshn_tools.k8ify_version }}_linux_amd64.tar.gz"
         binary_name: k8ify
         binary_checksum: "{{ vshn_tools.k8ify_checksum }}"
+
+    - name: setup alias for commodore
+      ansible.builtin.blockinfile:
+        path: "~/.bash_aliases"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: commodore alias"
+        block: |
+          alias commodore='docker run \
+              --rm \
+              --user="${UID}" \
+              --volume "${PWD}:/app/data" \
+              --workdir /app/data \
+              projectsyn/commodore:${COMMODORE_VERSION:=v1.29.0}'
