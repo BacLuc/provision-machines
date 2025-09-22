@@ -150,6 +150,9 @@
     - role: yazi
       tags: yazi
 
+    - role: sysctl
+      tags: sysctl
+
   post_tasks:
     - name: Include ubuntu cleanup tasks
       ansible.builtin.include_tasks: tasks/ubuntu_cleanup.yml

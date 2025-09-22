@@ -1,0 +1,42 @@
+- name: configure sysctl
+  when: enable_sysctl | default(false)
+  block:
+    - name: set defaults for sysctl role
+      ansible.builtin.set_fact:
+        sysctl_defaults:
+          settings:
+            fs.inotify.max_queued_events: 1048576
+            fs.inotify.max_user_instances: 1048576
+            fs.inotify.max_user_watches: 1048576
+
+    - name: set facts for sysctl role
+      ansible.builtin.set_fact:
+        sysctl: "{{ sysctl_defaults | combine((sysctl | default({})), recursive=true) }}"
+
+    - name: create sysctl.d directory
+      become: true
+      ansible.builtin.file:
+        path: /etc/sysctl.d
+        state: directory
+        owner: root
+        group: root
+        mode: "ug=rwx,o=rx"
+
+    - name: create 99-local.conf with sysctl settings
+      become: true
+      ansible.builtin.copy:
+        content: |
+          # Ansible managed - Local sysctl settings
+          {% for key, value in sysctl.settings.items() %}
+          {{ key }} = {{ value }}
+          {% endfor %}
+        dest: /etc/sysctl.d/99-local.conf
+        owner: root
+        group: root
+        mode: "0644"
+      register: sysctl_99_local_file
+
+    - name: apply sysctl settings immediately
+      become: true
+      when: sysctl_99_local_file.changed
+      ansible.builtin.command: sysctl --system

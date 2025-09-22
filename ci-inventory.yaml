@@ -34,6 +34,7 @@ local:
     enable_kubectl: true
     enable_nvim: false
     enable_php_development: true
+    enable_sysctl: true
     enable_ubuntu_cleanup: true
     enable_ubuntu_desktop: false
     enable_vagrant: true
