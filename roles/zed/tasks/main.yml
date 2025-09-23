@@ -89,6 +89,16 @@
               "languages": { "YAML": { "format_on_save": "off" } },
               "lsp":
                 {
+                  "helm_ls":
+                    {
+                      "settings":
+                        {
+                          "yamlls":
+                            {
+                              "path": "/home/{{ user }}/.local/share/zed/languages/yaml-language-server/node_modules/.bin/yaml-language-server",
+                            },
+                        },
+                    },
                   "yaml-language-server":
                     {
                       "settings":
