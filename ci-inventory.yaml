@@ -73,6 +73,7 @@ local:
         # - chromium-browser
         # - chromium-browser-l10n
         # - chromium-codecs-ffmpeg
+        - cloc
         - curl
         # - geany
         - git
