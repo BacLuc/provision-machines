@@ -28,6 +28,7 @@ local:
     customize_gnome__skip_restart_gnome_shell: false
     enable_git_tools: true
     git_graphical_tools: false
+    enable_jetbrains_gitclient: false
     enable_okular: false
     enable_ollama: false
     enable_tmux: true
