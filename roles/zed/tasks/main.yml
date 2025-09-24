@@ -143,6 +143,46 @@
         dest: "/home/{{ user }}/.config/zed/keymap.json"
         mode: "u=rwx,go=rx"
 
+    - name: add launch zed script
+      ansible.builtin.copy:
+        content: |
+          #!/usr/bin/env zsh
+
+          ZED_ENVIRONMENT=cli
+          ZED_FORCE_CLI_MODE=
+          ZED_TERM=true
+
+          source /home/{{ user }}/.zshrc
+          exec zed "$@"
+        dest: "~/bin/launch-zed-with-env"
+        mode: "ug=rwx,o=rx"
+
+    - name: change zed desktop file to use environment
+      ansible.builtin.copy:
+        content: |
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=Zed
+          GenericName=Text Editor
+          Comment=A high-performance, multiplayer code editor.
+          StartupNotify=true
+          Terminal=true
+          Exec=/home/{{ user }}/bin/launch-zed-with-env %U
+          Icon=/home/{{ user }}/.local/zed.app/share/icons/hicolor/512x512/apps/zed.png
+          Categories=Utility;TextEditor;Development;IDE;
+          Keywords=zed;
+          MimeType=text/plain;application/x-zerosize;x-scheme-handler/zed;
+          Actions=NewWorkspace;
+          X-Desktop-File-Install-Version=0.28
+
+          [Desktop Action NewWorkspace]
+          Exec=/home/{{ user }}/bin/launch-zed-with-env --new %U
+          Name=Open a new workspace
+
+        dest: "~/.local/share/applications/dev.zed.Zed.desktop"
+        mode: "ug=rw,o=r"
+
     - name: Ensure Zed memory monitor is absent
       block:
         - name: Remove the Zed memory monitoring script
