@@ -60,7 +60,7 @@
 - name: "install zsh-autosuggestions"
   when: zsh.enable_zsh_autosuggestions | default(false)
   ansible.builtin.command: |
-    {{ homebrew_path }}/brew install zsh-autosuggestions
+    ~/bin/brew install zsh-autosuggestions
 
 - name: "install zsh-syntax-highlighting"
   become: true
@@ -118,7 +118,7 @@
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: add zsh-autosuggestions"
     block: |
-      source $({{ homebrew_path }}/brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+      source $(~/bin/brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 - name: "add zsh-syntax-highlighting"
   ansible.builtin.blockinfile:

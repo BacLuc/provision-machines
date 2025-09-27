@@ -4,7 +4,7 @@
     - name: install fzf package
       ansible.builtin.command:
         cmd: |
-          {{ homebrew_path }}/brew install fzf
+          ~/bin/brew install fzf
         creates: "{{ homebrew_path }}/fzf"
 
     - name: add fzf completion to bash

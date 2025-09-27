@@ -1,23 +1,79 @@
 - name: set facts homebrew role
   ansible.builtin.set_fact:
+    homebrew_home: "/home/linuxbrew"
     homebrew_path: "/home/linuxbrew/.linuxbrew/Homebrew/bin"
 
-- name: install homebrew
-  ansible.builtin.shell:
-    cmd: |
-      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    creates: "{{ homebrew_path }}/brew"
+- name: create linuxbrew home dir
+  become: true
+  ansible.builtin.file:
+    dest: "/home/linuxbrew"
+    state: "directory"
+    owner: "root"
+    mode: "u=rwx,go=rx"
+
+- name: create .linuxbrew dir
+  become: true
+  ansible.builtin.file:
+    dest: "/home/linuxbrew/.linuxbrew"
+    state: "directory"
+    owner: "{{ user }}"
+    mode: "u=rwx,go=rx"
+
+- name: create .cache dir
+  become: true
+  ansible.builtin.file:
+    dest: "/home/linuxbrew/.cache"
+    state: "directory"
+    owner: "{{ user }}"
+    mode: "u=rwx,go=rx"
+
+- name: Setup user bin dir
+  ansible.builtin.file:
+    path: "~/bin"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: Check if homebrew is already installed
+  ansible.builtin.stat:
+    path: "/home/linuxbrew/.linuxbrew/bin/brew"
+  register: homebrew_installed
+
+- name: Copy homebrew installation from container to host
+  when: not homebrew_installed.stat.exists
+  block:
+    - name: Copy homebrew installation using docker cp and tar
+      become: true
+      ansible.builtin.shell:
+        cmd: |
+          HOMEBREW_VERSION=4.6.14
+          container_id=$(docker create homebrew/brew:$HOMEBREW_VERSION)
+          set +e
+          docker cp $container_id:/home/linuxbrew/.linuxbrew /home/linuxbrew/
+          exit_code=$?
+          docker rm $container_id
+          exit $exit_code
+        creates: "/home/linuxbrew/.linuxbrew/bin/brew"
+
+    - name: Fix ownership of homebrew installation
+      become: true
+      ansible.builtin.file:
+        path: "/home/linuxbrew/.linuxbrew"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        recurse: true
+
+- name: create brew script
+  ansible.builtin.copy:
+    content: |
+      #!/bin/sh
+      HOMEBREW_VERSION=4.6.14
+      docker run --rm -v {{ homebrew_home }}:{{ homebrew_home }} --user {{ user_id }} homebrew/brew:$HOMEBREW_VERSION brew "$@"
+    dest: "~/bin/brew"
+    mode: "u=rwx,go=rx"
 
 - name: add homebrew to path
   ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: homebrew"
     block: |
-      PATH="$PATH:{{ homebrew_path }}"
-
-- name: template update homebrew script
-  become: true
-  ansible.builtin.template:
-    src: homebrew-upgrade.j2.sh
-    dest: "{{ update_packages_script.dir }}/homebrew-upgrade"
-    mode: "u=rwx,go=rx"
+      PATH="$PATH:{{ homebrew_path }}:{{ homebrew_home }}/.linuxbrew/bin"

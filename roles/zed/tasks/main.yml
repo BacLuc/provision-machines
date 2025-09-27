@@ -214,5 +214,5 @@
       when: zed.enable_helm_support | default(false)
       ansible.builtin.command:
         cmd: |
-          {{ homebrew_path }}/brew install helm-ls
+          ~/bin/brew install helm-ls
         creates: "/home/linuxbrew/.linuxbrew/Homebrew/Cellar/helm-ls"

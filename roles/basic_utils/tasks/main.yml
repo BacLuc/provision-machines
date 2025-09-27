@@ -566,7 +566,7 @@
     - name: install goenv
       ansible.builtin.command:
         cmd: |
-          {{ homebrew_path }}/brew install goenv
+          ~/bin/brew install goenv
         creates: "{{ homebrew_path }}/goenv"
 
     - name: Setup goenv for bash

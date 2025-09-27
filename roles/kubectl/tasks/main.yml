@@ -107,7 +107,7 @@
 - name: install k9s
   ansible.builtin.command:
     cmd: |
-      {{ homebrew_path }}/brew install k9s
+      ~/bin/brew install k9s
     creates: "{{ homebrew_path }}/k9s"
 
 - name: Add k9s aliases
@@ -126,31 +126,31 @@
   when: kubectl.enable_oidc_plugin | default(false)
   ansible.builtin.command:
     cmd: |
-      {{ homebrew_path }}/brew install kubelogin
+      ~/bin/brew install kubelogin
     creates: "{{ homebrew_path }}/kubectl-oidc_login"
 
 - name: install kubeconform
   ansible.builtin.command:
     cmd: |
-      {{ homebrew_path }}/brew install kubeconform
+      ~/bin/brew install kubeconform
     creates: "{{ homebrew_path }}/kubeconform"
 
 - name: install kustomize
   ansible.builtin.command:
     cmd: |
-      {{ homebrew_path }}/brew install kustomize
+      ~/bin/brew install kustomize
     creates: "{{ homebrew_path }}/kustomize"
 
 - name: install kubeseal
   ansible.builtin.command:
     cmd: |
-      {{ homebrew_path }}/brew install kubeseal
+      ~/bin/brew install kubeseal
     creates: "{{ homebrew_path }}/kubeseal"
 
 - name: install helmfile
   ansible.builtin.command:
     cmd: |
-      {{ homebrew_path }}/brew install helmfile
+      ~/bin/brew install helmfile
     creates: "{{ homebrew_path }}/helmfile"
 
 - name: install helm-chartsnap

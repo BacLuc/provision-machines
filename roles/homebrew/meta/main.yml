@@ -1,3 +1,4 @@
 ---
 dependencies:
   - role: update_packages_script
+  - role: docker

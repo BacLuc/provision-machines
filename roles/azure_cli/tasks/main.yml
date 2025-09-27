@@ -11,7 +11,7 @@
     - name: "install azure cli"
       when: azure_cli_installed.stat.exists is false
       ansible.builtin.command: |
-        {{ homebrew_path }}/brew install azure-cli
+        ~/bin/brew install azure-cli
 
     - name: "check if kubelogin is installed"
       ansible.builtin.stat:
@@ -21,7 +21,7 @@
     - name: "install kubelogin"
       when: azure_cli_kubelogin_installed.stat.exists is false
       ansible.builtin.command: |
-        {{ homebrew_path }}/brew install azure-cli Azure/kubelogin/kubelogin
+        ~/bin/brew install azure-cli Azure/kubelogin/kubelogin
 
     - name: Add aliases
       ansible.builtin.lineinfile:

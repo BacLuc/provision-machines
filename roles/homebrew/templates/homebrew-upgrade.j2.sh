@@ -2,7 +2,7 @@
 
 set -e
 
-homebrew_bin="{{ homebrew_path }}/brew"
+homebrew_bin="/home/{{ user }}/bin/brew"
 user="{{ user }}"
 
 export NONINTERACTIVE=1
