@@ -129,6 +129,12 @@
         dest: "~/bin/zed"
         state: link
 
+    - name: Create zed config dir
+      ansible.builtin.file:
+        path: "~/.config/zed"
+        state: directory
+        mode: "u=rwx,go=rx"
+
     - name: provision zed config
       ansible.builtin.copy:
         content: |
