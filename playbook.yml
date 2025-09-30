@@ -67,6 +67,8 @@
             id: 906
           - url: https://extensions.gnome.org/extension-data/wsmatrixmartin.zurowietz.de.v23.shell-extension.zip
             id: 1485
+          - url: https://extensions.gnome.org/extension-data/unblanksun.wxggmail.com.v34.shell-extension.zip
+            id: 1414
         customize_gnome__skip_restart_gnome_shell: customize_gnome__skip_restart_gnome_shell | default(false)
     - role: gnome
       tags: gnome
