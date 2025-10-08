@@ -39,7 +39,7 @@ local:
     enable_ubuntu_cleanup: true
     enable_ubuntu_desktop: false
     enable_vagrant: true
-    enable_visual_studio_code: true
+    enable_visual_studio_code: false
     enable_vshn_tools: true
     enable_yazi: true
     enable_zed: false
