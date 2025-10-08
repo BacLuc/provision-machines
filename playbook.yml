@@ -114,7 +114,7 @@
 
     - role: ansible-role-visual-studio-code
       tags: visual-studio-code
-      when: enable_visula_studio_code | default(false)
+      when: enable_visual_studio_code | default(false)
 
     - role: basic_utils
       tags: basic_utils
