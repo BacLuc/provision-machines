@@ -151,6 +151,19 @@ local:
         user_name: "User"
         user_email: "user@domain.org"
 
+    ubuntu_desktop:
+      favorite_apps:
+        - desktop_file_name: ghostty_ghostty.desktop
+          shortcut: "<Super>z"
+        - desktop_file_name: firefox_firefox.desktop
+          shortcut: "<Super>u"
+        - desktop_file_name: phpstorm_phpstorm.desktop
+          shortcut: "<Super>i"
+        - desktop_file_name: dev.zed.Zed.desktop
+          shortcut: "<Super>o"
+        - desktop_file_name: gitclient.desktop
+          shortcut: "<Super>g"
+
     windows:
       enable: false
       # change user

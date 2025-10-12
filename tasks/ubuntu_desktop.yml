@@ -1,3 +1,31 @@
+- name: ubuntu_desktop print var
+  ansible.builtin.debug:
+    var: ubuntu_desktop
+
+- name: "set defaults for ubuntu_desktop role"
+  ansible.builtin.set_fact:
+    ubuntu_desktop_defaults:
+      # 10 allowed, 0-9
+      favorite_apps:
+        - desktop_file_name: ghostty_ghostty.desktop
+          shortcut: "<Super>z"
+        - desktop_file_name: firefox_firefox.desktop
+          shortcut: "<Super>u"
+        - desktop_file_name: phpstorm_phpstorm.desktop
+          shortcut: "<Super>i"
+        - desktop_file_name: dev.zed.Zed.desktop
+          shortcut: "<Super>o"
+        - desktop_file_name: gitclient.desktop
+          shortcut: "<Super>g"
+
+- name: "set facts for ubuntu_desktop role"
+  ansible.builtin.set_fact:
+    ubuntu_desktop: "{{ ubuntu_desktop_defaults | combine((ubuntu_desktop | default({})), recursive=true) }}"
+
+- name: ubuntu_desktop print var
+  ansible.builtin.debug:
+    var: ubuntu_desktop
+
 - name: Install psutil that is needed for dconf module below
   become: true
   ansible.builtin.apt:
@@ -8,10 +36,27 @@
   ansible.builtin.apt:
     name: xfce4-terminal
 
-- name: define all gnome favorite apps
-  community.general.dconf:
-    key: "/org/gnome/shell/favorite-apps"
-    value: "['firefox_firefox.desktop', 'ghostty_ghostty.desktop', 'dev.zed.Zed.desktop', 'gitclient.desktop', 'nemo.desktop']"
+- name: add shortcuts for apps
+  block:
+    - name: set favorite_apps_var
+      ansible.builtin.set_fact:
+        ubuntu_desktop_favorite_apps_value: '[''{{ (ubuntu_desktop.favorite_apps | map(attribute=''desktop_file_name'') | join("'',''")) }}'']'
+
+    - name: debug result of map
+      ansible.builtin.debug:
+        msg: "{{ ubuntu_desktop_favorite_apps_value }}"
+
+    - name: define all gnome favorite apps
+      community.general.dconf:
+        key: "/org/gnome/shell/favorite-apps"
+        value: "{{ ubuntu_desktop_favorite_apps_value }}"
+
+    - name: set keyboard shortcuts for favorite apps
+      ansible.builtin.command: 'gsettings set org.gnome.shell.keybindings switch-to-application-{{ index + 1 }} "{{ [item.shortcut] }}"'
+      loop: "{{ ubuntu_desktop.favorite_apps }}"
+      loop_control:
+        label: "Setting shortcut {{ item.shortcut }} for app {{ index + 1 }} ({{ item.desktop_file_name }})"
+        index_var: index
 
 - name: add german keyboard layouts
   community.general.dconf:
