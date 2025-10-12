@@ -149,6 +149,11 @@
         value: "['<Shift><Super>Up']"
         description: "add shortcut for moving window to monitor up"
 
+      - schema: "org.gnome.mutter.keybindings"
+        key: "switch-monitor"
+        value: "[]"
+        description: "Switch monitor"
+
 - name: set dconf shortcuts
   ansible.builtin.command: 'gsettings set "{{ item.schema }}" "{{ item.key }}" "{{ item.value }}"'
   loop: "{{ gnome_shortcuts }}"
