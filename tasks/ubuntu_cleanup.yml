@@ -1,4 +1,0 @@
-- name: Remove no more referenced packages
-  become: true
-  ansible.builtin.apt:
-    autoremove: true

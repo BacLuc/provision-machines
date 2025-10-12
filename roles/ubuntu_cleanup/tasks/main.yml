@@ -1,0 +1,7 @@
+- name: "ubuntu cleanup configuration"
+  when: enable_ubuntu_cleanup | default(true)
+  block:
+    - name: Remove no more referenced packages
+      become: true
+      ansible.builtin.apt:
+        autoremove: true

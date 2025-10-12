@@ -27,14 +27,7 @@
       ansible.builtin.set_fact:
         default_shell: /bin/zsh
       when: enable_zsh | default(false)
-    - name: Import basic setup tasks
-      ansible.builtin.import_tasks: tasks/basicsetup.yml
-      when: enable_basicsetup | default(false)
       tags: basicsetup
-    - name: Import ubuntu desktop tasks
-      ansible.builtin.import_tasks: tasks/ubuntu_desktop.yml
-      when: enable_ubuntu_desktop | default(false)
-      tags: ubuntu_desktop
     - name: Gather the package facts
       tags: always
       ansible.builtin.package_facts:
@@ -47,6 +40,9 @@
         creates: "{{ ansible.apt_list_file }}"
 
   roles:
+    - role: basicsetup
+      tags: basicsetup
+
     - role: backup_burp
       tags: backup_burp
 
@@ -144,6 +140,9 @@
     - role: snap
       tags: snap
 
+    - role: ubuntu_desktop
+      tags: ubuntu_desktop
+
     - role: vagrant
       tags: vagrant
 
@@ -162,7 +161,4 @@
     - role: sysctl
       tags: sysctl
 
-  post_tasks:
-    - name: Include ubuntu cleanup tasks
-      ansible.builtin.include_tasks: tasks/ubuntu_cleanup.yml
-      when: enable_ubuntu_cleanup | default(false)
+    - role: ubuntu_cleanup
