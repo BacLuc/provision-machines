@@ -183,3 +183,41 @@
             - { schema: "org.gnome.GPaste", key: "sync-clipboard-to-primary" }
             - { schema: "org.gnome.GPaste", key: "sync-primary-to-clipboard" }
             - { schema: "org.gnome.GPaste", key: "upload" }
+
+    - name: additional desktop files
+      when: ubuntu_desktop.enable_testing_browser_desktop | default(false)
+      block:
+        - name: create icons dir
+          ansible.builtin.file:
+            path: "~/.local/icons"
+            state: directory
+            owner: "{{ user }}"
+            group: "{{ user }}"
+            mode: "u=rwx,go=rx"
+
+        - name: add local testing browser
+          when: ubuntu_desktop.enable_testing_browser_desktop
+          block:
+            - name: add ecamp logo
+              ansible.builtin.copy:
+                src: ecamp.png
+                dest: "~/.local/icons/ecamp.png"
+                mode: "u=rw,go=rx"
+
+            - name: additional testing browser desktop file
+              ansible.builtin.copy:
+                content: |
+                  [Desktop Entry]
+                  Version=1.0
+                  Type=Application
+                  Name=Local testing
+                  GenericName=Browser
+                  StartupNotify=true
+                  Terminal=false
+                  Exec=env BAMF_DESKTOP_FILE_HINT=/home/{{ user }}/.local/share/applications/firefox-local-testing.desktop /snap/bin/firefox http://localhost:3000
+                  Icon=/home/{{ user }}/.local/icons/ecamp.png
+                  Categories=Browser;
+                  Keywords=browser;testing;
+
+                dest: "~/.local/share/applications/firefox-local-testing.desktop"
+                mode: "ug=rw,o=r"

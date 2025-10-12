@@ -152,6 +152,7 @@ local:
         user_email: "user@domain.org"
 
     ubuntu_desktop:
+      enable_testing_browser_desktop: true
       favorite_apps:
         - desktop_file_name: ghostty_ghostty.desktop
           shortcut: "<Super>z"
