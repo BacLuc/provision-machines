@@ -11,7 +11,7 @@
 - name: define all gnome favorite apps
   community.general.dconf:
     key: "/org/gnome/shell/favorite-apps"
-    value: "['nemo.desktop', 'chromium-browser.desktop', 'ghostty.desktop', 'code.desktop']"
+    value: "['firefox_firefox.desktop', 'ghostty_ghostty.desktop', 'dev.zed.Zed.desktop', 'gitclient.desktop', 'nemo.desktop']"
 
 - name: add german keyboard layouts
   community.general.dconf:
