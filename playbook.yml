@@ -71,6 +71,8 @@
             id: 1414
           - url: https://extensions.gnome.org/extension-data/tiling-assistantleleat-on-github.v48.shell-extension.zip
             id: 3733
+          - url: https://extensions.gnome.org/extension-data/switcherlandau.fi.v41.shell-extension.zip
+            id: 973
         customize_gnome__skip_restart_gnome_shell: customize_gnome__skip_restart_gnome_shell | default(false)
     - role: gnome
       tags: gnome
