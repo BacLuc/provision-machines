@@ -109,7 +109,7 @@
 
 - name: "check if zsh-autosuggestions file exists"
   ansible.builtin.stat:
-    path: "{{ homebrew_path }}/../share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+    path: "{{ homebrew_home }}/.linuxbrew/Homebrew/Cellar/zsh-autosuggestions"
   register: zsh_autosuggestions_exists
 
 - name: "add zsh-autosuggestions"
@@ -118,7 +118,7 @@
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: add zsh-autosuggestions"
     block: |
-      source $(~/bin/brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+      source $(~/bin/brew --prefix)/Homebrew/Cellar/zsh-autosuggestions
 
 - name: "add zsh-syntax-highlighting"
   ansible.builtin.blockinfile:
