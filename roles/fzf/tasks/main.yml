@@ -23,3 +23,18 @@
         block: |
           FZF_DEFAULT_OPTS="--tmux"
           source <(fzf --zsh)
+
+    - name: Add aliases
+      ansible.builtin.lineinfile:
+        dest: "~/.bash_aliases"
+        line: "{{ item.line }}"
+        regexp: "{{ item.regexp }}"
+        state: present
+        insertafter: EOF
+        create: true
+        mode: "u+rw"
+      with_items:
+        - {
+            regexp: "^alias goto=",
+            line: "alias goto='cd $(find ~ -type d | fzf)'",
+          }
