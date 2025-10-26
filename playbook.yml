@@ -146,6 +146,9 @@
     - role: vagrant
       tags: vagrant
 
+    - role: vifm
+      tags: vifm
+
     - role: vshn_tools
       tags: vshn_tools
 
@@ -154,9 +157,6 @@
 
     - role: fzf
       tags: fzf
-
-    - role: yazi
-      tags: yazi
 
     - role: sysctl
       tags: sysctl

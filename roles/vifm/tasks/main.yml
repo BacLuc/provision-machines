@@ -1,0 +1,41 @@
+- name: Install vifm
+  when: enable_vifm | default(false)
+  block:
+    - name: Install vifm apt package
+      become: true
+      ansible.builtin.package:
+        name:
+          - vifm
+
+    - name: Provision vifmrc
+      ansible.builtin.copy:
+        content: |
+          only
+        dest: "~/vifmrc"
+        owner: "{{ user }}"
+        mode: "u=rw,go=r"
+
+    - name: store vicd function in var
+      ansible.builtin.set_fact:
+        vifm_vicd: |
+          vicd() {
+              local dst="$(command vifm --choose-dir - "$@")"
+              if [ -z "$dst" ]; then
+                  echo 'Directory picking cancelled/failed'
+                  return 1
+              fi
+              cd "$dst"
+          }
+
+    - name: Add vicd command to bash
+      ansible.builtin.blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: vicd"
+        block: "{{ vifm_vicd }}"
+
+    - name: Add vicd command to zsh
+      when: enable_zsh | default(false)
+      ansible.builtin.blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: vicd"
+        block: "{{ vifm_vicd }}"

@@ -1,9 +1,0 @@
-- name: install yazi
-  when: enable_yazi | default(false)
-  block:
-    - name: install yazi package
-      become: true
-      community.general.snap:
-        name:
-          - yazi
-        classic: true
