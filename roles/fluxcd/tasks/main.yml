@@ -1,0 +1,13 @@
+- name: "Fluxcd role"
+  when: enable_fluxcd | default(false)
+  block:
+    - name: setup flux cli alias
+      ansible.builtin.blockinfile:
+        path: "~/.bash_aliases"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: flux cli alias"
+        block: |
+          alias flux='docker run --rm -it \
+            --user $UID \
+            --volume $KUBECONFIG:/kubeconfig \
+            --entrypoint=sh \
+            ghcr.io/fluxcd/flux-cli:${FLUX_CLI_VERSION:-v2.7.2}'

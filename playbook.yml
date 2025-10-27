@@ -99,6 +99,9 @@
     - role: flatpak
       tags: flatpak
 
+    - role: fluxcd
+      tags: fluxcd
+
     - role: php_development
       tags: php_development
 

@@ -22,6 +22,7 @@ local:
     enable_basicsetup: true
     enable_backup_burp: false
     enable_fzf: true
+    enable_fluxcd: true
     enable_hashicorp_vault_cli: true
     enable_homebrew: true
     enable_customize_gnome: false
