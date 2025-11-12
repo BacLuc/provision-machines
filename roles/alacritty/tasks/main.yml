@@ -1,0 +1,48 @@
+- name: Install Alacritty
+  when: enable_alacritty | default(false)
+  block:
+    - name: "set defaults for backup_alacritty role"
+      ansible.builtin.set_fact:
+        backup_alacritty_defaults:
+          font_size: 12
+
+    - name: "set facts for backup_alacritty role"
+      ansible.builtin.set_fact:
+        alacritty: "{{ backup_alacritty_defaults | combine((alacritty | default({})), recursive=true) }}"
+
+    - name: backup_alacritty print var
+      ansible.builtin.debug:
+        var: alacritty
+
+    - name: install alacritty
+      become: true
+      ansible.builtin.apt:
+        name: alacritty
+        state: present
+
+    - name: Create Alacritty config directory
+      ansible.builtin.file:
+        path: "~/.config/alacritty"
+        state: directory
+        mode: "0755"
+
+    - name: Download Catppuccin Mocha theme
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/catppuccin/alacritty/f6cb5a5c2b404cdaceaff193b9c52317f62c62f7/catppuccin-mocha.toml
+        dest: "~/.config/alacritty/catppuccin-mocha.toml"
+        mode: "0644"
+
+    - name: Provision Alacritty config
+      ansible.builtin.copy:
+        content: |
+          import = [
+            "~/.config/alacritty/catppuccin-mocha.toml"
+          ]
+
+          [font]
+          size = {{ alacritty.font_size }}
+
+          [window]
+          startup_mode = "Maximized"
+        dest: "~/.config/alacritty/alacritty.toml"
+        mode: "0644"

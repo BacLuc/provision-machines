@@ -40,6 +40,9 @@
         creates: "{{ ansible.apt_list_file }}"
 
   roles:
+    - role: alacritty
+      tags: alacritty
+
     - role: basicsetup
       tags: basicsetup
 

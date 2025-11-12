@@ -16,6 +16,7 @@ local:
       enable: true
       provision_daemon_json: false
     enable_ansible_ppa: true
+    enable_alacritty: true
     enable_azure_cli: false
     enable_displaylink_driver: false
     enable_bash: true
@@ -153,6 +154,8 @@ local:
 
     ubuntu_desktop:
       favorite_apps:
+        - desktop_file_name: Alacritty.desktop
+          shortcut: "<Super>z"
         - desktop_file_name: firefox_firefox.desktop
           shortcut: "<Super>u"
         - desktop_file_name: phpstorm_phpstorm.desktop
