@@ -396,29 +396,21 @@
         dest: "~/bin/flutter"
         mode: "u=rwx,go=rx"
 
-- name: install ghostty
-  when: basic_utils.enable_ghostty | default(false)
+- name: remove ghostty
+  when: basic_utils.remove_ghostty | default(true)
   block:
     - name: install ghostty snap
       become: true
       community.general.snap:
         name:
           - ghostty
-        classic: true
+        state: absent
 
     - name: create ghostty config dir
       ansible.builtin.file:
         path: "~/.config/ghostty/"
-        state: directory
+        state: absent
         mode: "u=rwx,go=rx"
-
-    - name: provision config
-      ansible.builtin.copy:
-        content: |
-          font-size={{ ghostty.font_size }}
-          maximize=true
-        dest: "~/.config/ghostty/config"
-        mode: "0644"
 
 - name: nvm
   when: basic_utils.enable_nvm | default(false)

@@ -108,7 +108,6 @@ local:
       enable_direnv: true
       enable_cinc: true
       enable_flutter: true
-      enable_ghostty: true
       enable_go: true
       enable_java: true
       enable_keepassxc: false
@@ -154,8 +153,6 @@ local:
 
     ubuntu_desktop:
       favorite_apps:
-        - desktop_file_name: ghostty_ghostty.desktop
-          shortcut: "<Super>z"
         - desktop_file_name: firefox_firefox.desktop
           shortcut: "<Super>u"
         - desktop_file_name: phpstorm_phpstorm.desktop

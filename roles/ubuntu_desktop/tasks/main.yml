@@ -16,8 +16,6 @@
           enable_testing_browser_desktop: false
           # 10 allowed, 0-9
           favorite_apps:
-            - desktop_file_name: ghostty_ghostty.desktop
-              shortcut: "<Super>z"
             - desktop_file_name: firefox_firefox.desktop
               shortcut: "<Super>u"
             - desktop_file_name: phpstorm_phpstorm.desktop
