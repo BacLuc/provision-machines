@@ -175,7 +175,7 @@
       when: "not kubectl_helm_chartsnap_file_stats.stat.exists or kubectl_helm_chartsnap_file_stats.stat.checksum != kubectl_helm_chartsnap_checksum"
       ansible.builtin.shell: |
         helm plugin uninstall chartsnap || true
-        helm plugin install --version 0.6.0 https://github.com/jlandowner/helm-chartsnap
+        helm plugin install --version 0.6.0 https://github.com/jlandowner/helm-chartsnap --verify=false
 
 - name: install helm-diff
   block:
@@ -199,7 +199,7 @@
       when: "not kubectl_helm_diff_file_stats.stat.exists or kubectl_helm_diff_file_stats.stat.checksum != kubectl_helm_diff_checksum"
       ansible.builtin.shell: |
         helm plugin uninstall diff || true
-        helm plugin install --version 3.12.5 https://github.com/databus23/helm-diff
+        helm plugin install --version 3.12.5 https://github.com/databus23/helm-diff --verify=false
 
 - name: install kubectl-neat
   ansible.builtin.include_role:
