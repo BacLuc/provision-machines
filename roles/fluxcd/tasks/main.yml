@@ -9,10 +9,13 @@
           alias flux='docker run --rm -it \
             --user $UID \
             --volume $KUBECONFIG:/kubeconfig \
-            ghcr.io/fluxcd/flux-cli:${FLUX_CLI_VERSION:-v2.2.3} --kubeconfig=kubeconfig'
+            --volume $PWD:/workspace \
+            --workdir $PWD:/workspace \
+            ghcr.io/fluxcd/flux-cli:${FLUX_CLI_VERSION:-v2.2.3} --kubeconfig=/kubeconfig'
 
           alias fluxa='docker run --rm -it \
             --user $UID \
             --volume $KUBECONFIG:/kubeconfig \
-            --entrypoint=sh \
-            ghcr.io/fluxcd/flux-cli:${FLUX_CLI_VERSION:-v2.2.3} --kubeconfig=kubeconfig --as cluster-admin'
+            --volume $PWD:/workspace \
+            --workdir $PWD:/workspace \
+            ghcr.io/fluxcd/flux-cli:${FLUX_CLI_VERSION:-v2.2.3} --kubeconfig=/kubeconfig --as cluster-admin'
