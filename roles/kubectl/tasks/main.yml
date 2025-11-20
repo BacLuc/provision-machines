@@ -86,14 +86,14 @@
     mode: "u+rw"
   with_items:
     - { regexp: "^alias k=", line: "alias k=kubectl" }
-    - { regexp: "^alias ka=", line: "alias ka='kubectl --as cluster-admin'" }
+    - { regexp: "^alias ka=", line: 'alias ka=''kubectl --as "system:admin"''' }
     - {
         regexp: "^alias kn=",
         line: 'alias kn=''f() { [ "$1" ] && kubectl config set-context --current --namespace $1 || kubectl config view --minify | grep namespace | cut -d" " -f6 ; } ; f''',
       }
     - {
         regexp: "^alias helma=",
-        line: "alias helma='helm --kube-as-user cluster-admin'",
+        line: 'alias helma=''helm --kube-as-user "system:admin"''',
       }
     - {
         regexp: "^alias kgworld=",
@@ -101,7 +101,7 @@
       }
     - {
         regexp: "^alias kagworld=",
-        line: 'alias kagworld=''kubectl --as cluster-admin get $(kubectl api-resources --verbs=list --namespaced -o name | paste -sd ",")''',
+        line: 'alias kagworld=''kubectl --as "system:admin" get $(kubectl api-resources --verbs=list --namespaced -o name | paste -sd ",")''',
       }
 
 - name: install k9s
@@ -120,7 +120,7 @@
     create: true
     mode: "u+rw"
   with_items:
-    - { regexp: "^alias k9sa=", line: "alias k9sa='k9s --as cluster-admin'" }
+    - { regexp: "^alias k9sa=", line: 'alias k9sa=''k9s --as "system:admin"''' }
 
 - name: install oidc_plugin
   when: kubectl.enable_oidc_plugin | default(false)
