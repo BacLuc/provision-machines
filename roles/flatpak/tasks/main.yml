@@ -9,6 +9,7 @@
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 - name: install flatpaks
+  when: flatpaks != None
   community.general.flatpak:
     name: "{{ flatpaks | default([]) }}"
 
