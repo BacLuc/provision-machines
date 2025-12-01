@@ -155,6 +155,9 @@
     - role: vifm
       tags: vifm
 
+    - role: vshn_emergency_credentials_receive
+      tags: vshn_emergency_credentials_receive
+
     - role: vshn_tools
       tags: vshn_tools
 

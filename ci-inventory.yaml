@@ -43,6 +43,7 @@ local:
     enable_vagrant: true
     enable_vifm: true
     enable_visual_studio_code: false
+    enable_vshn_emergency_credentials_receive: true
     enable_vshn_tools: true
     enable_zed: false
     enable_zsh: true

@@ -1,0 +1,30 @@
+- name: Setup emergency-receive script
+  when: enable_vshn_emergency_credentials_receive | default(false)
+  block:
+    - name: vshn_emergency_credentials_receive print var
+      ansible.builtin.debug:
+        var: vshn_emergency_credentials_receive
+
+    - name: set defaults for vshn_emergency_credentials_receive role
+      ansible.builtin.set_fact:
+        vshn_emergency_credentials_receive_defaults:
+          vshn_emergency_credentials_receive_version: 1.2.1
+          vshn_emergency_credentials_receive_checksum: 60eff914cb5e4b8771dd8606ba1b324e3183000c1a0fd91fa4ae2c82ad788afc
+
+    - name: set facts for vshn_emergency_credentials_receive role
+      ansible.builtin.set_fact:
+        vshn_emergency_credentials_receive: "{{ vshn_emergency_credentials_receive_defaults | combine((vshn_emergency_credentials_receive | default({})), recursive=true) }}"
+
+    - name: ensure ~/bin directory exists
+      ansible.builtin.file:
+        path: "~/bin"
+        state: directory
+        mode: "u=rwx,go=rx"
+
+    - name: install emergency-credentials-receive
+      ansible.builtin.include_role:
+        name: github_release_binary
+      vars:
+        url: "https://github.com/vshn/emergency-credentials-receive/releases/download/v{{ vshn_emergency_credentials_receive.vshn_emergency_credentials_receive_version }}/emergency-credentials-receive_linux_amd64"
+        binary_name: emergency-credentials-receive
+        binary_checksum: "{{ vshn_emergency_credentials_receive.vshn_emergency_credentials_receive_checksum }}"
