@@ -208,3 +208,11 @@
     url: "https://github.com/itaysk/kubectl-neat/releases/download/v2.0.4/kubectl-neat_linux_amd64.tar.gz"
     binary_name: kubectl-neat
     binary_checksum: "8dc3086fa8e7f5390f35a0b257566af478575ae3cc0d5b4614fbebbee5f35352"
+
+- name: install kubectl-capacity
+  ansible.builtin.include_role:
+    name: github_release_binary
+  vars:
+    url: "https://github.com/robscott/kube-capacity/releases/download/v0.8.0/kube-capacity_v0.8.0_linux_x86_64.tar.gz"
+    binary_name: kube-capacity
+    binary_checksum: "test"
