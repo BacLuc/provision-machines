@@ -32,6 +32,24 @@
         dest: "{{ update_packages_script.dir }}/ollama-upgrade"
         mode: "u=rwx,go=rx"
 
+    - name: Add OLLAMA_VULKAN environment variable
+      become: true
+      ansible.builtin.lineinfile:
+        path: "/etc/systemd/system/ollama.service"
+        line: 'Environment="OLLAMA_VULKAN=1"'
+        insertafter: '^Environment="PATH=.*"$'
+        state: present
+        backup: true
+      register: ollama_systemd_changed
+
+    - name: Daemon-reload and restart ollama service
+      become: true
+      when: ollama_systemd_changed.changed
+      ansible.builtin.systemd_service:
+        name: ollama.service
+        daemon_reload: true
+        state: restarted
+
     - name: create models directory
       become: true
       ansible.builtin.file:
