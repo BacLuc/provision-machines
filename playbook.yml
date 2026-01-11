@@ -111,6 +111,9 @@
     - role: jetbrains_gitclient
       tags: jetbrains_gitclient
 
+    - role: lazygit
+      tags: lazygit
+
     - role: ollama
       tags: ollama
 

@@ -35,6 +35,7 @@ local:
     enable_ollama: false
     enable_tmux: true
     enable_kubectl: true
+    enable_lazygit: true
     enable_nvim: false
     enable_php_development: true
     enable_sysctl: true
