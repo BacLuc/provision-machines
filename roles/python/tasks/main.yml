@@ -52,8 +52,9 @@
         mode: "u=rwx,go=rx"
 
     - name: Create Python virtual environments
-      ansible.builtin.command: |
+      ansible.builtin.shell: |
         python -m venv ~/pyenv/{{ item }}
+        chmod +x ~/pyenv/{{ item }}/bin/activate
       args:
         creates: "~/pyenv/{{ item }}/bin/activate"
       loop: "{{ extract(container=basic_utils, input='python', morekeys=['enabled']) | default([]) }}"
@@ -61,8 +62,9 @@
         label: "Creating venv at {{ item }}"
 
     - name: Create Python virtual environments
-      ansible.builtin.command: |
+      ansible.builtin.shell: |
         python -m venv ~/pyenv/{{ item }}
+        chmod +x ~/pyenv/{{ item }}/bin/activate
       args:
         creates: "~/pyenv/{{ item }}/bin/activate"
       loop: "{{ python.venvs }}"
