@@ -1,0 +1,19 @@
+# this role is meant to be used as dependency and must not be enabled by itself
+- name: set facts
+  ansible.builtin.set_fact:
+    cleanup_scripts:
+      dir: /usr/local/bin/cleanup_scripts.d
+
+- name: "create cleanup scripts folder"
+  become: true
+  ansible.builtin.file:
+    path: "{{ cleanup_scripts.dir }}"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: "create cleanup script"
+  become: true
+  ansible.builtin.copy:
+    src: cleanup-script.sh
+    dest: /usr/local/bin/cleanup-script
+    mode: "u=rwx,go=rx"
