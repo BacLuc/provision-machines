@@ -38,6 +38,7 @@ local:
     enable_lazygit: true
     enable_nvim: false
     enable_php_development: true
+    enable_python: true
     enable_sysctl: true
     enable_ubuntu_cleanup: true
     enable_ubuntu_desktop: false
@@ -153,6 +154,9 @@ local:
       config:
         user_name: "User"
         user_email: "user@domain.org"
+
+    python:
+      venvs: []
 
     ubuntu_desktop:
       favorite_apps:

@@ -459,58 +459,6 @@
         dest: "{{ update_packages_script.dir }}/nvm-upgrade"
         mode: "u=rwx,go=rx"
 
-- name: Setup python
-  when: basic_utils.python.enable | default(false)
-  block:
-    - name: Ensure python3 is installed
-      become: true
-      ansible.builtin.package:
-        name:
-          - python3
-          - python3-venv
-
-    - name: Add python3 to update-alternatives if it doesn't exist
-      become: true
-      ansible.builtin.command: |
-        update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-      args:
-        creates: /etc/alternatives/python # This checks if the alternative link exists
-      register: python_alternative_added
-      changed_when: python_alternative_added.rc == 0
-      failed_when: python_alternative_added.rc != 0 and "alternative python already exists" not in python_alternative_added.stderr
-
-    - name: Check current default python alternative
-      become: true
-      ansible.builtin.shell: |
-        update-alternatives --query python | grep 'current link' | awk '{print $NF}'
-      # noinspection YAMLIncompatibleTypes
-      changed_when: false
-      register: current_python_link
-
-    - name: Set python3 as the default python alternative
-      become: true
-      ansible.builtin.command: |
-        update-alternatives --set python /usr/bin/python3
-      when: current_python_link.stdout != "/usr/bin/python3"
-      register: python_default_set
-      changed_when: python_default_set.rc == 0
-
-    - name: setup pyenv dir
-      when: basic_utils.enable_ssh_config_dir | default(false)
-      ansible.builtin.file:
-        path: "~/pyenv"
-        state: directory
-        mode: "u=rwx,go=rx"
-
-    - name: Create Python virtual environments
-      ansible.builtin.command: |
-        python -m venv ~/pyenv/{{ item }}
-      args:
-        creates: "~/pyenv/{{ item }}/bin/activate"
-      loop: "{{ basic_utils.python.venvs }}"
-      loop_control:
-        label: "Creating venv at {{ item }}"
-
 - name: enable openvpn file import for network manager
   when: basic_utils.enable_openvpn_config_import_network_manager | default(false)
   become: true

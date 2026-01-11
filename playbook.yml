@@ -46,6 +46,9 @@
     - role: basicsetup
       tags: basicsetup
 
+    - role: python
+      tags: python
+
     - role: backup_burp
       tags: backup_burp
 
