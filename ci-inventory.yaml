@@ -37,6 +37,7 @@ local:
     enable_kubectl: true
     enable_lazygit: true
     enable_nvim: false
+    enable_nvm: true
     enable_php_development: true
     enable_python: true
     enable_sysctl: true
@@ -115,7 +116,6 @@ local:
       enable_go: true
       enable_java: true
       enable_keepassxc: false
-      enable_nvm: true
       enable_openvpn_config_import_network_manager: true
       enable_rambox: true
       enable_signal: true

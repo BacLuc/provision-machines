@@ -111,6 +111,9 @@
     - role: php_development
       tags: php_development
 
+    - role: nvm
+      tags: nvm
+
     - role: lazygit
       tags: lazygit
 

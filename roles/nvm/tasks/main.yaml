@@ -1,0 +1,46 @@
+- name: nvm
+  when: (extract(container=basic_utils, input='enable_nvm') | default(false)) or (enable_nvm | default(false))
+  block:
+    - name: check if nvm is already installed
+      ansible.builtin.stat:
+        path: ~/.nvm
+      register: basic_utils__nvm
+
+    - name: setup nvm # noqa command-instead-of-module
+      when: basic_utils__nvm.stat.exists is false
+      ansible.builtin.shell: |
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+
+    - name: add nvm to path for bash
+      ansible.builtin.blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add nvm to PATH"
+        block: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+    - name: add nvm to path for zsh
+      when: enable_zsh | default(false)
+      ansible.builtin.blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add nvm to PATH"
+        block: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+    - name: add script to update nvm
+      become: true
+      ansible.builtin.copy:
+        content: |
+          #!/bin/sh
+          set -e
+
+          user="{{ user }}"
+          nvm_version=v0.40.3
+
+          su "$user" -c "git -C /home/{{ user }}/.nvm fetch --tags"
+          su "$user" -c "git -C /home/{{ user }}/.nvm reset --hard $nvm_version"
+        dest: "{{ update_packages_script.dir }}/nvm-upgrade"
+        mode: "u=rwx,go=rx"
