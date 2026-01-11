@@ -1,0 +1,18 @@
+# This role is meant to be used as dependency to setup pytest
+
+- name: Set python_cleanup_scripts facts
+  ansible.builtin.set_fact:
+    python_cleanup_scripts:
+      venv: "cleanup_scripts"
+
+- name: Create Python virtual environments
+  ansible.builtin.shell: |
+    python -m venv ~/pyenv/{{ python_cleanup_scripts.venv }}
+    chmod +x ~/pyenv/{{ python_cleanup_scripts.venv }}/bin/activate
+  args:
+    creates: "~/pyenv/{{ python_cleanup_scripts.venv }}/bin/activate"
+
+- name: Install pytest
+  ansible.builtin.shell:
+    cmd: |
+      ~/pyenv/{{ python_cleanup_scripts.venv }}/bin/python -m pip install --upgrade pytest==9.0.2
