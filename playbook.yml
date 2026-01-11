@@ -108,9 +108,6 @@
     - role: php_development
       tags: php_development
 
-    - role: jetbrains_gitclient
-      tags: jetbrains_gitclient
-
     - role: lazygit
       tags: lazygit
 
