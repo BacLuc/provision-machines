@@ -18,3 +18,8 @@
         url: "https://github.com/jesseduffield/lazygit/releases/download/v{{ lazygit.lazygit_version }}/lazygit_{{ lazygit.lazygit_version }}_Linux_x86_64.tar.gz"
         binary_name: lazygit
         binary_checksum: "{{ lazygit.lazygit_checksum }}"
+
+    - name: install wl-clipboard
+      become: true
+      ansible.builtin.package:
+        name: wl-clipboard
