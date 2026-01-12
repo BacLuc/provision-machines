@@ -8,8 +8,8 @@
     - name: set defaults for ollama role
       ansible.builtin.set_fact:
         ollama_defaults:
-          ollama_version: 0.13.1
-          model: mistral:7b
+          ollama_version: 0.13.4
+          model: qwen2.5:3b
 
     - name: set facts for ollama role
       ansible.builtin.set_fact:
@@ -36,11 +36,14 @@
       become: true
       ansible.builtin.lineinfile:
         path: "/etc/systemd/system/ollama.service"
-        line: 'Environment="OLLAMA_VULKAN=1"'
+        line: "{{ item.line }}"
         insertafter: '^Environment="PATH=.*"$'
         state: present
         backup: true
       register: ollama_systemd_changed
+      with_items:
+        - { line: 'Environment="OLLAMA_VULKAN=1"' }
+        - { line: 'Environment="OLLAMA_CONTEXT_LENGTH=16000"' }
 
     - name: Daemon-reload and restart ollama service
       become: true
