@@ -66,3 +66,20 @@
 
         dest: "{{ cleanup_scripts.dir }}/cleanup-node-modules"
         mode: "u=rwx,go=rx"
+
+    - name: add node versions cleanup script
+      become: true
+      ansible.builtin.copy:
+        content: |
+          #!/bin/sh
+
+          root=/home/{{ user }}/.nvm/versions/node/
+          for nm_dir in $(find $root \
+            -type d -name node_modules \
+            -atime "-100"); do
+            du -h -d0 $nm_dir
+            rm -rf $nm_dir
+          done
+
+        dest: "{{ cleanup_scripts.dir }}/cleanup-node-versions"
+        mode: "u=rwx,go=rx"
