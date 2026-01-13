@@ -44,3 +44,25 @@
           su "$user" -c "git -C /home/{{ user }}/.nvm reset --hard $nvm_version"
         dest: "{{ update_packages_script.dir }}/nvm-upgrade"
         mode: "u=rwx,go=rx"
+
+    - name: add node_modules cleanup script
+      become: true
+      ansible.builtin.copy:
+        content: |
+          #!/bin/sh
+
+          cleanup_node_modules() {
+              root=$1
+              for nm_dir in $(find $root \
+                -type d -name node_modules \
+                -atime "-21" \
+                | grep -E -v '.*/node_modules/.*/node_modules(/|$)'); do
+                du -h -d0 $nm_dir
+                rm -rf $nm_dir
+              done
+          }
+
+          cleanup_node_modules /home/{{ user }}/projects
+
+        dest: "{{ cleanup_scripts.dir }}/cleanup-node-modules"
+        mode: "u=rwx,go=rx"
