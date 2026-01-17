@@ -75,8 +75,9 @@
 
           root=/home/{{ user }}/.nvm/versions/node/
           for nm_dir in $(find $root \
-            -type d -name node_modules \
-            -atime "-100"); do
+            -mindepth 1 -maxdepth 1 \
+            -type d \
+            -atime "+200"); do
             du -h -d0 $nm_dir
             rm -rf $nm_dir
           done
