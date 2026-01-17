@@ -55,7 +55,7 @@
               root=$1
               for nm_dir in $(find $root \
                 -type d -name node_modules \
-                -atime "-21" \
+                -atime "+21" \
                 | grep -E -v '.*/node_modules/.*/node_modules(/|$)'); do
                 du -h -d0 $nm_dir
                 rm -rf $nm_dir
