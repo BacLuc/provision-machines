@@ -42,7 +42,7 @@
         backup: true
       register: ollama_systemd_changed
       with_items:
-        - { line: 'Environment="OLLAMA_VULKAN=1"' }
+        - { line: 'Environment="OLLAMA_VULKAN=0"' }
         - { line: 'Environment="OLLAMA_CONTEXT_LENGTH=16000"' }
 
     - name: Daemon-reload and restart ollama service
