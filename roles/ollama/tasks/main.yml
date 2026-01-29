@@ -8,7 +8,7 @@
     - name: set defaults for ollama role
       ansible.builtin.set_fact:
         ollama_defaults:
-          ollama_version: 0.13.4
+          ollama_version: 0.15.2
           model: qwen2.5:3b
 
     - name: set facts for ollama role
