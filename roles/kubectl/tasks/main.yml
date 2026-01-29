@@ -216,3 +216,11 @@
     url: "https://github.com/robscott/kube-capacity/releases/download/v0.8.0/kube-capacity_v0.8.0_linux_x86_64.tar.gz"
     binary_name: kube-capacity
     binary_checksum: "test"
+
+- name: install kubectl-modify-secret
+  ansible.builtin.include_role:
+    name: github_release_binary
+  vars:
+    url: "https://github.com/rajatjindal/kubectl-modify-secret/releases/download/v0.0.47/kubectl-modify-secret_v0.0.47_linux_amd64.tar.gz"
+    binary_name: kubectl-modify_secret
+    binary_checksum: "be5a7fd276a35da9dfb1fd558a44245c111a787dd05d42d80ca9d6ece02107e5"
