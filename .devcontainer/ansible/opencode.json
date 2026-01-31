@@ -1,0 +1,35 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": {
+        "baseURL": "http://172.28.0.1:11434/v1"
+      },
+      "models": {
+        "gpt-oss:20b-mmap": {
+          "name": "gpt-oss:20b-mmap"
+        },
+        "qwen2.5:3b": {
+          "name": "qwen2.5:3b"
+        },
+        "qwen2.5:3b-mmap": {
+          "name": "qwen2.5:3b-mmap"
+        },
+        "ministral-3:3b": {
+          "name": "ministral-3:3b"
+        },
+        "mistral:7b-mmap": {
+          "name": "mistral:7b-mmap"
+        },
+        "gpt-oss:20b": {
+          "name": "gpt-oss:20b"
+        },
+        "mistral:7b": {
+          "name": "mistral:7b"
+        }
+      }
+    }
+  }
+}
