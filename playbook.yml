@@ -5,6 +5,9 @@
       dir: /usr/local/bin/update-script.d
 
   pre_tasks:
+    - name: check that become-pass works
+      become: true
+      ansible.builtin.shell: test "$(whoami)" = "root" || exit 1
     - name: Get user
       tags: always
       ansible.builtin.command: whoami
