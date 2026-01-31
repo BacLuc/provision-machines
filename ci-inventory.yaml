@@ -33,6 +33,7 @@ local:
     enable_jetbrains_gitclient: false
     enable_okular: false
     enable_ollama: false
+    enable_openwebui: true
     enable_tmux: true
     enable_kubectl: true
     enable_lazygit: true

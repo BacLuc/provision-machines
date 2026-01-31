@@ -120,6 +120,9 @@
     - role: ollama
       tags: ollama
 
+    - role: openwebui
+      tags: openwebui
+
     - role: okular
       tags: okular
       when: enable_okular | default(false)

@@ -1,0 +1,44 @@
+---
+- name: install openwebui
+  when: enable_openwebui | default(false)
+  block:
+    - name: set compose project directory
+      ansible.builtin.set_fact:
+        openwebui_compose_project_dir: "{{ openwebui_compose_project_dir | default(ansible_env.HOME + '/openwebui') }}"
+
+    - name: create docker volume
+      become: true
+      ansible.builtin.command:
+        cmd: docker volume create open-webui
+        creates: /var/lib/docker/volumes/open-webui
+
+    - name: create compose project directory
+      ansible.builtin.file:
+        path: "{{ openwebui_compose_project_dir }}"
+        state: directory
+        mode: "u=rwx,go=rx"
+
+    - name: deploy docker-compose.yml
+      ansible.builtin.copy:
+        src: docker-compose.yml
+        dest: "{{ openwebui_compose_project_dir }}/docker-compose.yml"
+        mode: "u=rw,go=r"
+      register: openwebui_docker_compose_file
+
+    - name: deploy systemd service file
+      become: true
+      ansible.builtin.template:
+        src: openwebui.service.j2
+        dest: /etc/systemd/system/openwebui.service
+        mode: "0644"
+        validate: systemd-analyze verify %s
+      register: openwebui_systemd_file
+
+    - name: enable and start openwebui service
+      when: openwebui_systemd_file.changed or openwebui_docker_compose_file.changed
+      become: true
+      ansible.builtin.systemd_service:
+        name: openwebui
+        daemon_reload: true
+        enabled: true
+        state: restarted
