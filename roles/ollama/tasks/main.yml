@@ -43,7 +43,7 @@
       register: ollama_systemd_changed
       with_items:
         - { line: 'Environment="OLLAMA_VULKAN=0"' }
-        - { line: 'Environment="OLLAMA_CONTEXT_LENGTH=16000"' }
+        - { line: 'Environment="OLLAMA_CONTEXT_LENGTH=32000"' }
         - { line: 'Environment="OLLAMA_KEEP_ALIVE=1"' }
 
     - name: Daemon-reload and restart ollama service
