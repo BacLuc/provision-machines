@@ -1,0 +1,12 @@
+table inet ollama_filter {
+    chain input {
+        type filter hook input priority 10; policy accept;
+
+        iif "lo" tcp dport 11434 accept
+
+        iifname "docker*" tcp dport 11434 accept
+        iifname "br-*" tcp dport 11434 accept
+
+        tcp dport 11434 drop
+    }
+}

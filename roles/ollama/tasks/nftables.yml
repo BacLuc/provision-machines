@@ -1,0 +1,42 @@
+- name: Install nftables
+  become: true
+  ansible.builtin.apt:
+    name: nftables
+    state: present
+
+- name: Create nftables.conf.d directory
+  become: true
+  ansible.builtin.file:
+    path: /etc/nftables.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy nftables configuration for ollama to conf.d
+  become: true
+  ansible.builtin.template:
+    src: nftables-ollama.conf.j2
+    dest: /etc/nftables.conf.d/ollama.conf
+    owner: root
+    group: root
+    mode: "0644"
+  register: nftables_ollama_file
+
+- name: Ensure nftables includes conf.d directory
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/nftables.conf
+    line: 'include "/etc/nftables.conf.d/*.conf"'
+    state: present
+    backup: true
+  register: nftables_root_file
+
+- name: Ensure nftables service is enabled and running
+  when: nftables_root_file.changed or nftables_ollama_file.changed
+  become: true
+  ansible.builtin.systemd:
+    name: nftables
+    daemon_reload: true
+    enabled: true
+    state: started

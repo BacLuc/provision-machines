@@ -45,6 +45,7 @@
         - { line: 'Environment="OLLAMA_VULKAN=0"' }
         - { line: 'Environment="OLLAMA_CONTEXT_LENGTH=32000"' }
         - { line: 'Environment="OLLAMA_KEEP_ALIVE=1"' }
+        - { line: 'Environment="OLLAMA_HOST=0.0.0.0:11434"' }
 
     - name: Daemon-reload and restart ollama service
       become: true
@@ -79,3 +80,6 @@
     - name: run the model
       when: ollama_model_mmap_file.changed
       ansible.builtin.command: ollama run {{ ollama.model }}-mmap
+
+    - name: Include nftables tasks
+      ansible.builtin.include_tasks: nftables.yml
