@@ -96,3 +96,11 @@
     mode: "u+rw"
   with_items:
     - { regexp: "^alias dc=", line: "alias dc='docker compose'" }
+
+- name: Copy docker cleanup script to cleanup scripts directory
+  become: true
+  ansible.builtin.copy:
+    src: docker-cleanup.sh
+    dest: "{{ cleanup_scripts.dir }}/docker-cleanup"
+    mode: "u=rwx,go=rx"
+  when: cleanup_scripts.dir is defined
