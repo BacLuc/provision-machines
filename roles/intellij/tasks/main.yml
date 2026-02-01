@@ -1,0 +1,43 @@
+---
+- name: Create local bin directory
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.local/bin"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: Copy VM settings script
+  ansible.builtin.copy:
+    src: apply-vm-settings.sh
+    dest: "{{ ansible_env.HOME }}/.local/bin/apply-vm-settings.sh"
+    mode: "u=rwx,go=rx"
+
+- name: Create systemd user config directory
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.config/systemd/user"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: Copy systemd service file
+  ansible.builtin.copy:
+    src: intellij-vm-settings.service
+    dest: "{{ ansible_env.HOME }}/.config/systemd/user/intellij-vm-settings.service"
+    mode: "u=rw,go=r"
+
+- name: Reload systemd user daemon
+  ansible.builtin.systemd:
+    scope: user
+    daemon_reload: true
+
+- name: Enable intellij-vm-settings service
+  ansible.builtin.systemd:
+    name: intellij-vm-settings
+    scope: user
+    enabled: true
+    state: started
+
+- name: Run script once to apply settings immediately
+  ansible.builtin.command:
+    cmd: "{{ ansible_env.HOME }}/.local/bin/apply-vm-settings.sh"
+  register: script_result
+  changed_when: script_result.rc == 0
+  failed_when: false
