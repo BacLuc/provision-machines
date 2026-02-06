@@ -171,6 +171,8 @@ local:
           shortcut: "<Super>o"
         - desktop_file_name: gitclient.desktop
           shortcut: "<Super>g"
+        # - desktop_file_name: rocketchat-desktop_rocketchat-desktop.desktop
+        #   shortcut: "<Super>c"
 
     windows:
       enable: false
@@ -207,6 +209,7 @@ local:
         # - add zulu8-jdk
     snaps:
       - rclone
+      # - rocketchat-desktop
 
     zed:
       enable_helm_support: true
