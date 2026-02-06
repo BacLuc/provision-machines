@@ -162,14 +162,14 @@ local:
     ubuntu_desktop:
       favorite_apps:
         - desktop_file_name: Alacritty.desktop
-          shortcut: "<Super>z"
+          shortcut: "<Super>y"
         - desktop_file_name: firefox_firefox.desktop
-          shortcut: "<Super>u"
-        - desktop_file_name: phpstorm_phpstorm.desktop
-          shortcut: "<Super>i"
+          shortcut: "<Super>x"
+        - desktop_file_name: intellij-idea-ultimate_intellij-idea-ultimate.desktop
+          shortcut: "<Super>"
         - desktop_file_name: dev.zed.Zed.desktop
-          shortcut: "<Super>o"
-        - desktop_file_name: gitclient.desktop
+          shortcut: "<Super>f"
+        - desktop_file_name: vivaldi_vivaldi-stable.desktop
           shortcut: "<Super>g"
         # - desktop_file_name: rocketchat-desktop_rocketchat-desktop.desktop
         #   shortcut: "<Super>c"
