@@ -144,6 +144,7 @@ local:
 
     flatpaks:
       # - io.missioncenter.MissionCenter
+      # - chat.rocket.RocketChat
 
     motd:
       enable_disk_usage: false
@@ -171,7 +172,7 @@ local:
           shortcut: "<Super>f"
         - desktop_file_name: vivaldi_vivaldi-stable.desktop
           shortcut: "<Super>g"
-        # - desktop_file_name: rocketchat-desktop_rocketchat-desktop.desktop
+        # - desktop_file_name: chat.rocket.RocketChat.desktop
         #   shortcut: "<Super>c"
 
     windows:
@@ -209,7 +210,6 @@ local:
         # - add zulu8-jdk
     snaps:
       - rclone
-      # - rocketchat-desktop
 
     zed:
       enable_helm_support: true
