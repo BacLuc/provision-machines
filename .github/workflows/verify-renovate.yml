@@ -2,25 +2,7 @@ name: Verify Renovate Dependencies
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "renovate.json"
-      - ".github/renovate-snapshot.yaml"
-      - "scripts/update-renovate-snapshot.sh"
-      - "**/tasks/main.yml"
-      - "**/docker-compose.yml"
-      - "compose.yaml"
-      - "requirements.yml"
   pull_request:
-    branches: [main]
-    paths:
-      - "renovate.json"
-      - ".github/renovate-snapshot.yaml"
-      - "scripts/update-renovate-snapshot.sh"
-      - "**/tasks/main.yml"
-      - "**/docker-compose.yml"
-      - "compose.yaml"
-      - "requirements.yml"
   workflow_dispatch:
     inputs:
       update_snapshot:
@@ -31,10 +13,9 @@ on:
 
 jobs:
   verify-renovate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Install yq
         run: |
