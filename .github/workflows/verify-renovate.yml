@@ -1,0 +1,63 @@
+name: Verify Renovate Dependencies
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "renovate.json"
+      - ".github/renovate-snapshot.yaml"
+      - "scripts/update-renovate-snapshot.sh"
+      - "**/tasks/main.yml"
+      - "**/docker-compose.yml"
+      - "compose.yaml"
+      - "requirements.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "renovate.json"
+      - ".github/renovate-snapshot.yaml"
+      - "scripts/update-renovate-snapshot.sh"
+      - "**/tasks/main.yml"
+      - "**/docker-compose.yml"
+      - "compose.yaml"
+      - "requirements.yml"
+  workflow_dispatch:
+    inputs:
+      update_snapshot:
+        description: "Update the snapshot file"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  verify-renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          chmod a+x /usr/local/bin/yq
+
+      - name: Validate renovate.json
+        run: |
+          docker run --rm -v "$PWD":/workspace renovate/renovate:latest \
+            renovate-config-validator /workspace/renovate.json
+
+      - name: Check dependencies against snapshot
+        if: ${{ !inputs.update_snapshot }}
+        run: |
+          ./scripts/update-renovate-snapshot.sh --check
+
+      - name: Update snapshot (manual trigger)
+        if: ${{ inputs.update_snapshot }}
+        run: |
+          echo "Updating snapshot..."
+          ./scripts/update-renovate-snapshot.sh
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/renovate-snapshot.yaml
+          git commit -m "chore: update renovate dependency snapshot [skip ci]" || echo "No changes to commit"
+          git push
