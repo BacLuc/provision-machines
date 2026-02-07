@@ -105,6 +105,9 @@
       tags: docker
       when: docker.enable | default(false)
 
+    - role: intellij
+      tags: intellij
+
     - role: flatpak
       tags: flatpak
 
