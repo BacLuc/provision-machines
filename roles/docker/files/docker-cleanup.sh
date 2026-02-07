@@ -100,24 +100,23 @@ done < <(
 
     # Check if container was run from this image recently
     last_used=0
-    while IFS= read -r container_info; do
-      [ -z "$container_info" ] && continue
-      cid=$(echo "$container_info" | cut -d'|' -f1)
-      finished=$(echo "$container_info" | cut -d'|' -f2)
-      if [ "$finished" -gt "$last_used" ]; then
-        last_used=$finished
-      fi
-    done < <(docker ps -a --filter "ancestor=$id" --format "{{.ID}}|{{.FinishedAt}}" | while IFS= read -r line; do
-      cid=$(echo "$line" | cut -d'|' -f1)
-      finished_str=$(echo "$line" | cut -d'|' -f2)
-      # Convert to timestamp
-      if [ -n "$finished_str" ] && [ "$finished_str" != "0001-01-01T00:00:00Z" ]; then
-        finished=$(date -u -d "$finished_str" +%s 2>/dev/null || echo "0")
+    while IFS= read -r cid; do
+      [ -z "$cid" ] && continue
+      # Get container state and timestamps
+      state=$(docker inspect "$cid" --format '{{.State.Status}}' 2>/dev/null || echo "")
+      if [ "$state" = "running" ]; then
+        finished=$(docker inspect "$cid" --format '{{.State.StartedAt}}' 2>/dev/null || echo "0")
       else
-        finished="0"
+        finished=$(docker inspect "$cid" --format '{{.State.FinishedAt}}' 2>/dev/null || echo "0")
       fi
-      echo "$cid|$finished"
-    done)
+      # Convert to timestamp
+      if [ -n "$finished" ] && [ "$finished" != "0001-01-01T00:00:00Z" ]; then
+        finished_ts=$(date -u -d "$finished" +%s 2>/dev/null || echo "0")
+        if [ "$finished_ts" -gt "$last_used" ]; then
+          last_used=$finished_ts
+        fi
+      fi
+    done < <(docker ps -a --filter "ancestor=$id" --format "{{.ID}}" 2>/dev/null)
 
     # If no container was found, use the image creation time
     if [ "$last_used" = "0" ]; then
