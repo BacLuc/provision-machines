@@ -3,28 +3,41 @@
   "extends": ["config:base"],
   "regexManagers": [
     {
-      "fileMatch": ["^roles/.*/tasks/main\\.yml$"],
+      "fileMatch": [
+        "^roles/.*/tasks/main\\.yml$",
+        "^roles/.*/tasks/main\\.yaml$"
+      ],
       "matchStrings": [
         "(?<depName>[a-z0-9_-]+)_version:\\s*['\"]?(?<currentValue>v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)['\"]?"
       ],
       "datasourceTemplate": "github-releases"
     },
     {
-      "fileMatch": ["^roles/.*/tasks/main\\.yml$"],
+      "fileMatch": [
+        "^roles/.*/tasks/main\\.yml$",
+        "^roles/.*/tasks/main\\.yaml$"
+      ],
       "matchStrings": [
         "https://github\\.com/(?<depName>[^/]+/[^/]+)/releases/download/(?<currentValue>v[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)/"
       ],
       "datasourceTemplate": "github-releases"
     },
     {
-      "fileMatch": ["^roles/.*/tasks/main\\.yml$"],
+      "fileMatch": [
+        "^roles/.*/tasks/main\\.yml$",
+        "^roles/.*/tasks/main\\.yaml$"
+      ],
       "matchStrings": [
         "helm plugin install --version\\s+(?<currentValue>[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)\\s+https://github\\.com/(?<depName>[^/]+/[^/]+)"
       ],
       "datasourceTemplate": "github-releases"
     },
     {
-      "fileMatch": ["^.*docker-compose\\.yml$", "^compose\\.yaml$"],
+      "fileMatch": [
+        "^.*docker-compose\\.yml$",
+        "^compose\\.yaml$",
+        "^roles/.*/files/docker-compose\\.yml$"
+      ],
       "matchStrings": [
         "image:\\s*['\"]?(?<depName>[^:]+):(?<currentValue>[\\w.-]+)['\"]?"
       ],
@@ -36,12 +49,149 @@
         "src:\\s*['\"]?https://github\\.com/(?<depName>[^/]+/[^/]+)\\.git['\"]?\\s+version:\\s*['\"]?(?<currentValue>[a-z0-9]+)['\"]?"
       ],
       "datasourceTemplate": "git-refs"
+    },
+    {
+      "fileMatch": ["^ci-inventory\\.yaml$"],
+      "matchStrings": [
+        "client_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?.*?cinc.*?docker.*?tag:\\s*['\"]?(?<currentValue2>[\\w.-]+)['\"]?"
+      ],
+      "depNameTemplate": "cincproject/cinc",
+      "datasourceTemplate": "docker",
+      "autoReplaceStringTemplate": "client_version: '{{{currentValue}}}'\n    cinc:\n      image: cincproject/cinc:{{{newValue}}}"
+    },
+    {
+      "fileMatch": ["^ci-inventory\\.yaml$"],
+      "matchStrings": [
+        "java_(?<major>\\d+)_version:\\s*['\"]?(?<currentValue>[\\d.-]+)['\"]?"
+      ],
+      "depNameTemplate": "adoptium/temurin{{{major}}}-bin",
+      "datasourceTemplate": "docker"
+    },
+    {
+      "fileMatch": ["^ci-inventory\\.yaml$"],
+      "matchStrings": [
+        "maven_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"
+      ],
+      "depNameTemplate": "apache/maven",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": ["^ci-inventory\\.yaml$"],
+      "matchStrings": [
+        "gradle_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"
+      ],
+      "depNameTemplate": "gradle/gradle",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": ["^playbook\\.yml$"],
+      "matchStrings": [
+        "version:\\s*['\"]?(?<currentValue>v[0-9]+)['\"]?.*?https://extensions\\.gnome\\.org/extension/(?<depName>[0-9]+)/"
+      ],
+      "datasourceTemplate": "gnome-extension"
+    },
+    {
+      "fileMatch": [
+        "^roles/.*/tasks/main\\.yml$",
+        "^roles/.*/tasks/main\\.yaml$"
+      ],
+      "matchStrings": [
+        "nvm_version:\\s*['\"]?(?<currentValue>v[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)['\"]?"
+      ],
+      "depNameTemplate": "nvm-sh/nvm",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": [
+        "^roles/.*/tasks/main\\.yml$",
+        "^roles/.*/tasks/main\\.yaml$"
+      ],
+      "matchStrings": [
+        "ollama_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"
+      ],
+      "depNameTemplate": "ollama/ollama",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": [
+        "^roles/.*/tasks/main\\.yml$",
+        "^roles/.*/tasks/main\\.yaml$"
+      ],
+      "matchStrings": ["php_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"],
+      "depNameTemplate": "php/php-src",
+      "datasourceTemplate": "github-tags",
+      "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+).*$",
+      "extractVersionTemplate": "^php-(?<version>.*)$"
+    },
+    {
+      "fileMatch": [
+        "^roles/.*/tasks/main\\.yml$",
+        "^roles/.*/tasks/main\\.yaml$"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\w+) depName=(?<depName>[^\\s]+).*\\n.*tag:\\s*['\"]?(?<currentValue>[\\w.-]+)['\"]?"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
+      "fileMatch": ["^\\.devcontainer/.*Dockerfile$"],
+      "matchStrings": ["FROM\\s+(?<depName>[^:]+):(?<currentValue>[^\\s]+)"],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "fileMatch": ["^\\.devcontainer/.*Dockerfile$"],
+      "matchStrings": [
+        "ENV\\s+[^_]+_VERSION\\s+['\"]?(?<currentValue>v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)['\"]?.*?https://github\\.com/(?<depName2>[^/]+/[^/]+)"
+      ],
+      "depNameTemplate": "{{{depName2}}}",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": ["^\\.devcontainer/.*Dockerfile$"],
+      "matchStrings": [
+        "ENV\\s+NVM_VERSION\\s+['\"]?(?<currentValue>v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)['\"]?"
+      ],
+      "depNameTemplate": "nvm-sh/nvm",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": ["^\\.devcontainer/.*Dockerfile$"],
+      "matchStrings": [
+        "ENV\\s+NODE_VERSION\\s+['\"]?(?<currentValue>\\d+)['\"]?"
+      ],
+      "depNameTemplate": "nodejs/node",
+      "datasourceTemplate": "github-tags",
+      "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+).*?$",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "fileMatch": ["^\\.devcontainer/devcontainer\\.json$"],
+      "matchStrings": [
+        "\"version\":\\s*['\"]?(?<currentValue>\\d+)['\"]?.*?\"id\":\\s*['\"]?(?<depName>[^'\"]+)['\"]?"
+      ],
+      "datasourceTemplate": "devcontainer-feature"
     }
   ],
   "packageRules": [
     {
       "matchDepTypes": ["github-releases"],
       "extractVersion": "^v?(?<version>.*)$"
+    },
+    {
+      "matchDatasources": ["docker"],
+      "versioning": "loose"
+    },
+    {
+      "matchDepNames": ["cincproject/cinc"],
+      "versioning": "regex:^(?<major>\\d+)(?:\\.(?<minor>\\d+))?$"
+    },
+    {
+      "matchDepNames": ["nodejs/node"],
+      "extractVersion": "^v?(?<version>.*)$"
+    },
+    {
+      "matchDepNames": ["php/php-src"],
+      "extractVersion": "^php-(?<version>.*)$"
     }
   ]
 }

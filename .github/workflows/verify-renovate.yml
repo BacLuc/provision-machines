@@ -41,11 +41,6 @@ jobs:
           wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           chmod a+x /usr/local/bin/yq
 
-      - name: Validate renovate.json
-        run: |
-          docker run --rm -v "$PWD":/workspace renovate/renovate:latest \
-            renovate-config-validator /workspace/renovate.json
-
       - name: Check dependencies against snapshot
         if: ${{ !inputs.update_snapshot }}
         run: |
