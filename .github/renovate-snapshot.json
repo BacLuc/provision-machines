@@ -1,0 +1,19 @@
+[
+  "actions/checkout",
+  "actions/setup-python",
+  "actions/cache",
+  "docker/setup-qemu-action",
+  "docker/login-action",
+  "gantsign/workflows",
+  "lazygit",
+  "ollama",
+  "vshn_emergency_credentials_receive",
+  "appcat_cli",
+  "k8ify",
+  "itaysk/kubectl-neat",
+  "robscott/kube-capacity",
+  "rajatjindal/kubectl-modify-secret",
+  "jlandowner/helm-chartsnap --verify=false\n\n- name: install helm-diff\n  block:\n    - name: set helm-diff facts\n      ansible.builtin.set_fact:\n        kubectl_helm_diff_path: ~",
+  "databus23/helm-diff --verify=false\n\n- name: install kubectl-neat\n  ansible.builtin.include_role:\n    name: github_release_binary\n  vars:\n    url: \"https:",
+  "ollama/ollama"
+]
