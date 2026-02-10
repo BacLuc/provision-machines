@@ -1,0 +1,17 @@
+- name: Ensure NVM is installed
+  import_role:
+    name: nvm
+
+- name: Install devcontainer-cli via npm globally
+  npm:
+    name: '@devcontainers/cli'
+    global: yes
+    state: present
+
+- name: Add alias for devcontainer-cli in user's bashrc
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: "alias devcontainer='devcontainer up {{ ansible_env.HOME }}/.dotfiles'"
+    create: yes
+    state: present
+    marker: "# {mark} ANSIBLE devcontainer alias"

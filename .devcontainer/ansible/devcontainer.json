@@ -1,37 +1,37 @@
 {
   "name": "Ansible & OpenCode Development",
   "build": {
-    "dockerfile": "Dockerfile",
-    "context": "."
+    "dockerfile": "./ansible/Dockerfile",
+    "context": "./ansible",
   },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       "enableNonRootDocker": "true",
-      "moby": "false"
+      "moby": "false",
     },
     "ghcr.io/devcontainers/features/common-utils:1": {
-      "configureZsh": true
-    }
+      "configureZsh": true,
+    },
   },
   "customizations": {
     "vscode": {
       "extensions": [
         "redhat.ansible",
         "ms-azuretools.vscode-docker",
-        "ms-vscode-remote.remote-containers"
-      ]
-    }
+        "ms-vscode-remote.remote-containers",
+      ],
+    },
   },
   "mounts": [
     {
       "source": "${localWorkspaceFolder}/.devcontainer/ansible/opencode.json",
       "target": "/home/vscode/.config/opencode/opencode.json",
-      "type": "bind"
-    }
+      "type": "bind",
+    },
   ],
   "remoteUser": "vscode",
   "containerEnv": {
-    "OPENTAI_CONFIG_PATH": "/home/vscode/.opencode.json"
-  }
+    "OPENTAI_CONFIG_PATH": "/home/vscode/.opencode.json",
+  },
 }
