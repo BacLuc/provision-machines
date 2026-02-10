@@ -174,6 +174,8 @@ local:
           shortcut: "<Super>g"
         # - desktop_file_name: chat.rocket.RocketChat.desktop
         #   shortcut: "<Super>c"
+        # - desktop_file_name: thunderbird_thunderbird.desktop
+        #   shortcut: "<Super><Alt>c"
 
     windows:
       enable: false
