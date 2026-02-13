@@ -18,6 +18,12 @@
         state: directory
         mode: "u=rwx,go=rx"
 
+    - name: copy searngx directory
+      ansible.builtin.copy:
+        src: searngx/
+        dest: "{{ openwebui_compose_project_dir }}/searngx"
+        mode: "u=rwx,go=rx"
+
     - name: deploy docker-compose.yml
       ansible.builtin.copy:
         src: docker-compose.yml
