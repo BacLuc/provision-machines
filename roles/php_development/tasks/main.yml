@@ -3,6 +3,7 @@
   block:
     - name: set php version
       ansible.builtin.set_fact:
+        # renovate: datasource=github-tags depName=php/php-src
         php_version: "{{ php_version | default('8.4.10') }}"
         php_versions_to_delete: []
 
