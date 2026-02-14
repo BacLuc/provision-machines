@@ -24,7 +24,9 @@ check_snapshot() {
 }
 
 generate_snapshot() {
-    docker run --rm -e LOG_LEVEL=info -e LOG_FORMAT=json -v $PWD:/workspace -w /workspace renovate/renovate --platform=local 2>/tmp/renovate-err.log | jq 'select(.level==40) | .githubDeps'
+    # Use DEBUG level to get packageFiles with docker dependencies
+    docker run --rm -e LOG_LEVEL=debug -e LOG_FORMAT=json -v "$PWD:/workspace" -w /workspace renovate/renovate --platform=local 2>/tmp/renovate-err.log | jq -s \
+        '(map(select(.level==40)) | first).githubDeps as $githubDeps | [((map(select(.msg == "packageFiles with updates")) | first | .config.dockerfile[].deps[].depName) // null)] as $dockerDeps | ($githubDeps + $dockerDeps) | unique'
 }
 
 # Main script logic

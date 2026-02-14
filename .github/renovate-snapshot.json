@@ -1,16 +1,17 @@
 [
   "actions/checkout",
-  "itaysk/kubectl-neat",
-  "robscott/kube-capacity",
-  "rajatjindal/kubectl-modify-secret",
-  "jlandowner/helm-chartsnap",
   "databus23/helm-diff",
+  "itaysk/kubectl-neat",
   "jesseduffield/lazygit",
+  "jlandowner/helm-chartsnap",
+  "mcr.microsoft.com/devcontainers/base",
+  "nodejs/node",
+  "nvm-sh/nvm",
   "ollama/ollama",
   "php/php-src",
-  "vshn/emergency-credentials-receive",
+  "rajatjindal/kubectl-modify-secret",
+  "robscott/kube-capacity",
   "vshn/appcat-cli",
-  "vshn/k8ify",
-  "nvm-sh/nvm",
-  "nodejs/node"
+  "vshn/emergency-credentials-receive",
+  "vshn/k8ify"
 ]
