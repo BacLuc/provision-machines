@@ -13,7 +13,8 @@
     {
       "fileMatch": [
         "^roles/.*/tasks/main\\.yml$",
-        "^roles/.*/tasks/main\\.yaml$"
+        "^roles/.*/tasks/main\\.yaml$",
+        "^\\.devcontainer/.*Dockerfile$"
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+).*\\n\\s+[^:]+:\\s*['\"]?(?<currentValue>[\\w.-]+)['\"]?"
