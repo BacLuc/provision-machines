@@ -44,6 +44,10 @@ are in a single variable in the ansible task file.
 ```yaml
 # renovate: datasource=docker depName=node
 tag: "24.13.0"
+
+ollama_defaults:
+  # renovate: datasource=github-releases depName=ollama/ollama
+  ollama_version: "0.15.2"
 ```
 
 use `./scripts/update-renovate-snapshot.sh` to check if the dependency can be extracted,
