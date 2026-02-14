@@ -76,10 +76,6 @@
       "extractVersion": "^v?(?<version>.*)$"
     },
     {
-      "matchDatasources": ["docker"],
-      "versioning": "loose"
-    },
-    {
       "matchDepNames": ["cincproject/cinc"],
       "versioning": "regex:^(?<major>\\d+)(?:\\.(?<minor>\\d+))?$"
     },
