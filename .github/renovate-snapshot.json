@@ -10,5 +10,7 @@
   "php/php-src",
   "vshn/emergency-credentials-receive",
   "vshn/appcat-cli",
-  "vshn/k8ify"
+  "vshn/k8ify",
+  "nvm-sh/nvm",
+  "nodejs/node"
 ]

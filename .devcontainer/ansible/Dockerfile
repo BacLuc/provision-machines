@@ -1,3 +1,4 @@
+# renovate: datasource=docker depName=mcr.microsoft.com/devcontainers/base
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
@@ -13,10 +14,14 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 USER vscode
 
 ENV NVM_DIR=/home/vscode/.nvm
+# renovate: datasource=github-releases depName=nvm-sh/nvm
+ENV NVM_VERSION=0.40.0
+# renovate: datasource=github-tags depName=nodejs/node
+ENV NODE_VERSION=24
 
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash && \
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash && \
     . /home/vscode/.nvm/nvm.sh && \
-    nvm install 24 && \
+    nvm install ${NODE_VERSION} && \
     npm install -g opencode-ai
 
 USER root

@@ -13,11 +13,17 @@
     {
       "fileMatch": [
         "^roles/.*/tasks/main\\.yml$",
-        "^roles/.*/tasks/main\\.yaml$",
-        "^\\.devcontainer/.*Dockerfile$"
+        "^roles/.*/tasks/main\\.yaml$"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+).*\\n\\s+[^:]+:\\s*['\"]?(?<currentValue>[\\w.-]+)['\"]?"
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\n\\s+[a-zA-Z_][a-zA-Z0-9_]*:[^'\"]*['\"]?(?<currentValue>[\\w.-]+)['\"]?"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
+      "fileMatch": ["^\\.devcontainer/.*Dockerfile$"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\nENV\\s+[a-zA-Z_][a-zA-Z0-9_]*=(?<currentValue>[\\w.-]+)"
       ],
       "datasourceTemplate": "{{{datasource}}}"
     },
