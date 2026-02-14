@@ -24,3 +24,27 @@ It may be that not everything works because you are in a container.
 
 Every commit has to pass:
 docker compose run --rm prettier && docker compose run --rm ansible-lint && docker compose run --rm yamllint.
+
+## Renovate
+
+Renovate must be able to update all dependencies.
+For that we use a regex pattern where we have the renovate instructions in a comment above, and all versions
+are in a single variable in the ansible task file.
+
+```json
+{
+  "customType": "regex",
+  "managerFilePatterns": ["/^.*.ya?ml/"],
+  "matchStrings": [
+    "renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)?\\s.*tag: \"(?<currentValue>.*)\"\\s"
+  ]
+}
+```
+
+```yaml
+# renovate: datasource=docker depName=node
+tag: "24.13.0"
+```
+
+use `./scripts/update-renovate-snapshot.sh` to check if the dependency can be extracted,
+and update the snapshot if you changed something where a dependency is used, or if you changed renovate.json.
