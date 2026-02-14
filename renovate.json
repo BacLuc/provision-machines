@@ -9,16 +9,6 @@
         "^roles/.*/tasks/main\\.yaml$"
       ],
       "matchStrings": [
-        "(?<depName>[a-z0-9_-]+)_version:\\s*['\"]?(?<currentValue>v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)['\"]?"
-      ],
-      "datasourceTemplate": "github-releases"
-    },
-    {
-      "fileMatch": [
-        "^roles/.*/tasks/main\\.yml$",
-        "^roles/.*/tasks/main\\.yaml$"
-      ],
-      "matchStrings": [
         "https://github\\.com/(?<depName>[^/]+/[^/]+)/releases/download/(?<currentValue>v[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)/"
       ],
       "datasourceTemplate": "github-releases"
@@ -107,17 +97,6 @@
         "^roles/.*/tasks/main\\.yml$",
         "^roles/.*/tasks/main\\.yaml$"
       ],
-      "matchStrings": [
-        "ollama_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"
-      ],
-      "depNameTemplate": "ollama/ollama",
-      "datasourceTemplate": "github-releases"
-    },
-    {
-      "fileMatch": [
-        "^roles/.*/tasks/main\\.yml$",
-        "^roles/.*/tasks/main\\.yaml$"
-      ],
       "matchStrings": ["php_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"],
       "depNameTemplate": "php/php-src",
       "datasourceTemplate": "github-tags",
@@ -131,6 +110,16 @@
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\w+) depName=(?<depName>[^\\s]+).*\\n.*tag:\\s*['\"]?(?<currentValue>[\\w.-]+)['\"]?"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
+      "fileMatch": [
+        "^roles/.*/tasks/main\\.yml$",
+        "^roles/.*/tasks/main\\.yaml$"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+).*\\n\\s+[^:]+:\\s*['\"]?(?<currentValue>[\\w.-]+)['\"]?"
       ],
       "datasourceTemplate": "{{{datasource}}}"
     },

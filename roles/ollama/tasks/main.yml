@@ -8,8 +8,9 @@
     - name: set defaults for ollama role
       ansible.builtin.set_fact:
         ollama_defaults:
-          ollama_version: 0.15.2
-          model: qwen2.5:3b
+          # renovate: datasource=github-releases depName=ollama/ollama
+          ollama_version: "0.15.2"
+          model: "qwen2.5:3b"
 
     - name: set facts for ollama role
       ansible.builtin.set_fact:
@@ -27,7 +28,7 @@
       ansible.builtin.copy:
         content: |
           if [ "$(ollama --version)" != "ollama version is {{ ollama.ollama_version }}" ]; then
-            curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION={{ ollama.ollama_version }} sh
+          curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION={{ ollama.ollama_version }} sh
           fi
         dest: "{{ update_packages_script.dir }}/ollama-upgrade"
         mode: "u=rwx,go=rx"

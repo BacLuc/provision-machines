@@ -4,7 +4,8 @@
     - name: set defaults for lazygit role
       ansible.builtin.set_fact:
         lazygit_defaults:
-          lazygit_version: 0.58.0
+          # renovate: datasource=github-releases depName=jesseduffield/lazygit
+          lazygit_version: "0.58.0"
           lazygit_checksum: 5c7c81884167cf38561c82704ec8783bcd199f484e6c63c781783f4f5a662a2a
 
     - name: set facts for lazygit role
