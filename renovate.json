@@ -9,16 +9,6 @@
         "^roles/.*/tasks/main\\.yaml$"
       ],
       "matchStrings": [
-        "https://github\\.com/(?<depName>[^/]+/[^/]+)/releases/download/(?<currentValue>v[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)/"
-      ],
-      "datasourceTemplate": "github-releases"
-    },
-    {
-      "fileMatch": [
-        "^roles/.*/tasks/main\\.yml$",
-        "^roles/.*/tasks/main\\.yaml$"
-      ],
-      "matchStrings": [
         "helm plugin install --version\\s+(?<currentValue>[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)\\s+https://github\\.com/(?<depName>[^/]+/[^/]+)"
       ],
       "datasourceTemplate": "github-releases"

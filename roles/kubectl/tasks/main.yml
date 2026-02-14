@@ -1,6 +1,12 @@
 - name: "set defaults for kubectl role"
   ansible.builtin.set_fact:
     kubectl_defaults:
+      # renovate: datasource=github-releases depName=itaysk/kubectl-neat
+      kubectl_neat_version: "2.0.4"
+      # renovate: datasource=github-releases depName=robscott/kube-capacity
+      kubectl_capacity_version: "0.8.0"
+      # renovate: datasource=github-releases depName=rajatjindal/kubectl-modify-secret
+      kubectl_modify_secret_version: "0.0.47"
       contex_management_part: |
         function ktx() {
           if [ $# -eq 0 ]; then
@@ -209,7 +215,7 @@
   ansible.builtin.include_role:
     name: github_release_binary
   vars:
-    url: "https://github.com/itaysk/kubectl-neat/releases/download/v2.0.4/kubectl-neat_linux_amd64.tar.gz"
+    url: "https://github.com/itaysk/kubectl-neat/releases/download/v{{ kubectl.kubectl_neat_version }}/kubectl-neat_linux_amd64.tar.gz"
     binary_name: kubectl-neat
     binary_checksum: "8dc3086fa8e7f5390f35a0b257566af478575ae3cc0d5b4614fbebbee5f35352"
 
@@ -217,7 +223,7 @@
   ansible.builtin.include_role:
     name: github_release_binary
   vars:
-    url: "https://github.com/robscott/kube-capacity/releases/download/v0.8.0/kube-capacity_v0.8.0_linux_x86_64.tar.gz"
+    url: "https://github.com/robscott/kube-capacity/releases/download/v{{ kubectl.kubectl_capacity_version }}/kube-capacity_v{{ kubectl.kubectl_capacity_version }}_linux_x86_64.tar.gz"
     binary_name: kube-capacity
     binary_checksum: "c4e49762110584b2efbf5d4b0c69f549ef86275ac2ee5343a99e7522d3b38ae8"
 
@@ -225,6 +231,6 @@
   ansible.builtin.include_role:
     name: github_release_binary
   vars:
-    url: "https://github.com/rajatjindal/kubectl-modify-secret/releases/download/v0.0.47/kubectl-modify-secret_v0.0.47_linux_amd64.tar.gz"
+    url: "https://github.com/rajatjindal/kubectl-modify-secret/releases/download/v{{ kubectl.kubectl_modify_secret_version }}/kubectl-modify-secret_v{{ kubectl.kubectl_modify_secret_version }}_linux_amd64.tar.gz"
     binary_name: kubectl-modify_secret
     binary_checksum: "be5a7fd276a35da9dfb1fd558a44245c111a787dd05d42d80ca9d6ece02107e5"
