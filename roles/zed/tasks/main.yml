@@ -25,6 +25,103 @@
           memory_monitor_cron_frequency: "*/5 * * * *"
           zed_config:
             {
+              "language_models":
+                {
+                  "openai_compatible":
+                    {
+                      "cortecs":
+                        {
+                          "api_url": "https://api.cortecs.ai/v1/",
+                          "available_models":
+                            [
+                              {
+                                "name": "devstral-2512",
+                                "max_tokens": 200000,
+                                "max_output_tokens": 32000,
+                                "max_completion_tokens": 200000,
+                                "capabilities":
+                                  {
+                                    "tools": true,
+                                    "images": false,
+                                    "parallel_tool_calls": false,
+                                    "prompt_cache_key": false,
+                                    "chat_completions": true,
+                                  },
+                              },
+                              {
+                                "name": "gpt-oss-120b",
+                                "max_tokens": 200000,
+                                "max_output_tokens": 32000,
+                                "max_completion_tokens": 200000,
+                                "capabilities":
+                                  {
+                                    "tools": true,
+                                    "images": false,
+                                    "parallel_tool_calls": false,
+                                    "prompt_cache_key": false,
+                                    "chat_completions": true,
+                                  },
+                              },
+                              {
+                                "name": "claude-opus4-5",
+                                "max_tokens": 200000,
+                                "max_output_tokens": 32000,
+                                "max_completion_tokens": 200000,
+                                "capabilities":
+                                  {
+                                    "tools": true,
+                                    "images": false,
+                                    "parallel_tool_calls": true,
+                                    "prompt_cache_key": false,
+                                    "chat_completions": true,
+                                  },
+                              },
+                              {
+                                "name": "qwen3-next-80b-a3b-thinking",
+                                "max_tokens": 200000,
+                                "max_output_tokens": 32000,
+                                "max_completion_tokens": 200000,
+                                "capabilities":
+                                  {
+                                    "tools": true,
+                                    "images": false,
+                                    "parallel_tool_calls": false,
+                                    "prompt_cache_key": false,
+                                    "chat_completions": true,
+                                  },
+                              },
+                              {
+                                "name": "kimi-k2-thinking",
+                                "max_tokens": 200000,
+                                "max_output_tokens": 32000,
+                                "max_completion_tokens": 200000,
+                                "capabilities":
+                                  {
+                                    "tools": true,
+                                    "images": false,
+                                    "parallel_tool_calls": false,
+                                    "prompt_cache_key": false,
+                                    "chat_completions": true,
+                                  },
+                              },
+                              {
+                                "name": "qwen3-coder-30b-a3b-instruct",
+                                "max_tokens": 200000,
+                                "max_output_tokens": 32000,
+                                "max_completion_tokens": 200000,
+                                "capabilities":
+                                  {
+                                    "tools": true,
+                                    "images": false,
+                                    "parallel_tool_calls": false,
+                                    "prompt_cache_key": false,
+                                    "chat_completions": true,
+                                  },
+                              },
+                            ],
+                        },
+                    },
+                },
               "agent":
                 {
                   "default_model":
@@ -101,6 +198,7 @@
                     },
                   "yaml-language-server":
                     {
+                      "enabled": false,
                       "settings":
                         { "yaml": { "format": { "singleQuote": true } } },
                     },
