@@ -4,17 +4,6 @@
   "ignorePaths": ["**/.ansible/**", "**/node_modules/**"],
   "regexManagers": [
     {
-      "fileMatch": [
-        "^.*docker-compose\\.yml$",
-        "^compose\\.yaml$",
-        "^roles/.*/files/docker-compose\\.yml$"
-      ],
-      "matchStrings": [
-        "image:\\s*['\"]?(?<depName>[^:]+):(?<currentValue>[\\w.-]+)['\"]?"
-      ],
-      "datasourceTemplate": "docker"
-    },
-    {
       "fileMatch": ["^playbook\\.yml$"],
       "matchStrings": [
         "version:\\s*['\"]?(?<currentValue>v[0-9]+)['\"]?.*?https://extensions\\.gnome\\.org/extension/(?<depName>[0-9]+)/"
