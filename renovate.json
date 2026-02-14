@@ -28,11 +28,6 @@
       "datasourceTemplate": "{{{datasource}}}"
     },
     {
-      "fileMatch": ["^\\.devcontainer/.*Dockerfile$"],
-      "matchStrings": ["FROM\\s+(?<depName>[^:]+):(?<currentValue>[^\\s]+)"],
-      "datasourceTemplate": "docker"
-    },
-    {
       "fileMatch": ["^\\.devcontainer/devcontainer\\.json$"],
       "matchStrings": [
         "\"version\":\\s*['\"]?(?<currentValue>\\d+)['\"]?.*?\"id\":\\s*['\"]?(?<depName>[^'\"]+)['\"]?"
