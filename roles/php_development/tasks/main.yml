@@ -1,10 +1,15 @@
 - name: Install phpenv
   when: enable_php_development | default(false)
   block:
-    - name: set php version
+    - name: set defaults for php_development role
       ansible.builtin.set_fact:
-        # renovate: datasource=github-tags depName=php/php-src
-        php_version: "{{ php_version | default('8.4.10') }}"
+        php_development_defaults:
+          # renovate: datasource=github-tags depName=php/php-src
+          php_version: "8.4.10"
+
+    - name: set facts for php_development role
+      ansible.builtin.set_fact:
+        php_version: "{{ php_development_defaults.php_version }}"
         php_versions_to_delete: []
 
     - name: install phpenv package

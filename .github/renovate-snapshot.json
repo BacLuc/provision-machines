@@ -7,6 +7,7 @@
   "databus23/helm-diff",
   "jesseduffield/lazygit",
   "ollama/ollama",
+  "php/php-src",
   "vshn/emergency-credentials-receive",
   "vshn/appcat-cli",
   "vshn/k8ify"
