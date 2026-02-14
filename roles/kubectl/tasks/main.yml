@@ -192,7 +192,7 @@
         kubectl_helm_diff_path: ~/.local/share/helm/plugins/helm-diff/bin/diff
         kubectl_helm_diff_checksum: e3800f74f6271ded023fdf4cee56f8b314bbef3c20d360625610031349f4b63c
         # renovate: datasource=github-releases depName=databus23/helm-diff
-        helm_diff_version: "3.12.5"
+        helm_diff_version: "3.15.0"
 
     - name: try to get checksum of helm-diff
       ansible.builtin.stat:
