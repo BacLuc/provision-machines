@@ -30,6 +30,7 @@ local:
     enable_git_tools: true
     git_graphical_tools: false
     enable_jetbrains_gitclient: false
+    enable_jetbrains: true
     enable_okular: false
     enable_ollama: false
     enable_openwebui: true

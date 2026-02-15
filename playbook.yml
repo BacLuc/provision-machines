@@ -130,6 +130,9 @@
       tags: okular
       when: enable_okular | default(false)
 
+    - role: intellij
+      tags: intellij
+
     - role: ansible-role-visual-studio-code
       tags: visual-studio-code
       when: enable_visual_studio_code | default(false)
