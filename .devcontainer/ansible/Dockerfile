@@ -17,7 +17,7 @@ ENV NVM_DIR=/home/vscode/.nvm
 # renovate: datasource=github-releases depName=nvm-sh/nvm
 ENV NVM_VERSION=0.40.0
 # renovate: datasource=github-tags depName=nodejs/node
-ENV NODE_VERSION=24
+ENV NODE_VERSION=25.6.1
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash && \
     . /home/vscode/.nvm/nvm.sh && \
