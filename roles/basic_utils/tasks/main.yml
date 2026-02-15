@@ -304,19 +304,6 @@
     bash -c "source ~/.sdkman/bin/sdkman-init.sh; sdk install {{ item }}"
   loop: "{{ basic_utils.sdkman }}"
 
-- name: setup cinc-client alias
-  when: basic_utils.enable_cinc | default(false)
-  ansible.builtin.blockinfile:
-    path: "~/.bash_aliases"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK: cinc-client alias"
-    block: |
-      alias cinc-client='docker run --rm -it \
-      {% for arg in basic_utils.cinc.add_args %}
-      {{ arg }} \
-      {% endfor %}
-      -v $(pwd):/data \
-      {{ basic_utils.cinc.image }}:${CHEF_CLIENT_VERSION:-{{ basic_utils.cinc.client_version }}} knife'
-
 - name: flutter development
   when: basic_utils.enable_flutter | default(false)
   block:

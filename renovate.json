@@ -42,10 +42,6 @@
       "extractVersion": "^v?(?<version>.*)$"
     },
     {
-      "matchDepNames": ["cincproject/cinc"],
-      "versioning": "regex:^(?<major>\\d+)(?:\\.(?<minor>\\d+))?$"
-    },
-    {
       "matchDepNames": ["nodejs/node"],
       "extractVersion": "^v?(?<version>.*)$"
     },

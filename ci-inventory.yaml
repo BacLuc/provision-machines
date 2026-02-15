@@ -105,14 +105,8 @@ local:
         - xz-utils
 
     basic_utils:
-      cinc:
-        client_version: 18.5.0
-        image: cincproject/cinc:18
-        add_args:
-          - "--add-host myhost.local:192.168.1.10"
       enable_android_studio: false
       enable_direnv: true
-      enable_cinc: true
       enable_flutter: true
       enable_go: true
       enable_java: true
