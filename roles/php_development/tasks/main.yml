@@ -5,7 +5,7 @@
       ansible.builtin.set_fact:
         php_development_defaults:
           # renovate: datasource=github-tags depName=php/php-src
-          php_version: "8.4.10"
+          php_version: "8.5.3"
 
     - name: set facts for php_development role
       ansible.builtin.set_fact:
