@@ -96,3 +96,54 @@
     mode: "u+rw"
   with_items:
     - { regexp: "^alias dc=", line: "alias dc='docker compose'" }
+
+- name: Create docker metadata directory
+  ansible.builtin.file:
+    path: "~/.local/share/docker-image-usage"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: Create local bin directory
+  ansible.builtin.file:
+    path: "~/.local/bin"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: Copy docker events tracking script to local bin
+  ansible.builtin.copy:
+    src: docker-events-track.sh
+    dest: "~/.local/bin/docker-events-track.sh"
+    mode: "u=rwx,go=rx"
+
+- name: Create systemd user config directory
+  ansible.builtin.file:
+    path: "~/.config/systemd/user"
+    state: directory
+    mode: "u=rwx,go=rx"
+
+- name: Copy docker events tracking service file
+  ansible.builtin.copy:
+    src: docker-events-track.service
+    dest: "~/.config/systemd/user/docker-events-track.service"
+    mode: "u=rw,go=r"
+
+- name: Reload systemd user daemon
+  ansible.builtin.systemd:
+    scope: user
+    daemon_reload: true
+
+- name: Enable docker events tracking service
+  ansible.builtin.systemd:
+    name: docker-events-track
+    scope: user
+    enabled: true
+    state: started
+  failed_when: false
+
+- name: Copy docker cleanup script to cleanup scripts directory
+  become: true
+  ansible.builtin.copy:
+    src: docker-cleanup.sh
+    dest: "{{ cleanup_scripts.dir }}/docker-cleanup"
+    mode: "u=rwx,go=rx"
+  when: cleanup_scripts.dir is defined
