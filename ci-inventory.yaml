@@ -17,7 +17,6 @@ local:
       provision_daemon_json: false
     enable_ansible_ppa: true
     enable_alacritty: true
-    enable_azure_cli: false
     enable_displaylink_driver: false
     enable_bash: true
     enable_basicsetup: true

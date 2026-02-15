@@ -143,9 +143,6 @@
     - role: windows
       when: windows.enable | default(false)
 
-    - role: azure_cli
-      tags: azure_cli
-
     - role: nvim
       tags: nvim
 
