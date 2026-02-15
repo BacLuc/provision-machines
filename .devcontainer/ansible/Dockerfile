@@ -15,7 +15,7 @@ USER vscode
 
 ENV NVM_DIR=/home/vscode/.nvm
 # renovate: datasource=github-releases depName=nvm-sh/nvm
-ENV NVM_VERSION=0.40.0
+ENV NVM_VERSION=0.40.4
 # renovate: datasource=github-tags depName=nodejs/node
 ENV NODE_VERSION=24
 
