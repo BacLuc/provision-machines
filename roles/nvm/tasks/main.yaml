@@ -1,6 +1,16 @@
 - name: nvm
   when: (extract(container=basic_utils, input='enable_nvm') | default(false)) or (enable_nvm | default(false))
   block:
+    - name: set defaults for nvm role
+      ansible.builtin.set_fact:
+        nvm_defaults:
+          # renovate: datasource=github-releases depName=nvm-sh/nvm
+          nvm_version: "v0.40.0"
+
+    - name: set facts for nvm role
+      ansible.builtin.set_fact:
+        nvm: "{{ nvm_defaults | combine((nvm | default({})), recursive=true) }}"
+
     - name: check if nvm is already installed
       ansible.builtin.stat:
         path: ~/.nvm
@@ -9,7 +19,7 @@
     - name: setup nvm # noqa command-instead-of-module
       when: basic_utils__nvm.stat.exists is false
       ansible.builtin.shell: |
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{{ nvm.nvm_version }}/install.sh | bash
 
     - name: add nvm to path for bash
       ansible.builtin.blockinfile:
@@ -38,7 +48,7 @@
           set -e
 
           user="{{ user }}"
-          nvm_version=v0.40.3
+          nvm_version={{ nvm.nvm_version }}
 
           su "$user" -c "git -C /home/{{ user }}/.nvm fetch --tags"
           su "$user" -c "git -C /home/{{ user }}/.nvm reset --hard $nvm_version"
