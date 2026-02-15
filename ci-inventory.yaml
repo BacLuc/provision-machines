@@ -170,39 +170,6 @@ local:
         # - desktop_file_name: thunderbird_thunderbird.desktop
         #   shortcut: "<Super><Alt>c"
 
-    windows:
-      enable: false
-      # change user
-      java_home: C:\Users\<user>\scoop\apps\temurin11-jdk\current
-      scoop_packages:
-        - 7zip
-        - 7zip19.00-helper
-        - chromium
-        # - dark
-        - firefox
-        # - flutter@3.22.0
-        # - gcloud
-        - git
-        - googlechrome
-        # - irfanview
-        # - keepassxc
-        # - keyviz
-        # - libreoffice
-        - maven
-        # - nextcloud
-        - nodejs-lts
-        - notepadplusplus
-        - nvm
-        - okular
-        # - powertoys
-        # - signal
-        - temurin21-jdk
-        - temurin11-jdk
-        # - tightvnc
-        - vscode
-        - vncviewer
-        - windirstat
-        # - add zulu8-jdk
     snaps:
       - rclone
 

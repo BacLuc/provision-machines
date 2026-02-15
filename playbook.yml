@@ -140,9 +140,6 @@
     - role: hashicorp_vault_cli
       tags: hashicorp_vault_cli
 
-    - role: windows
-      when: windows.enable | default(false)
-
     - role: nvim
       tags: nvim
 
