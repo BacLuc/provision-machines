@@ -5,7 +5,7 @@
       ansible.builtin.set_fact:
         nvm_defaults:
           # renovate: datasource=github-releases depName=nvm-sh/nvm
-          nvm_version: "v0.40.0"
+          nvm_version: "v0.40.4"
 
     - name: set facts for nvm role
       ansible.builtin.set_fact:
