@@ -52,3 +52,8 @@ ollama_defaults:
 
 use `./scripts/update-renovate-snapshot.sh` to check if the dependency can be extracted,
 and update the snapshot if you changed something where a dependency is used, or if you changed renovate.json.
+
+## ansible_env
+
+Never use keys from {{ ansible_env }} in ansible, they are not reliable.
+For home use ~ or /home/{{ user }}.
