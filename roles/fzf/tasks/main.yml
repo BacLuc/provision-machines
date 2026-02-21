@@ -5,7 +5,7 @@
       ansible.builtin.command:
         cmd: |
           ~/bin/brew install fzf
-        creates: "{{ homebrew_path }}/fzf"
+        creates: "{{ homebrew_home }}/.linuxbrew/bin/fzf"
 
     - name: add fzf completion to bash
       ansible.builtin.blockinfile:
