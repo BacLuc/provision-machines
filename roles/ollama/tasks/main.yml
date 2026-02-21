@@ -1,10 +1,6 @@
 - name: install ollama
   when: enable_ollama | default(false)
   block:
-    - name: ollama print var
-      ansible.builtin.debug:
-        var: ollama
-
     - name: set defaults for ollama role
       ansible.builtin.set_fact:
         ollama_defaults:
