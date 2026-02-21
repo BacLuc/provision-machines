@@ -4,10 +4,17 @@
       - dev.zed.Zed
     state: "absent"
 
+- name: Check if zed symlink exists
+  ansible.builtin.stat:
+    path: "/home/{{ user }}/bin/zed"
+  register: zed_symlink_stat
+  changed_when: false
+
 - name: Remove a symbolic link for zed
   ansible.builtin.file:
     dest: "/home/{{ user }}/bin/zed"
     state: absent
+  when: not (enable_zed | default(false)) and zed_symlink_stat.stat.exists
 
 - name: setup zed
   when: enable_zed | default(false)
@@ -221,11 +228,19 @@
         cmd: curl -f https://raw.githubusercontent.com/zed-industries/zed/refs/tags/v0.204.5/script/install.sh | sh
         creates: ~/.local/bin/zed
 
+    - name: Check if zed symlink needs creation
+      ansible.builtin.stat:
+        path: "/home/{{ user }}/bin/zed"
+        follow: false
+      register: zed_symlink_needed
+      changed_when: false
+
     - name: Create a symbolic link for zed
       ansible.builtin.file:
         src: "~/.local/bin/zed"
         dest: "~/bin/zed"
         state: link
+      when: not zed_symlink_needed.stat.exists
 
     - name: Create zed config dir
       ansible.builtin.file:
