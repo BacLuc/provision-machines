@@ -5,7 +5,7 @@
       ansible.builtin.command:
         cmd: |
           ~/bin/brew install neovim
-        creates: "{{ homebrew_path }}/nvim"
+        creates: "{{ homebrew_home }}/.linuxbrew/bin/nvim"
 
     # noqa: latest
     - name: install NormalNeovim distribution
