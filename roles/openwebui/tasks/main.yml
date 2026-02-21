@@ -4,7 +4,7 @@
   block:
     - name: set compose project directory
       ansible.builtin.set_fact:
-        openwebui_compose_project_dir: "{{ openwebui_compose_project_dir | default(ansible_env.HOME + '/openwebui') }}"
+        openwebui_compose_project_dir: "{{ openwebui_compose_project_dir | default('/home/' ~ user ~ '/openwebui') }}"
 
     - name: create docker volume
       become: true
