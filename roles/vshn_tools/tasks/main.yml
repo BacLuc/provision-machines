@@ -12,8 +12,8 @@
           appcat_cli_version: "0.5.0"
           appcat_cli_checksum: 2141bf312b56ff7baf7727a98bbe0488dab7769162fb88e63255209e3e8140f1
           # renovate: datasource=github-releases depName=vshn/k8ify
-          k8ify_version: "2.4.0"
-          k8ify_checksum: b411a1398f4eb2b10d19624f1e51a21c260503e4225e865332e60e97348f5de8
+          k8ify_version: "2.5.0"
+          k8ify_checksum: f3605d34439c0bef36930c71ad2b066acc0ba821e68c98e764fffc1a66dcc3b9
 
     - name: set facts for vshn_tools role
       ansible.builtin.set_fact:
@@ -37,7 +37,7 @@
       ansible.builtin.include_role:
         name: github_release_binary
       vars:
-        url: "https://github.com/vshn/k8ify/releases/download/{{ vshn_tools.k8ify_version }}/k8ify_{{ vshn_tools.k8ify_version }}_linux_amd64.tar.gz"
+        url: "https://github.com/vshn/k8ify/releases/download/v{{ vshn_tools.k8ify_version }}/k8ify_{{ vshn_tools.k8ify_version }}_linux_amd64.tar.gz"
         binary_name: k8ify
         binary_checksum: "{{ vshn_tools.k8ify_checksum }}"
 
