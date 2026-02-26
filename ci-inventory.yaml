@@ -169,6 +169,7 @@ local:
         # - desktop_file_name: chat.rocket.RocketChat.desktop
         #   shortcut: "<Super>c"
         # - desktop_file_name: thunderbird_thunderbird.desktop
+        # - desktop_file_name: org.mozilla.Thunderbird.desktop.desktop # for flatpak
         #   shortcut: "<Super><Alt>c"
 
     snaps:
