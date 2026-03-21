@@ -1,6 +1,7 @@
 [
   "actions/checkout",
   "databus23/helm-diff",
+  "git-lfs/git-lfs",
   "itaysk/kubectl-neat",
   "jesseduffield/lazygit",
   "jlandowner/helm-chartsnap",

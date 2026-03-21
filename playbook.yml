@@ -121,6 +121,9 @@
     - role: lazygit
       tags: lazygit
 
+    - role: git_lfs
+      tags: git_lfs
+
     - role: ollama
       tags: ollama
 
