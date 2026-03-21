@@ -1,0 +1,80 @@
+---
+- name: Ensure user bin directory exists
+  ansible.builtin.file:
+    path: "/home/{{ user }}/bin"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0755'
+
+- name: Ensure central ai_agent_devcontainer config directory exists
+  ansible.builtin.file:
+    path: "/home/{{ user }}/.config/ai_agent_devcontainer"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0755'
+
+- name: Copy devcontainer script to user bin
+  ansible.builtin.copy:
+    src: start-ai-agent-devcontainer.sh
+    dest: "/home/{{ user }}/bin/start-ai-agent-devcontainer"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0755'
+
+- name: Copy Dockerfile to central config directory
+  ansible.builtin.copy:
+    src: Dockerfile
+    dest: "/home/{{ user }}/.config/ai_agent_devcontainer/Dockerfile"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0644'
+
+- name: Copy devcontainer.json to central config directory
+  ansible.builtin.copy:
+    src: devcontainer.json
+    dest: "/home/{{ user }}/.config/ai_agent_devcontainer/devcontainer.json"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0644'
+
+- name: Ensure opencode config directory exists on host
+  ansible.builtin.file:
+    path: "/home/{{ user }}/.config/opencode"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0755'
+
+- name: Ensure opencode agents directory exists on host
+  ansible.builtin.file:
+    path: "/home/{{ user }}/.config/opencode/agents"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0755'
+
+- name: Create a placeholder provider-config.json if it doesn't exist
+  ansible.builtin.copy:
+    content: |
+      {
+        "providers": []
+      }
+    dest: "/home/{{ user }}/.config/opencode/provider-config.json"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0600'
+    force: no
+
+- name: Create a placeholder api-keys.json if it doesn't exist
+  ansible.builtin.copy:
+    content: |
+      {
+        "apiKeys": {}
+      }
+    dest: "/home/{{ user }}/.config/opencode/api-keys.json"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0600'
+    force: no

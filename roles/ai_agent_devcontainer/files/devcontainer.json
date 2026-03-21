@@ -1,0 +1,20 @@
+{
+  "name": "AI Agent DevContainer",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.config/opencode/provider-config.json,target=/home/vscode/.config/opencode/provider-config.json,type=bind",
+    "source=${localEnv:HOME}/.config/opencode/api-keys.json,target=/home/vscode/.config/opencode/api-keys.json,type=bind",
+    "source=${localEnv:HOME}/.config/opencode/agents,target=/home/vscode/.config/opencode/agents,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": []
+    }
+  },
+  "remoteUser": "vscode",
+  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.config/opencode"
+}

@@ -1,5 +1,5 @@
 - name: nvm
-  when: (extract(container=basic_utils, input='enable_nvm') | default(false)) or (enable_nvm | default(false))
+  when: enable_nvm | default(false)
   block:
     - name: set defaults for nvm role
       ansible.builtin.set_fact:
@@ -52,7 +52,7 @@
 
           su "$user" -c "git -C /home/{{ user }}/.nvm fetch --tags"
           su "$user" -c "git -C /home/{{ user }}/.nvm reset --hard $nvm_version"
-        dest: "{{ update_packages_script.dir }}/nvm-upgrade"
+        dest: "{{ cleanup_scripts.dir }}/nvm-upgrade"
         mode: "u=rwx,go=rx"
 
     - name: add node_modules cleanup script

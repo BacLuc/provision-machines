@@ -1,4 +1,9 @@
 ---
+- name: Update apt cache
+  become: true
+  ansible.builtin.apt:
+    update_cache: yes
+
 - name: Install dependencies to add docker repository
   become: true
   ansible.builtin.apt:

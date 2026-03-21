@@ -64,22 +64,22 @@
     - role: homebrew
       tags: homebrew
       when: enable_homebrew | default(false)
-    - role: ansible-role-customize-gnome
-      tags: customize_gnome
-      when: enable_customize_gnome | default(false)
-      vars:
-        gnome_extensions:
-          - url: https://extensions.gnome.org/extension-data/sound-output-device-chooserkgshank.net.v43.shell-extension.zip
-            id: 906
-          - url: https://extensions.gnome.org/extension-data/wsmatrixmartin.zurowietz.de.v23.shell-extension.zip
-            id: 1485
-          - url: https://extensions.gnome.org/extension-data/unblanksun.wxggmail.com.v34.shell-extension.zip
-            id: 1414
-          - url: https://extensions.gnome.org/extension-data/tiling-assistantleleat-on-github.v48.shell-extension.zip
-            id: 3733
-          - url: https://extensions.gnome.org/extension-data/switcherlandau.fi.v41.shell-extension.zip
-            id: 973
-        customize_gnome__skip_restart_gnome_shell: customize_gnome__skip_restart_gnome_shell | default(false)
+    # - role: ansible-role-customize-gnome
+    #   tags: customize_gnome
+    #   when: enable_customize_gnome | default(false)
+    #   vars:
+    #     gnome_extensions:
+    #       - url: https://extensions.gnome.org/extension-data/sound-output-device-chooserkgshank.net.v43.shell-extension.zip
+    #         id: 906
+    #       - url: https://extensions.gnome.org/extension-data/wsmatrixmartin.zurowietz.de.v23.shell-extension.zip
+    #         id: 1485
+    #       - url: https://extensions.gnome.org/extension-data/unblanksun.wxggmail.com.v34.shell-extension.zip
+    #         id: 1414
+    #       - url: https://extensions.gnome.org/extension-data/tiling-assistantleleat-on-github.v48.shell-extension.zip
+    #         id: 3733
+    #       - url: https://extensions.gnome.org/extension-data/switcherlandau.fi.v41.shell-extension.zip
+    #         id: 973
+    #     customize_gnome__skip_restart_gnome_shell: customize_gnome__skip_restart_gnome_shell | default(false)
     - role: gnome
       tags: gnome
     - role: bash
@@ -92,15 +92,15 @@
       tags: tmux
       when: enable_tmux | default(false)
 
-    - role: git-tools
-      tags: git
-      when: enable_git_tools | default(false)
-      vars:
-        git_aliases: true
-        git_rerere: true
-        git_editor_nano: true
-        git_user_name: "{{git.config.user_name | mandatory}}"
-        git_user_email: "{{git.config.user_email | mandatory}}"
+    # - role: git-tools
+    #   tags: git
+    #   when: enable_git_tools | default(false)
+    #   vars:
+    #     git_aliases: true
+    #     git_rerere: true
+    #     git_editor_nano: true
+    #     git_user_name: "{{git.config.user_name | mandatory}}"
+    #     git_user_email: "{{git.config.user_email | mandatory}}"
 
     - role: docker
       tags: docker
@@ -134,9 +134,9 @@
     - role: intellij
       tags: intellij
 
-    - role: ansible-role-visual-studio-code
-      tags: visual-studio-code
-      when: enable_visual_studio_code | default(false)
+    # - role: ansible-role-visual-studio-code
+    #   tags: visual-studio-code
+    #   when: enable_visual_studio_code | default(false)
 
     - role: basic_utils
       tags: basic_utils
@@ -179,5 +179,13 @@
 
     - role: sysctl
       tags: sysctl
+
+    - role: devcontainer_cli
+      tags: devcontainer_cli
+      when: enable_devcontainer_cli | default(false)
+
+    - role: ai_agent_devcontainer
+      tags: ai_agent_devcontainer
+      when: enable_ai_agent_devcontainer | default(false)
 
     - role: ubuntu_cleanup
