@@ -48,12 +48,11 @@
           ignore_errors: true
           register: github_release_is_tar
 
-        - name: extract binary to ~/bin
+        - name: extract binary to ~/bin # noqa command-instead-of-module command-instead-of-shell
           when: github_release_is_tar.rc == 0
-          ansible.builtin.unarchive:
-            src: "{{ github_release_binary_tmp_path }}"
-            dest: "~/bin"
-            remote_src: true
+          ansible.builtin.shell:
+            cmd: "tar -xf {{ github_release_binary_tmp_path }}{% if tar_strip_components | default(0) | int > 0 %} --strip-components={{ tar_strip_components }}{% endif %} -C ~/bin"
+            creates: "~/bin/{{ binary_name }}"
 
         - name: move binary to ~/bin
           when: github_release_is_tar.rc != 0
