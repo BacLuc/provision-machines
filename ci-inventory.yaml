@@ -15,6 +15,7 @@ local:
     docker:
       enable: true
       provision_daemon_json: false
+    enable_ai_agent_devcontainer: true
     enable_ansible_ppa: true
     enable_alacritty: true
     enable_displaylink_driver: false

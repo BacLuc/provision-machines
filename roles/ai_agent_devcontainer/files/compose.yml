@@ -1,0 +1,5 @@
+services:
+  devcontainer:
+    network_mode: host
+    build: .
+    working_dir: ${WORKING_DIR:-/workspaces}

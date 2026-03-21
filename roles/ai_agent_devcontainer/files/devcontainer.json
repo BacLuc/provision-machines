@@ -1,0 +1,17 @@
+{
+  "name": "AI Agent DevContainer",
+  "dockerComposeFile": "./compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+    "source=${localEnv:HOME}/${localEnv:PROVISION_MACHINES_DIR:projects/provision-machines}/roles/ai_agent_devcontainer/files/opencode,target=/home/codespace/.config/opencode,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": []
+    }
+  },
+  "remoteUser": "codespace",
+  "postStartCommand": "cd /workspaces/${localWorkspaceFolderBasename} && opencode web"
+}

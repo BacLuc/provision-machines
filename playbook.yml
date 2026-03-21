@@ -180,4 +180,11 @@
     - role: sysctl
       tags: sysctl
 
+    - role: devcontainer_cli
+      tags: devcontainer_cli
+      when: enable_devcontainer_cli | default(false)
+
+    - role: ai_agent_devcontainer
+      tags: ai_agent_devcontainer
+
     - role: ubuntu_cleanup
