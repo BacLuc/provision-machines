@@ -1,3 +1,4 @@
 **
 !/agents
 !opencode.json
+!/untracked-config.example.json
