@@ -1,0 +1,6 @@
+---
+- name: Install devcontainer-cli via npm
+  community.general.npm:
+    name: "@devcontainers/cli"
+    global: true
+    state: present

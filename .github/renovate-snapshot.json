@@ -1,11 +1,11 @@
 [
   "actions/checkout",
   "databus23/helm-diff",
+  "git-lfs/git-lfs",
   "itaysk/kubectl-neat",
   "jesseduffield/lazygit",
   "jlandowner/helm-chartsnap",
-  "mcr.microsoft.com/devcontainers/base",
-  "nodejs/node",
+  "mcr.microsoft.com/devcontainers/universal",
   "nvm-sh/nvm",
   "ollama/ollama",
   "php/php-src",

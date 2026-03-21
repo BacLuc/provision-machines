@@ -1,0 +1,19 @@
+---
+- name: Setup ai_agent_devcontainer
+  when: enable_ai_agent_devcontainer | default(false)
+  block:
+    - name: Ensure user bin directory exists
+      ansible.builtin.file:
+        path: "/home/{{ user }}/bin"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: "ug=rwx,o=rx"
+
+    - name: Copy devcontainer script to user bin
+      ansible.builtin.copy:
+        src: start-ai-agent-devcontainer.sh
+        dest: "/home/{{ user }}/bin/start-ai-agent-devcontainer"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: "ug=rwx,o=rx"
