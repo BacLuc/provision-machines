@@ -1,0 +1,53 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base"],
+  "ignorePaths": ["**/.ansible/**", "**/node_modules/**"],
+  "rebaseWhen": "conflicted",
+  "regexManagers": [
+    {
+      "fileMatch": ["^playbook\\.yml$"],
+      "matchStrings": [
+        "version:\\s*['\"]?(?<currentValue>v[0-9]+)['\"]?.*?https://extensions\\.gnome\\.org/extension/(?<depName>[0-9]+)/"
+      ],
+      "datasourceTemplate": "gnome-extension"
+    },
+    {
+      "fileMatch": [
+        "^roles/.*/tasks/main\\.yml$",
+        "^roles/.*/tasks/main\\.yaml$"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\n\\s+[a-zA-Z_][a-zA-Z0-9_]*:[^'\"]*['\"]?(?<currentValue>[\\w.-]+)['\"]?"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
+      "fileMatch": ["^\\.devcontainer/.*Dockerfile$"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\nENV\\s+[a-zA-Z_][a-zA-Z0-9_]*=(?<currentValue>[\\w.-]+)"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
+      "fileMatch": ["^\\.devcontainer/devcontainer\\.json$"],
+      "matchStrings": [
+        "\"version\":\\s*['\"]?(?<currentValue>\\d+)['\"]?.*?\"id\":\\s*['\"]?(?<depName>[^'\"]+)['\"]?"
+      ],
+      "datasourceTemplate": "devcontainer-feature"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchDepTypes": ["github-releases"],
+      "extractVersion": "^v?(?<version>.*)$"
+    },
+    {
+      "matchDepNames": ["nodejs/node"],
+      "extractVersion": "^v?(?<version>.*)$"
+    },
+    {
+      "matchDepNames": ["php/php-src"],
+      "extractVersion": "^php-(?<version>.*)$"
+    }
+  ]
+}

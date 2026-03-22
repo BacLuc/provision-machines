@@ -1,0 +1,14 @@
+#!/bin/sh
+
+export PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig"
+
+case "$(pwd)" in
+  "*.fvmrc"*) exec fvm flutter "$@" ;;
+esac
+
+if [ -f "$(pwd)/.fvmrc" ]; then
+    exec fvm flutter "$@"
+fi
+
+echo "No flutter version specified";
+exit 1;

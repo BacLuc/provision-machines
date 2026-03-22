@@ -1,0 +1,103 @@
+"""Tmux terminal multiplexer setup and configuration."""
+
+import os
+from io import StringIO
+
+from pyinfra.api.deploy import deploy
+from pyinfra.context import host
+from pyinfra.operations import apt, files
+
+
+
+
+
+@deploy("Tmux")
+def configure_tmux(user=None, home=None, default_shell="/bin/zsh", _sudo=None, **kwargs):
+    """Setup Tmux terminal multiplexer with configuration."""
+    if not host.data.get("enable_tmux", False):
+        return
+
+    if user is None:
+        user = host.data.get("user") or os.environ.get("USER", "vscode")
+    if home is None:
+        home = f"/home/{user}"
+
+    apt.packages(
+        name="Install tmux",
+        packages=["tmux"],
+        update=True,
+    )
+
+    # Create tmux configuration
+    tmux_config_content = f"""# Terminal behaviour
+set-option -g default-shell {default_shell}
+
+set -g default-terminal "tmux-256color"
+
+set -g mouse on
+
+# put mode-keys vi near that i might try it in the future.
+#set -g mode-keys vi
+
+set-option -g history-limit 30000
+set-option -g bell-action current
+set-option -g visual-bell on
+
+# reload config file (change file location to your the tmux.conf you want to use)
+bind r source-file ~/.tmux.conf \\; display "Config reloaded!"
+
+bind-key -T copy-mode MouseDragEnd1Pane  send-keys -X copy-pipe
+bind-key -T copy-mode C-w send-keys -X copy-pipe
+
+bind '"' split-window -v -c "#{{pane_current_path}}"
+bind % split-window -h -c "#{{pane_current_path}}"
+bind c new-window -c "#{{pane_current_path}}"
+
+# resize sharing
+set-window-option -g aggressive-resize on
+
+# Activity monitoring
+set-window-option -g monitor-activity off
+set-option -g visual-activity off
+
+# Highlight active window
+set-window-option -g window-status-current-style bg=red
+
+# Start the window numbering at 1
+set -g base-index 1
+
+# Scroll History
+set -g history-limit 30000
+
+# Set ability to capture on start and restore on exit window data when running an application
+set -g alternate-screen on
+
+# Lower escape timing from 500ms to 100ms for quicker response to scroll-buffer access.
+set -s escape-time 100
+
+# start status bar
+set-option -g status-justify left
+set-option -g status-left '#[bg=colour72] #[bg=colour237] #[bg=colour236] #[bg=colour235]#[fg=colour185] #S #[bg=colour236] '
+set-option -g status-left-length 16
+set-option -g status-bg colour237
+set-option -g status-right '#[bg=colour236] #[bg=colour235]#[fg=colour185] %a %R #[bg=colour236]#[fg=colour3] #[bg=colour237] #[bg=colour72] #[]'
+set-option -g status-interval 60
+
+set-option -g pane-active-border-style fg=colour246
+set-option -g pane-border-style fg=colour238
+set-window-option -g window-status-format '#[bg=colour238]#[fg=colour107] #I #[bg=colour239]#[fg=colour110] #[bg=colour240]#W#[bg=colour239]#[fg=colour195]#F#[bg=colour238] '
+set-window-option -g window-status-current-format '#[bg=colour236]#[fg=colour215] #I #[bg=colour235]#[fg=colour167] #[bg=colour234]#W#[bg=colour235]#[fg=colour195]#F#[bg=colour236] '
+# end status bar
+set-option -g automatic-rename on
+set-option -g automatic-rename-format "#{{b:pane_current_path}} #{{pane_current_command}}"
+"""
+
+    # Create .tmux.conf file
+    files.put(
+        name="Create tmux configuration",
+        src=StringIO(tmux_config_content),
+        dest=f"{home}/.tmux.conf",
+        user=user,
+        group=user,
+        mode="644",
+    )
