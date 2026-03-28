@@ -5,7 +5,8 @@ from io import StringIO
 
 from pyinfra.api.deploy import deploy
 from pyinfra.context import host
-from pyinfra.facts.server import Arch, LinuxDistribution
+from pyinfra.facts.server import Arch, LinuxDistribution, Which
+from pyinfra.facts.systemd import SystemdStatus
 from pyinfra.operations import apt, files, server, systemd
 
 
@@ -67,6 +68,9 @@ def configure_docker(
 
     # Get system architecture using facts
     arch = host.get_fact(Arch)
+    # Convert x86_64 to amd64 for Docker repository
+    if arch == "x86_64":
+        arch = "amd64"
 
     # Get OS release codename using facts
     linux_dist = host.get_fact(LinuxDistribution)
@@ -84,6 +88,13 @@ def configure_docker(
     # Update apt cache
     apt.update(
         name="Update apt cache after adding Docker repository",
+    )
+
+    # Remove conflicting moby-tini package if it exists (conflicts with docker-ce)
+    apt.packages(
+        name="Remove conflicting moby-tini package",
+        packages=["moby-tini"],
+        present=False,
     )
 
     # Install Docker CE and dependencies
@@ -137,13 +148,37 @@ def configure_docker(
             mode="644",
         )
 
-        # Restart docker service to apply daemon configuration
-        systemd.service(
-            name="Restart Docker service",
-            service="docker",
-            running=True,
-            restarted=True,
-            enabled=True,
+        # Check if systemd is available and working
+        # First check if systemctl command exists
+        systemctl_exists = host.get_fact(Which, command="systemctl")
+
+        if systemctl_exists:
+            # Try to get systemd status to verify it's working
+            try:
+                systemd_status = host.get_fact(SystemdStatus, services=["docker.service"])
+                # Check if systemd is actually working by checking if docker service is recognized
+                # systemd_status can be a dict or boolean depending on the state
+                if isinstance(systemd_status, dict):
+                    docker_service = systemd_status.get("docker.service", {})
+                    if isinstance(docker_service, dict) and docker_service.get("SubState") != "failed":
+                        # Restart docker service to apply daemon configuration
+                        systemd.service(
+                            name="Restart Docker service",
+                            service="docker",
+                            running=True,
+                            restarted=True,
+                            enabled=True,
+                        )
+                        # Exit early since we handled systemd
+                        return
+                raise Exception("Systemd docker service not working")
+            except Exception:
+                pass
+
+        # If systemd is not available or not working (e.g., in container), start docker directly
+        server.shell(
+            name="Start Docker service (no systemd)",
+            commands=["dockerd > /var/log/dockerd.log 2>&1 &"],
         )
 
     # Remove conflicting dc package if it exists

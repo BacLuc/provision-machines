@@ -12,7 +12,7 @@ import os
 
 from pyinfra.context import host
 
-from .tasks import (
+from pyinfra_collections.basic_utils.tasks import (
     bat,
     direnv,
     flutter,
@@ -28,10 +28,10 @@ from .tasks import (
     user_bin,
     zoom,
 )
-from .tasks import (
+from pyinfra_collections.basic_utils.tasks import (
     gcr_ssh_agent as gcr_ssh_agent_module,
 )
-from .tasks import (
+from pyinfra_collections.basic_utils.tasks import (
     ssh_agent as ssh_agent_module,
 )
 

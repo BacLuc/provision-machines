@@ -9,6 +9,15 @@ from pyinfra.context import host
 from pyinfra.operations import apt, files, server
 
 
+def _parse_bool(value):
+    """Parse boolean value from string or other type."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.lower() in ("true", "1", "yes", "on")
+    return bool(value)
+
+
 
 
 
@@ -80,14 +89,16 @@ def configure_zsh(
 
     # current_shell_result may be a tuple, extract the shell string
     if isinstance(current_shell_result, tuple) and len(current_shell_result) > 0:
-        current_shell = current_shell_result[0]
+        current_shell = current_shell_result[0] if current_shell_result else ""
     else:
         current_shell = str(current_shell_result)
 
     if "/bin/zsh" not in current_shell and user:
+        # Only change shell if the user exists
         server.shell(
             name=f"Set default shell to zsh for {user}",
             commands=[f"chsh -s /bin/zsh {user}"],
+            _ignore_errors=True,
         )
 
     # Check if oh-my-zsh is installed
@@ -103,6 +114,7 @@ def configure_zsh(
         server.shell(
             name="Install oh-my-zsh",
             commands=["sh /tmp/oh-my-zsh-installer.sh --unattended"],
+            _ignore_errors=True,
         )
 
     # Add tmux autostart configuration if enabled

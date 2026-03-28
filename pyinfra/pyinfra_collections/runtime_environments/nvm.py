@@ -36,10 +36,11 @@ def configure_nvm(
     nvm_dir = f"{home}/.nvm"
 
     # Install nvm via curl (only if not already installed)
+    # Unset NVM_DIR before running install to avoid the warning
     server.shell(
         name="Install nvm",
         commands=[
-            f"test -d {nvm_dir} || curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{nvm_version}/install.sh | bash"
+            f"unset NVM_DIR; test -d {nvm_dir} || curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{nvm_version}/install.sh 2>/dev/null | bash"
         ],
     )
 
