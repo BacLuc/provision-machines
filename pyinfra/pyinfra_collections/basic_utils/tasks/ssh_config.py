@@ -1,5 +1,7 @@
 """SSH config setup."""
 
+from io import StringIO
+
 from pyinfra.operations import files
 
 
@@ -19,7 +21,7 @@ def setup(user, home, paths_to_include):
 
     files.put(
         name="Create SSH config file with includes",
+        src=StringIO(include_content),
         dest=f"{home}/.ssh/config",
-        content=include_content,
         mode="600",
     )

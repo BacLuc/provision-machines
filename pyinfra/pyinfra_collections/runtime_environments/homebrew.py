@@ -7,6 +7,15 @@ from pyinfra.context import host
 from pyinfra.operations import server, files, apt
 
 
+def _parse_bool(value):
+    """Parse boolean value from string or other type."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.lower() in ("true", "1", "yes", "on")
+    return bool(value)
+
+
 @deploy("Homebrew")
 def configure_homebrew(user=None, home=None, _sudo=None):
     """Setup Homebrew for Linux."""
@@ -42,12 +51,3 @@ def configure_homebrew(user=None, home=None, _sudo=None):
         line='eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"',
         ensure_newline=True,
     )
-
-
-def _parse_bool(value):
-    """Parse boolean value from string or other type."""
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, str):
-        return value.lower() in ("true", "1", "yes", "on")
-    return bool(value)

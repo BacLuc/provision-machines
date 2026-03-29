@@ -1,6 +1,4 @@
-"""Lazygit installation and configuration."""
-
-import os
+"""DevContainer CLI installation."""
 
 from pyinfra.api.deploy import deploy
 from pyinfra.context import host
@@ -16,16 +14,16 @@ def _parse_bool(value):
     return bool(value)
 
 
-@deploy("Lazygit")
-def configure_lazygit(user=None, home=None, _sudo=None, **kwargs):
-    """Install lazygit via homebrew."""
+@deploy("DevContainer CLI")
+def configure_devcontainer_cli(user=None, home=None, _sudo=None):
+    """Install DevContainer CLI via npm."""
     # Check if enabled
-    if not _parse_bool(host.data.get("enable_lazygit", False)):
+    if not _parse_bool(host.data.get("enable_devcontainer_cli", False)):
         return
 
-    # Install lazygit via homebrew
+    # Install devcontainer CLI
     server.shell(
-        name="Install lazygit via homebrew",
-        commands=["/home/linuxbrew/.linuxbrew/bin/brew install lazygit"],
+        name="Install devcontainer CLI",
+        commands=["npm install -g @devcontainers/cli"],
         _ignore_errors=True,
     )

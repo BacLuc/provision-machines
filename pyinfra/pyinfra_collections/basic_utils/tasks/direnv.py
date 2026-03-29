@@ -11,17 +11,18 @@ def setup(user, home, enable_zsh):
         update=True,
     )
 
-    files.block(
+    # Use files.line instead of files.block to avoid eval issues
+    files.line(
         name="Add direnv to bashrc",
         path=f"{home}/.bashrc",
-        content='eval "$(direnv hook bash)"',
-        marker="# {mark} ANSIBLE MANAGED BLOCK: source direnv",
+        line='eval "$(direnv hook bash)"',
+        ensure_newline=True,
     )
 
     if enable_zsh:
-        files.block(
+        files.line(
             name="Add direnv to zshrc",
             path=f"{home}/.zshrc",
-            content='eval "$(direnv hook zsh)"',
-            marker="# {mark} ANSIBLE MANAGED BLOCK: source direnv",
+            line='eval "$(direnv hook zsh)"',
+            ensure_newline=True,
         )

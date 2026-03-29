@@ -15,6 +15,7 @@ def _parse_bool(value):
         return value.lower() in ("true", "1", "yes", "on")
     return bool(value)
 
+
 @deploy("Kubectl")
 def configure_kubectl(
     user=None,
@@ -34,17 +35,25 @@ def configure_kubectl(
     if home is None:
         home = f"/home/{user}"
 
-    # Install kubectl and helm via snap
+    # Install kubectl, helm, and yq via homebrew (works in containers)
     server.shell(
-        name="Install kubectl and helm via snap",
-        commands=["snap install kubectl --classic", "snap install helm --classic"],
+        name="Install kubectl via homebrew",
+        commands=["/home/linuxbrew/.linuxbrew/bin/brew install kubectl"],
         _ignore_errors=True,
     )
 
-    # Install yq
+    # Install helm via homebrew
     server.shell(
-        name="Install yq",
-        commands=["snap install yq"],
+        name="Install helm via homebrew",
+        commands=["/home/linuxbrew/.linuxbrew/bin/brew install helm"],
+        _ignore_errors=True,
+    )
+
+    # Install yq via homebrew
+    server.shell(
+        name="Install yq via homebrew",
+        commands=["/home/linuxbrew/.linuxbrew/bin/brew install yq"],
+        _ignore_errors=True,
     )
 
     # Add kubectl completion for bash
@@ -55,6 +64,15 @@ def configure_kubectl(
         marker="# {mark} PYINFRA MANAGED BLOCK: kubectl completion",
     )
 
+    # Add kubectl completion for zsh if enabled
+    if enable_zsh:
+        files.block(
+            name="Add kubectl completion to zshrc",
+            path=f"{home}/.zshrc",
+            content="source <(kubectl completion zsh)\ncomplete -F __start_kubectl k",
+            marker="# {mark} PYINFRA MANAGED BLOCK: kubectl completion",
+        )
+
     # Add kubectl aliases
     files.line(
         name="Add kubectl aliases",
@@ -63,17 +81,17 @@ def configure_kubectl(
         ensure_newline=True,
     )
 
-    # Install k9s
-    server.shell(
-        name="Install k9s",
-        commands=["~/bin/brew install k9s"],
-        _ignore_errors=True,
-    )
-
     # Add k9s alias
     files.line(
         name="Add k9s alias",
         path=f"{home}/.bash_aliases",
         line="alias k9sa='k9s --as system:admin'",
         ensure_newline=True,
+    )
+
+    # Install k9s via homebrew
+    server.shell(
+        name="Install k9s via homebrew",
+        commands=["/home/linuxbrew/.linuxbrew/bin/brew install k9s"],
+        _ignore_errors=True,
     )
