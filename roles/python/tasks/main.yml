@@ -5,6 +5,10 @@
       ansible.builtin.set_fact:
         python_defaults:
           venvs: []
+        # renovate: datasource=github-releases depName=astral-sh/uv
+        python_uv_version: "0.6.0"
+        python_uv_checksum: becf19e97d1fd659d2ad44c3e753ab5f3dd6551de64e39241170ae883ce570a2
+        python_uvx_checksum: 80ad7e812aac189dedf7451e1680640a013adaebece2844489b8b5321ed3f27f
 
     - name: set facts for python role
       ansible.builtin.set_fact:
@@ -70,3 +74,21 @@
       loop: "{{ python.venvs }}"
       loop_control:
         label: "Creating venv at {{ item }}"
+
+    - name: install uv
+      ansible.builtin.include_role:
+        name: github_release_binary
+      vars:
+        url: "https://releases.astral.sh/github/uv/releases/download/{{ python_uv_version }}/uv-x86_64-unknown-linux-gnu.tar.gz"
+        tar_strip_components: 1
+        binary_name: uv
+        binary_checksum: "{{ python_uv_checksum }}"
+
+    - name: install uvx
+      ansible.builtin.include_role:
+        name: github_release_binary
+      vars:
+        url: "https://releases.astral.sh/github/uv/releases/download/{{ python_uv_version }}/uv-x86_64-unknown-linux-gnu.tar.gz"
+        tar_strip_components: 1
+        binary_name: uvx
+        binary_checksum: "{{ python_uvx_checksum }}"

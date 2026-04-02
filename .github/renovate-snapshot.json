@@ -1,5 +1,6 @@
 [
   "actions/checkout",
+  "astral-sh/uv",
   "databus23/helm-diff",
   "git-lfs/git-lfs",
   "itaysk/kubectl-neat",
