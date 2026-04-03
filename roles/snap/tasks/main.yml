@@ -21,3 +21,9 @@
   become: true
   community.general.snap:
     name: "{{ snaps | default([]) }}"
+
+- name: install classic snaps
+  become: true
+  community.general.snap:
+    name: "{{ classic_snaps | default([]) }}"
+    classic: true
