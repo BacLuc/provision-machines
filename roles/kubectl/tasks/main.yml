@@ -50,6 +50,14 @@
     name:
       - yq
 
+- name: Create kubeconfig directories
+  ansible.builtin.file:
+    path: "{{ shell_tmp_dir }}/.kube/config.d"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: "ug=rwx,o=rx"
+
 - name: Source kubectl tools bash
   ansible.builtin.blockinfile:
     path: "~/.bashrc"
