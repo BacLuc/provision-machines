@@ -22,6 +22,7 @@ local:
     enable_bash: true
     enable_basicsetup: true
     enable_backup_burp: false
+    enable_firefox: false
     enable_fzf: true
     enable_fluxcd: true
     enable_hashicorp_vault_cli: true

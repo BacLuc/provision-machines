@@ -109,6 +109,9 @@
     - role: flatpak
       tags: flatpak
 
+    - role: firefox
+      tags: firefox
+
     - role: fluxcd
       tags: fluxcd
 

@@ -1,0 +1,116 @@
+---
+- name: provision firefox addons
+  when: enable_firefox | default(false)
+  block:
+    - name: firefox print var
+      ansible.builtin.debug:
+        var: firefox
+
+    - name: set defaults for firefox role
+      ansible.builtin.set_fact:
+        firefox_defaults:
+          policies:
+            {
+              "policies":
+                {
+                  "ExtensionSettings":
+                    {
+                      "uBlock0@raymondhill.net":
+                        {
+                          "installation_mode": "normal_installed",
+                          "install_url": "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi",
+                          "private_browsing": true,
+                        },
+                      "keepassxc-browser@keepassxc.org":
+                        {
+                          "installation_mode": "normal_installed",
+                          "install_url": "https://addons.mozilla.org/firefox/downloads/latest/keepassxc-browser/latest.xpi",
+                          "private_browsing": true,
+                        },
+                      "idcac-pub@guus.ninja":
+                        {
+                          "installation_mode": "normal_installed",
+                          "install_url": "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies/latest.xpi",
+                          "private_browsing": true,
+                        },
+                      "jid1-MnnxcxisBPnSXQ@jetpack":
+                        {
+                          "installation_mode": "normal_installed",
+                          "install_url": "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17/latest.xpi",
+                          "private_browsing": true,
+                        },
+                      "addon@darkreader.org":
+                        {
+                          "installation_mode": "normal_installed",
+                          "install_url": "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest.xpi",
+                          "private_browsing": true,
+                        },
+                      "{11a68c03-baa3-41fb-869c-5172c4c4dd2e}":
+                        {
+                          "installation_mode": "normal_installed",
+                          "install_url": "https://addons.mozilla.org/firefox/downloads/latest/tab_search/latest.xpi",
+                          "private_browsing": true,
+                        },
+                    },
+                  "Bookmarks":
+                    [
+                      {
+                        "Title": "searxng",
+                        "URL": "localhost:13308",
+                        "Favicon": "http://localhost:13308/static/themes/simple/img/favicon.svg",
+                        "Placement": "toolbar",
+                      },
+                      {
+                        "Title": "openwebui",
+                        "URL": "localhost:13307",
+                        "Favicon": "http://localhost:13307/static/favicon.svg",
+                        "Placement": "toolbar",
+                      },
+                    ],
+                  "SearchEngines":
+                    {
+                      "Add":
+                        [
+                          {
+                            "Name": "searxng",
+                            "URLTemplate": "http://localhost:13308/search?q={searchTerms}",
+                            "Method": "GET",
+                            "IconURL": "http://localhost:13308/static/themes/simple/img/favicon.svg",
+                            "Alias": "searxng",
+                            "Description": "searxng",
+                          },
+                        ],
+                      "Default": "searxng",
+                    },
+                  "PasswordManagerEnabled": false,
+                  "GenerativeAI": { "Enabled": false },
+                  "Preferences": {},
+                },
+            }
+
+    - name: install firefox
+      become: true
+      community.general.snap:
+        name:
+          - firefox
+
+    - name: set facts for firefox role
+      ansible.builtin.set_fact:
+        firefox: "{{ firefox_defaults | combine((firefox | default({})), recursive=true) }}"
+
+    - name: create /etc/firefox/policies directory
+      become: true
+      ansible.builtin.file:
+        path: /etc/firefox/policies
+        state: directory
+        owner: root
+        group: root
+        mode: "u=rwx,go=rx"
+
+    - name: install firefox addons via policies.json
+      become: true
+      ansible.builtin.copy:
+        dest: /etc/firefox/policies/policies.json
+        content: |
+          {{ firefox.policies | to_nice_json }}
+        mode: "u=r,go=r"
