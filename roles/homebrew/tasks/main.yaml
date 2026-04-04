@@ -1,6 +1,7 @@
 - name: set facts homebrew role
   ansible.builtin.set_fact:
     homebrew_home: "/home/linuxbrew"
+    homebrew_binaries_path: "/home/linuxbrew/.linuxbrew/bin"
     homebrew_path: "/home/linuxbrew/.linuxbrew/Homebrew/bin"
 
 - name: create linuxbrew home dir
@@ -76,4 +77,4 @@
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: homebrew"
     block: |
-      PATH="$PATH:{{ homebrew_path }}:{{ homebrew_home }}/.linuxbrew/bin"
+      PATH="$PATH:{{ homebrew_path }}:{{ homebrew_binaries_path }}"

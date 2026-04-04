@@ -446,7 +446,7 @@
       ansible.builtin.command:
         cmd: |
           ~/bin/brew install goenv
-        creates: "{{ homebrew_path }}/goenv"
+        creates: "{{ homebrew_binaries_path }}/goenv"
 
     - name: Setup goenv for bash
       ansible.builtin.blockinfile:
@@ -454,7 +454,7 @@
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add goenv"
         block: |
           export GOENV_ROOT="$HOME/.goenv
-          eval "$({{ homebrew_path }}/goenv init -)"
+          eval "$({{ homebrew_binaries_path }}/goenv init -)"
 
     - name: Setup goenv for zsh
       when: enable_zsh | default(false)
@@ -464,7 +464,7 @@
         block: |
           export GOENV_ROOT="$HOME/.goenv"
           export PATH="$GOENV_ROOT/bin:$PATH"
-          eval "$({{ homebrew_path }}/goenv init -)"
+          eval "$({{ homebrew_binaries_path }}/goenv init -)"
 
 - name: Add setup for bat
   when: "'bat' in ansible_facts.packages"

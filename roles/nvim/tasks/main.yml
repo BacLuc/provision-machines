@@ -37,7 +37,7 @@
       become: true
       when: '"nvim" not in current_vim_alternatives.stdout'
       ansible.builtin.command: |
-        update-alternatives --install /usr/bin/vim vim {{ homebrew_path }}/nvim 1
+        update-alternatives --install /usr/bin/vim vim {{ homebrew_binaries_path }}/nvim 1
       register: nvim_alternative_added
       changed_when: nvim_alternative_added.rc == 0
       failed_when: nvim_alternative_added.rc != 0 and "alternative nvim already exists" not in nvim_alternative_added.stderr
@@ -53,7 +53,7 @@
     - name: Set nvim as the default vim alternative
       become: true
       ansible.builtin.command: |
-        update-alternatives --set vim {{ homebrew_path }}/nvim
+        update-alternatives --set vim {{ homebrew_binaries_path }}/nvim
       when: '"nvim" not in current_vim_link.stdout'
       register: vim_default_set
       changed_when: vim_default_set.rc == 0
@@ -70,7 +70,7 @@
       become: true
       when: '"nvim" not in current_vi_alternatives.stdout'
       ansible.builtin.command: |
-        update-alternatives --install /usr/bin/vi vi {{ homebrew_path }}/nvim 1
+        update-alternatives --install /usr/bin/vi vi {{ homebrew_binaries_path }}/nvim 1
       register: nvim_vi_alternative_added
       changed_when: nvim_vi_alternative_added.rc == 0
       failed_when: nvim_vi_alternative_added.rc != 0 and "alternative nvim already exists" not in nvim_vi_alternative_added.stderr
@@ -86,7 +86,7 @@
     - name: Set nvim as the default vi alternative
       become: true
       ansible.builtin.command: |
-        update-alternatives --set vi {{ homebrew_path }}/nvim
+        update-alternatives --set vi {{ homebrew_binaries_path }}/nvim
       when: '"nvim" not in current_vi_link.stdout'
       register: vi_default_set
       changed_when: vi_default_set.rc == 0

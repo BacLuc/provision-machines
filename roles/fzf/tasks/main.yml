@@ -13,7 +13,7 @@
         marker: "# {mark} ANSIBLE MANAGED BLOCK: add fzf completion"
         block: |
           FZF_DEFAULT_OPTS="--tmux"
-          eval $({{ homebrew_path }}/fzf --bash)
+          eval $({{ homebrew_binaries_path }}/fzf --bash)
 
     - name: add fzf completion to zsh
       when: enable_zsh | default(false)

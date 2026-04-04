@@ -52,7 +52,7 @@
 
 - name: Create kubeconfig directories
   ansible.builtin.file:
-    path: "{{ shell_tmp_dir }}/.kube/config.d"
+    path: "~/.kube/config.d"
     state: directory
     owner: "{{ user }}"
     group: "{{ user }}"
@@ -122,7 +122,7 @@
   ansible.builtin.command:
     cmd: |
       ~/bin/brew install k9s
-    creates: "{{ homebrew_path }}/k9s"
+    creates: "{{ homebrew_binaries_path }}/k9s"
 
 - name: Add k9s aliases
   ansible.builtin.lineinfile:
@@ -141,31 +141,31 @@
   ansible.builtin.command:
     cmd: |
       ~/bin/brew install kubelogin
-    creates: "{{ homebrew_path }}/kubectl-oidc_login"
+    creates: "{{ homebrew_binaries_path }}/kubectl-oidc_login"
 
 - name: install kubeconform
   ansible.builtin.command:
     cmd: |
       ~/bin/brew install kubeconform
-    creates: "{{ homebrew_path }}/kubeconform"
+    creates: "{{ homebrew_binaries_path }}/kubeconform"
 
 - name: install kustomize
   ansible.builtin.command:
     cmd: |
       ~/bin/brew install kustomize
-    creates: "{{ homebrew_path }}/kustomize"
+    creates: "{{ homebrew_binaries_path }}/kustomize"
 
 - name: install kubeseal
   ansible.builtin.command:
     cmd: |
       ~/bin/brew install kubeseal
-    creates: "{{ homebrew_path }}/kubeseal"
+    creates: "{{ homebrew_binaries_path }}/kubeseal"
 
 - name: install helmfile
   ansible.builtin.command:
     cmd: |
       ~/bin/brew install helmfile
-    creates: "{{ homebrew_path }}/helmfile"
+    creates: "{{ homebrew_binaries_path }}/helmfile"
 
 - name: install helm-chartsnap
   block:
