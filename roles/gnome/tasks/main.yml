@@ -2,7 +2,6 @@
   when: enable_customize_gnome | default(false)
   block:
     - name: "install gnome extensions app"
-      when: basic_utils.enable_keepassxc | default(false)
       community.general.flatpak:
         name:
           - org.gnome.Extensions
