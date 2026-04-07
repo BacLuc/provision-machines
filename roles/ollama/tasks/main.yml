@@ -5,7 +5,7 @@
       ansible.builtin.set_fact:
         ollama_defaults:
           # renovate: datasource=github-releases depName=ollama/ollama
-          ollama_version: "0.19.0"
+          ollama_version: "0.20.3"
           model: "qwen2.5:3b"
 
     - name: set facts for ollama role
