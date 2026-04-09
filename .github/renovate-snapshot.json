@@ -6,6 +6,7 @@
   "itaysk/kubectl-neat",
   "jesseduffield/lazygit",
   "jlandowner/helm-chartsnap",
+  "jsonnet-bundler/jsonnet-bundler",
   "mcr.microsoft.com/devcontainers/universal",
   "nvm-sh/nvm",
   "ollama/ollama",

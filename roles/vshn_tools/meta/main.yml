@@ -1,0 +1,4 @@
+---
+dependencies:
+  - role: python
+  - role: update_packages_script

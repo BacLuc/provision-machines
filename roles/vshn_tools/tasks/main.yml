@@ -14,6 +14,11 @@
           # renovate: datasource=github-releases depName=vshn/k8ify
           k8ify_version: "2.5.0"
           k8ify_checksum: f3605d34439c0bef36930c71ad2b066acc0ba821e68c98e764fffc1a66dcc3b9
+          # renovate: datasource=github-releases depName=jsonnet-bundler/jsonnet-bundler
+          jsonnet_bundler_version: "0.6.0"
+          jsonnet_bundler_checksum: sha256:78e54afbbc3ff3e0942b1576b4992277df4f6beb64cddd58528a76f0cd70db54
+
+          commodore_python_version: 3.12
 
     - name: set facts for vshn_tools role
       ansible.builtin.set_fact:
@@ -45,6 +50,7 @@
       ansible.builtin.blockinfile:
         path: "~/.bash_aliases"
         marker: "# {mark} ANSIBLE MANAGED BLOCK: commodore alias"
+        state: absent
         block: |
           alias commodore='docker run \
               --rm \
@@ -52,3 +58,56 @@
               --volume "${PWD}:/app/data" \
               --workdir /app/data \
               projectsyn/commodore:${COMMODORE_VERSION:=v1.29.0}'
+
+    - name: install jsonnet-bundler
+      ansible.builtin.get_url:
+        url: "https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v{{ vshn_tools.jsonnet_bundler_version }}/jb-linux-amd64"
+        dest: "~/bin/jb"
+        mode: "u=rwx,go=rx"
+        checksum: "{{ vshn_tools.jsonnet_bundler_checksum }}"
+
+    - name: install commodore
+      ansible.builtin.shell:
+        cmd: |
+          /home/{{ user }}/bin/uv tool install --python=python{{ vshn_tools_defaults.commodore_python_version }} --python-preference=system syn-commodore
+        creates: "~/.local/bin/commodore"
+
+    - name: set default lieutenant api url for bash
+      ansible.builtin.blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add commodore default api url"
+        block: |
+          export COMMODORE_API_URL=https://api.syn.vshn.net
+
+    - name: set default lieutenant api url for zsh
+      when: enable_zsh | default(false)
+      ansible.builtin.blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add commodore default api url"
+        block: |
+          export COMMODORE_API_URL=https://api.syn.vshn.net
+
+    - name: add update script
+      become: true
+      ansible.builtin.copy:
+        content: |
+          #!/bin/sh
+
+          su {{ user }} -c "/home/{{ user }}/bin/uv tool upgrade syn-commodore"
+        dest: "{{ update_packages_script.dir }}/commodore-upgrade"
+        mode: "u=rwx,go=rx"
+
+    - name: add bash autocomplete for bash
+      ansible.builtin.blockinfile:
+        path: "~/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add autocomplete for commodore"
+        block: |
+          source <(_COMMODORE_COMPLETE=zsh_source commodore)
+
+    - name: add zsh autocomplete for zsh
+      when: enable_zsh | default(false)
+      ansible.builtin.blockinfile:
+        path: "~/.zshrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: add autocomplete for commodore"
+        block: |
+          source <(_COMMODORE_COMPLETE=zsh_source commodore)
