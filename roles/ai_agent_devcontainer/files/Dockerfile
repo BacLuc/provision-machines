@@ -8,6 +8,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     python3-apt \
     curl \
     git \
+    netcat-openbsd \
     && curl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/refs/tags/v1.5.9063/files/docker/systemctl3.py -o /usr/local/bin/systemctl \
     && chmod +x /usr/local/bin/systemctl
 
@@ -25,5 +26,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/instal
     npm install -g opencode-ai
 
 ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.json
+
+ENV OPENCODE_PORT=4096
 
 USER root

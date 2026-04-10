@@ -4,7 +4,29 @@ set -e
 
 CONFIG_DIR="$HOME/${PROVISION_MACHINES_DIR:-projects/provision-machines}/roles/ai_agent_devcontainer/files"
 
+find_free_port() {
+  local port=4096
+  while nc -z 127.0.0.1 "$port" 2>/dev/null; do
+    port=$((port + 1))
+    if [[ $port -gt 9999 ]]; then
+      port=$((RANDOM % 60000 + 4000))
+    fi
+  done
+  echo "$port"
+}
+
+if [[ -n "$OPENCODE_PORT" ]]; then
+  if ! [[ "$OPENCODE_PORT" =~ ^[0-9]+$ ]] || [[ "$OPENCODE_PORT" -lt 1024 ]] || [[ "$OPENCODE_PORT" -gt 65535 ]]; then
+    echo "Error: OPENCODE_PORT must be a valid port number (1024-65535)" >&2
+    exit 1
+  fi
+else
+  OPENCODE_PORT=$(find_free_port)
+fi
+export OPENCODE_PORT
+
 WORKSPACE_DIR=$(pwd)
+export WORKSPACE_DIR
 WORKSPACE_BASENAME=$(basename "$WORKSPACE_DIR")
 
 WORKING_DIR="/workspaces/${WORKSPACE_BASENAME}"
