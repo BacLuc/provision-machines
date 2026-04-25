@@ -2,7 +2,7 @@
 - name: "set facts for bash"
   ansible.builtin.set_fact:
     # renovate: datasource=docker depName=ghcr.io/bacluc/prettier-image/prettier-image
-    bash_prettier_image_version_version: "3.8.1"
+    bash_prettier_image_version_version: "3.8.2"
 
 - name: "install autojump"
   become: true
