@@ -39,6 +39,9 @@ SANITIZED_PATH=$(echo "$WORKING_DIR" | tr '/' '_' | sed 's/^_//' | sed 's/_$//')
 COMPOSE_PROJECT_NAME="ai_devcontainer_${SANITIZED_PATH}"
 export COMPOSE_PROJECT_NAME
 
+export GIT_AUTHOR_NAME=$(git config user.name)
+export GIT_AUTHOR_EMAIL=$(git config user.email)
+
 mkdir -p /tmp/noworktree
 if [[ -f $WORKSPACE_DIR/.git ]]; then
   if grep -q "../" $WORKSPACE_DIR/.git ; then
