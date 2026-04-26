@@ -2,11 +2,17 @@
 description: Reviews your changes
 mode: all
 temperature: 0.1
-tools:
-  read: true
-  write: false
-  edit: false
-  bash: true
+permissions:
+  read: allow
+  write: deny
+  edit: deny
+  bash:
+    "*": ask
+    "git diff": allow
+    "git log*": allow
+    "grep *": allow
+    "cat *": allow
+  webfetch: allow
 ---
 
 # Role
