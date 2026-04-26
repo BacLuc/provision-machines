@@ -11,7 +11,17 @@
         "apiKey": "apikey"
       }
     },
+    "cortecs2": {
+      "options": {
+        "apiKey": "apikey"
+      }
+    },
     "requesty": {
+      "options": {
+        "apiKey": "apikey"
+      }
+    },
+    "requesty2": {
       "options": {
         "apiKey": "apikey"
       }
