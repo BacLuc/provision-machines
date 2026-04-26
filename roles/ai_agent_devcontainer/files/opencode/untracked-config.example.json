@@ -6,11 +6,6 @@
         "apiKey": "apikey"
       }
     },
-    "nebius": {
-      "options": {
-        "apiKey": "apikey"
-      }
-    },
     "cortecs": {
       "options": {
         "apiKey": "apikey"
