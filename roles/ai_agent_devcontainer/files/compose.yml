@@ -16,6 +16,9 @@ services:
         source: ${HOME}/${PROVISION_MACHINES_DIR:-projects/provision-machines}/roles/ai_agent_devcontainer/files/opencode
         target: /home/codespace/.config/opencode
         consistency: cached
+      - type: volume
+        source: docker-data
+        target: /var/lib/docker
     user: codespace
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -25,3 +28,6 @@ services:
       - GIT_AUTHOR_EMAIL
     ports:
       - "127.0.0.1:${OPENCODE_PORT:-4096}:4096"
+
+volumes:
+  docker-data:
