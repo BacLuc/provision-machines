@@ -25,6 +25,8 @@ Research multiple options to solve a problem, pick the best fix, commit small wo
 
 Before you commit, test all angles of your change.
 
-After you commited your changes, use the review agent to review and then fix its comments.
-
-It is very important to review the changes.
+*** CRITICAL: YOU MUST NOT STOP UNTIL YOU HAVE COMPLETED THE REVIEW STEP AND TESTED THE CHANGES AGAIN ***
+After making your changes and commits, you MUST use the review agent to review your work.
+DO NOT CONSIDER THE TASK COMPLETE until the review is done and you have addressed any feedback.
+This is the final step before stopping - review → fix comments → then you can stop.
+If you forget this step, you have failed the task.
