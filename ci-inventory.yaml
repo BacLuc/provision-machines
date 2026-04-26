@@ -95,6 +95,7 @@ local:
         - libgtk-3-dev
         - libstdc++-12-dev
         - ninja-build
+        - net-tools
         - ocrmypdf
         # - gitk
         # - gnome-tweaks
