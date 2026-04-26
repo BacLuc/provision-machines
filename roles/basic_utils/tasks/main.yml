@@ -27,20 +27,20 @@
     state: directory
     mode: "u=rwx,go=rx"
 
-- name: source user bin dir in bash
+- name: source user bin and ~/.local/bin dir in bash
   ansible.builtin.blockinfile:
     path: "~/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
     block: |
-      export PATH="/home/{{ user }}/bin:$PATH"
+      export PATH="/home/{{ user }}/bin:/home/{{ user }}/.local/bin:$PATH"
 
-- name: source user bin dir in zsh
+- name: source user bin and ~/.local/bin dir in zsh
   when: enable_zsh | default(false)
   ansible.builtin.blockinfile:
     path: "~/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK: bin of user"
     block: |
-      export PATH="/home/{{ user }}/bin:$PATH"
+      export PATH="/home/{{ user }}/bin:/home/{{ user }}/.local/bin:$PATH"
 
 - name: setup dirvenv
   when: basic_utils.enable_direnv | default(false)
