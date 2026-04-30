@@ -57,6 +57,7 @@
       when: '"nvim" not in current_vim_link.stdout'
       register: vim_default_set
       changed_when: vim_default_set.rc == 0
+      failed_when: false
 
     - name: Check current vi alternatives
       become: true
@@ -90,3 +91,4 @@
       when: '"nvim" not in current_vi_link.stdout'
       register: vi_default_set
       changed_when: vi_default_set.rc == 0
+      failed_when: false
