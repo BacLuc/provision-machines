@@ -9,8 +9,8 @@ services:
         target: /workspaces/${WORKSPACE_BASENAME}
         consistency: cached
       - type: bind
-        source: ${GIT_WORKTREE_SOURCE:-/tmp/noworktree}
-        target: ${GIT_WORKTREE_TARGET:-/tmp/noworktree}
+        source: ${GIT_WORKTREE_SOURCE:-/tmp/noworktree}/.git
+        target: ${GIT_WORKTREE_TARGET:-/tmp/noworktree}/.git
         consistency: cached
       - type: bind
         source: ${HOME}/${PROVISION_MACHINES_DIR:-projects/provision-machines}/roles/ai_agent_devcontainer/files/opencode
