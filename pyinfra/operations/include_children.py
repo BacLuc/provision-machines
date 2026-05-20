@@ -12,5 +12,4 @@ def include_children(directory: str) -> None:
         if os.path.isdir(os.path.join(directory, child_dir)) and os.path.exists(
             os.path.join(directory, child_dir, "deploy.py")
         ):
-            print(f"including {child_dir}")
             local.include(filename=os.path.join(directory, child_dir, "deploy.py"))
