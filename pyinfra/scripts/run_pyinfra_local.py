@@ -6,7 +6,7 @@ from pyinfra_cli.main import main as pyinfra_main  # type: ignore[import-untyped
 
 
 def main() -> None:
-    sys.argv = ["pyinfra", "@local", "deploy.py"]
+    sys.argv = ["pyinfra", "inventory.py", "deploy.py"]
 
     sys.exit(pyinfra_main())
 

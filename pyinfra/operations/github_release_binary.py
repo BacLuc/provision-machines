@@ -1,4 +1,5 @@
 import tempfile
+from typing import Callable, Union
 
 from pyinfra import host, logger
 from pyinfra.facts.files import Sha256File
@@ -8,7 +9,12 @@ from pyinfra.operations.server import shell
 
 
 def github_release_binary(
-    url: str, binary_name: str, checksum: str, strip_components: int = 0, is_tar: bool = True
+    url: str,
+    binary_name: str,
+    checksum: str,
+    strip_components: int = 0,
+    is_tar: bool = True,
+    _if: Union[bool, Callable[[], bool]] = True,
 ) -> None:
     if not url:
         raise ValueError("URL cannot be empty")
@@ -18,6 +24,12 @@ def github_release_binary(
         raise ValueError("Checksum cannot be empty")
     if strip_components < 0:
         raise ValueError("Strip components cannot be negative")
+
+    if isinstance(_if, bool) and not _if:
+        return
+
+    if callable(_if) and not _if():
+        return
 
     user_name = host.get_fact(User)
     dest_file_path = f"/home/{user_name}/bin/{binary_name}"
