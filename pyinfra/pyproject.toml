@@ -57,14 +57,14 @@ warn_unused_ignores = true
 explicit_package_bases = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
+testpaths = ["."]
+python_files = ["*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = ["--strict-markers", "--strict-config", "--cov=provision_machines", "--cov-report=term-missing"]
+addopts = ["--strict-markers", "--strict-config", "--cov=.", "--cov-report=term-missing"]
 
 [tool.coverage.run]
-source = ["provision_machines"]
+source = ["."]
 omit = ["*/tests/*", "*/test_*", "*/__pycache__/*"]
 
 [tool.coverage.report]
