@@ -1,0 +1,83 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "provision-machines"
+version = "0.1.0"
+description = "Pyinfra deployment scripts for provisioning development machines"
+requires-python = ">=3.10"
+
+dependencies = [
+    "path==17.1.1",
+    "pyinfra==3.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "isort==8.0.1",
+    "mypy==1.20.2",
+    "pytest-cov==7.1.0",
+    "pytest-mock==3.15.1",
+    "pytest==9.0.3",
+    "ruff==0.15.12",
+    "types-requests==2.33.0.20260408",
+]
+
+[tool.black]
+line-length = 120
+target-version = ["py39"]
+
+[tool.isort]
+include_trailing_comma = true
+line_length = 120
+multi_line_output = 3
+profile = "black"
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+ignore = ["E501", "B008", "C901"]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+namespace_packages = true
+no_implicit_optional = true
+python_version = "3.10"
+strict_equality = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_ignores = true
+explicit_package_bases = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = ["--strict-markers", "--strict-config", "--cov=provision_machines", "--cov-report=term-missing"]
+
+[tool.coverage.run]
+source = ["provision_machines"]
+omit = ["*/tests/*", "*/test_*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["provision_machines"]
