@@ -13,6 +13,8 @@ Do not stop until all use cases are tested.
 uv and pyinfra are already installed.
 If you need another tool, set it up with pyinfra and install it with pyinfra.
 
+NEVER NEVER use comments.
+
 Use the following command to run the pyinfra deploy:
 
 ```shell
