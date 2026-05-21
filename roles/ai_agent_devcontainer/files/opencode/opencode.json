@@ -66,7 +66,7 @@
     },
     "requesty2": {
       "options": {
-        "baseURL": "https://api.requesty.ai/v1"
+        "baseURL": "https://router.requesty.ai/v1"
       },
       "models": {
         "qwen3.5-397b-a17b": {
