@@ -83,6 +83,9 @@
         },
         "nebius/moonshotai/kimi-k2.5": {
           "name": "kimi-2.5"
+        },
+        "zai/GLM-4.5": {
+          "name": "zai/glm-4.5"
         }
       }
     }
