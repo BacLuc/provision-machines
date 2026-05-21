@@ -24,6 +24,9 @@ uv run scripts/run_pyinfra_local.py
 It may be that not everything works because you are in a container.
 Also read the README.md.
 
+Keep the style of the imports and how the group vars accessed.
+Also don't use unnecessary functions, keep the style as it was, simple and understandable.
+
 ## Renovate
 
 Renovate must be able to update all dependencies.
