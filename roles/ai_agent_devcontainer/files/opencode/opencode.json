@@ -69,9 +69,6 @@
         "baseURL": "https://router.requesty.ai/v1"
       },
       "models": {
-        "qwen3.5-397b-a17b": {
-          "name": "qwen3.5-397b-a17b"
-        },
         "google/gemini-3-pro-preview": {
           "name": "gemini-3-pro-preview"
         },
