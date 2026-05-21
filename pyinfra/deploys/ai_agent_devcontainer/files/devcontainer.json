@@ -1,0 +1,13 @@
+{
+  "name": "AI Agent DevContainer",
+  "dockerComposeFile": "./compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "customizations": {
+    "vscode": {
+      "extensions": []
+    }
+  },
+  "remoteUser": "codespace",
+  "postStartCommand": "bash -c '(git lfs uninstall || true ) && echo OpenCode starting on port ${OPENCODE_PORT:-4096}... && cd /workspaces/${localWorkspaceFolderBasename} && opencode web --hostname 0.0.0.0 --port 4096'"
+}

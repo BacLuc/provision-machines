@@ -1,3 +1,7 @@
+ai_agent_devcontainer = {
+    "enabled": True
+}
+
 python = {
     "enabled": True,
     "uv": {
