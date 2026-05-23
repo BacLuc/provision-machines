@@ -1,0 +1,15 @@
+[Unit]
+Description=Docker Image Usage Tracker
+After=docker.service
+PartOf=docker.service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/docker-events-track.sh
+Restart=on-failure
+RestartSec=10
+# Keep the service running
+KillMode=process
+
+[Install]
+WantedBy=default.target

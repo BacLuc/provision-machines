@@ -1,52 +1,46 @@
 from pyinfra import host
-from pyinfra.operations import (
-    apt,
-    files,
-)
+from pyinfra.operations import apt, files, server
 
-# Get user from host data
 user = host.data.get("user", "ubuntu")
 
-if host.data.get("alacritty", {}).get("enabled", False):
-    # Install alacritty
+alacritty_defaults = {
+    "font_size": 12,
+}
+
+alacritty = alacritty_defaults.copy()
+if host.data.get("alacritty"):
+    alacritty.update(host.data.get("alacritty", {}))
+
+if host.data.get("enable_alacritty", False):
+    
     apt.packages(
-        name="Install Alacritty",
+        name="Install alacritty",
         packages=["alacritty"],
         _sudo=True,
     )
-
-    # Create Alacritty config directory
+    
     files.directory(
         name="Create Alacritty config directory",
         path=f"/home/{user}/.config/alacritty",
-        user=user,
-        group=user,
         mode="755",
     )
-
-    # Download Catppuccin Mocha theme
+    
     files.download(
         name="Download Catppuccin Mocha theme",
         src="https://raw.githubusercontent.com/catppuccin/alacritty/f6cb5a5c2b404cdaceaff193b9c52317f62c62f7/catppuccin-mocha.toml",
         dest=f"/home/{user}/.config/alacritty/catppuccin-mocha.toml",
-        user=user,
-        group=user,
         mode="644",
     )
-
-    # Get font size from host data with default
-    font_size = host.data.get("alacritty", {}).get("font_size", 12)
-
-    # Provision Alacritty config
-    files.file(
+    
+    files.put(
         name="Provision Alacritty config",
-        path=f"/home/{user}/.config/alacritty/alacritty.toml",
+        dest=f"/home/{user}/.config/alacritty/alacritty.toml",
         content=f"""import = [
     "~/.config/alacritty/catppuccin-mocha.toml"
 ]
 
 [font]
-size = {font_size}
+size = {alacritty['font_size']}
 
 [mouse]
 hide_when_typing = false
@@ -54,7 +48,5 @@ hide_when_typing = false
 [window]
 startup_mode = "Maximized"
 """,
-        user=user,
-        group=user,
         mode="644",
     )
