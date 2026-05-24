@@ -6,6 +6,11 @@ from ..operations.github_release_binary import github_release_binary
 
 
 def python():
+    python_config = host.data.get("python", {})
+    basic_utils_config = host.data.get("basic_utils", {})
+    
+    if not (python_config.get("enabled", False) or basic_utils_config.get("python", {}).get("enabled", False)):
+        return
 
     python_defaults = {
         "venvs": [],

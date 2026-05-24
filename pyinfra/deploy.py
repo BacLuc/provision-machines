@@ -11,117 +11,114 @@ from .deploys.git_lfs import deploy as git_lfs_deploy
 
 
 def deploy():
-    # Core infrastructure
-    if host.data.basicsetup.enabled:
+    if host.data.get("basicsetup", {}).get("enabled", False):
         basicsetup()
     
-    if host.data.bash.enabled:
+    if host.data.get("bash", {}).get("enabled", False):
         bash()
     
-    if host.data.python.enabled:
+    if host.data.get("python", {}).get("enabled", False):
         python()
     
-    if host.data.zsh.enabled:
+    if host.data.get("zsh", {}).get("enabled", False):
         zsh()
     
-    if host.data.basic_utils.enabled:
+    if host.data.get("basic_utils", {}).get("enabled", False):
         basic_utils_deploy()
     
-    if host.data.cleanup_scripts.enabled:
+    if host.data.get("cleanup_scripts", {}).get("enabled", False):
         cleanup_scripts_deploy()
     
-    if host.data.docker.enabled:
+    if host.data.get("docker", {}).get("enabled", False):
         docker_deploy()
     
-    if host.data.flatpak.enabled:
+    if host.data.get("flatpak", {}).get("enabled", False):
         flatpak_deploy()
     
-    if host.data.fzf.enabled:
+    if host.data.get("fzf", {}).get("enabled", False):
         fzf_deploy()
     
-    if host.data.git_lfs.enabled:
+    if host.data.get("git_lfs", {}).get("enabled", False):
         git_lfs_deploy()
     
-    # Development tools
-    if host.data.basic_utils.enable_nvm or host.data.enable_nvm:
+    if (host.data.get("basic_utils", {}).get("enable_nvm", False) or 
+        host.data.get("enable_nvm", False)):
         nvm()
     
-    if host.data.kubectl.enabled:
+    if host.data.get("kubectl", {}).get("enabled", False):
         kubectl()
     
-    if host.data.tmux.enabled:
+    if host.data.get("tmux", {}).get("enabled", False):
         tmux()
     
-    if host.data.enable_nvim:
+    if host.data.get("enable_nvim", False):
         nvim()
     
-    if host.data.enable_lazygit:
+    if host.data.get("enable_lazygit", False):
         lazygit()
     
-    if host.data.enable_ollama:
+    if host.data.get("enable_ollama", False):
         ollama()
     
-    if host.data.homebrew.enabled:
+    if host.data.get("homebrew", {}).get("enabled", False):
         homebrew()
     
-    if host.data.snap.enabled:
+    if host.data.get("snap", {}).get("enabled", False):
         snap()
     
-    if host.data.enable_sysctl:
+    if host.data.get("enable_sysctl", False):
         sysctl()
     
-    if host.data.motd.enable_disk_usage:
+    if host.data.get("motd", {}).get("enable_disk_usage", False):
         motd()
     
-    if host.data.enable_alacritty:
+    if host.data.get("enable_alacritty", False):
         alacritty()
     
-    if host.data.enable_firefox:
+    if host.data.get("enable_firefox", False):
         firefox()
     
-    if host.data.enable_zed:
+    if host.data.get("enable_zed", False):
         zed()
     
-    if host.data.enable_vifm:
+    if host.data.get("enable_vifm", False):
         vifm()
     
-    if host.data.enable_jetbrains:
+    if host.data.get("enable_jetbrains", False):
         intellij()
     
-    if host.data.okular.enabled:
+    if host.data.get("okular", {}).get("enabled", False):
         okular()
     
-    # System integration (mostly enabled by default)
-    if host.data.enable_ubuntu_desktop:
+    if host.data.get("enable_ubuntu_desktop", True):
         ubuntu_desktop()
     
-    if host.data.hashicorp_apt_repo.enabled:
+    if host.data.get("hashicorp_apt_repo", {}).get("enabled", False):
         hashicorp_apt_repo()
     
-    if host.data.enable_hashicorp_vault_cli:
+    if host.data.get("enable_hashicorp_vault_cli", False):
         hashicorp_vault_cli()
     
-    if host.data.enable_php_development:
+    if host.data.get("enable_php_development", False):
         php_development()
     
-    if host.data.enable_openwebui:
+    if host.data.get("enable_openwebui", False):
         openwebui()
     
-    if host.data.enable_vagrant:
+    if host.data.get("enable_vagrant", False):
         vagrant()
     
-    if host.data.enable_fluxcd:
+    if host.data.get("enable_fluxcd", False):
         fluxcd()
     
-    if host.data.enable_backup_burp:
+    if host.data.get("enable_backup_burp", False):
         backup_burp()
     
-    if host.data.enable_displaylink_driver:
+    if host.data.get("enable_displaylink_driver", False):
         displaylink_driver()
     
-    if host.data.gnome.enable_customize_gnome:
+    if host.data.get("gnome", {}).get("enable_customize_gnome", False):
         gnome()
     
-    # Always run cleanup
-    if host.data.enable_ubuntu_cleanup:
+    if host.data.get("enable_ubuntu_cleanup", True):
         ubuntu_cleanup()

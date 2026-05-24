@@ -3,7 +3,7 @@ from pyinfra.operations import files, server
 
 user = host.data.get("user", "ubuntu")
 
-if host.data.enable_nvim:
+if host.data.get("enable_nvim", False):
     
     # Install neovim using homebrew (would need to be implemented)
     server.shell(

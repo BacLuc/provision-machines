@@ -12,7 +12,8 @@ nvm = nvm_defaults.copy()
 if host.data.get("nvm"):
     nvm.update(host.data.get("nvm", {}))
 
-if host.data.basic_utils.enable_nvm or host.data.enable_nvm:
+if (host.data.get("basic_utils", {}).get("enable_nvm", False) or 
+    host.data.get("enable_nvm", False)):
     
     nvm_dir = f"/home/{user}/.nvm"
     

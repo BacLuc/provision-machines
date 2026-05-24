@@ -3,6 +3,9 @@ from pyinfra.operations import apt, files, server
 
 
 def basicsetup():
+    if not host.data.get("basicsetup", {}).get("enabled", False):
+        return
+
     basicsetup_config = host.data.basicsetup
 
     apt.packages(

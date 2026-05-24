@@ -38,7 +38,7 @@ kubectl = kubectl_defaults.copy()
 if host.data.get("kubectl"):
     kubectl.update(host.data.get("kubectl", {}))
 
-if host.data.kubectl.enabled:
+if host.data.get("kubectl", {}).get("enabled", False):
     
     # Install kubectl and helm (using snap operations would need to be implemented)
     # For now, we'll use shell commands
