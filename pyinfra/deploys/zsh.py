@@ -5,10 +5,6 @@ from pyinfra.facts.server import User, Shell
 
 
 def zsh():
-    zsh_config = host.data.get("zsh", {})
-    
-    if not zsh_config.get("enabled", False):
-        return
 
     zsh_defaults = {
         "completions_dir": "~/zsh/completions",

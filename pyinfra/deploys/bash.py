@@ -3,8 +3,6 @@ from pyinfra.operations import apt, files, server
 
 
 def bash():
-    if not host.data.get("bash", {}).get("enabled", False):
-        return
 
     apt.packages(
         name="Install autojump",

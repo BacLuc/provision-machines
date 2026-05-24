@@ -3,7 +3,7 @@ from pyinfra.operations import apt, files, server
 
 user = host.data.get("user", "ubuntu")
 
-if host.data.get("tmux", {}).get("enabled", False):
+if host.data.tmux.enabled:
     
     apt.packages(
         name="Install tmux tools",
