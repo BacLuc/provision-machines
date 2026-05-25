@@ -235,7 +235,7 @@ php_development = {
 
 enable_openwebui = False
 
-openwebui_compose_project_dir = f"/home/{host.data.get('user', 'ubuntu')}/openwebui"
+openwebui_compose_project_dir = "/home/ubuntu/openwebui"
 
 enable_vagrant = False
 
