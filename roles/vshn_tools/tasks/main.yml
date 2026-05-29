@@ -14,6 +14,11 @@
           # renovate: datasource=github-releases depName=vshn/k8ify
           k8ify_version: "2.5.0"
           k8ify_checksum: f3605d34439c0bef36930c71ad2b066acc0ba821e68c98e764fffc1a66dcc3b9
+
+          # renovate: datasource=github-releases depName=vshn/kharon
+          kharon_version: "1.5.0"
+          kharon_checksum: sha256:01544fd92b389723480b0886326932182989727e38c91f89b7fa2133599dc6e5
+
           # renovate: datasource=github-releases depName=jsonnet-bundler/jsonnet-bundler
           jsonnet_bundler_version: "0.6.0"
           jsonnet_bundler_checksum: sha256:78e54afbbc3ff3e0942b1576b4992277df4f6beb64cddd58528a76f0cd70db54
@@ -45,6 +50,37 @@
         url: "https://github.com/vshn/k8ify/releases/download/v{{ vshn_tools.k8ify_version }}/k8ify_{{ vshn_tools.k8ify_version }}_linux_amd64.tar.gz"
         binary_name: k8ify
         binary_checksum: "{{ vshn_tools.k8ify_checksum }}"
+
+    - name: install kharon
+      block:
+        - name: install binary
+          ansible.builtin.get_url:
+            url: "https://github.com/vshn/kharon/releases/download/v{{ vshn_tools.kharon_version }}/kharon-linux-x86_64"
+            dest: "~/bin/kharon"
+            mode: "u=rwx,go=rx"
+            checksum: "{{ vshn_tools.kharon_checksum }}"
+
+        - name: add bash autocomplete for bash
+          ansible.builtin.blockinfile:
+            path: "~/.bashrc"
+            marker: "# {mark} ANSIBLE MANAGED BLOCK: add autocomplete for kharon"
+            block: |
+              source <(kharon completion bash)
+
+        - name: add zsh autocomplete for zsh
+          when: enable_zsh | default(false)
+          ansible.builtin.blockinfile:
+            path: "~/.zshrc"
+            marker: "# {mark} ANSIBLE MANAGED BLOCK: add autocomplete for kharon"
+            block: |
+              source <(kharon completion zsh)
+
+        - name: setup alias for kharon oc-web-login
+          ansible.builtin.blockinfile:
+            path: "~/.bash_aliases"
+            marker: "# {mark} ANSIBLE MANAGED BLOCK: kharon alias"
+            block: |
+              alias kl='kharon oc-web-login'
 
     - name: setup alias for commodore
       ansible.builtin.blockinfile:

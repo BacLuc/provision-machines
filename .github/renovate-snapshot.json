@@ -15,5 +15,6 @@
   "robscott/kube-capacity",
   "vshn/appcat-cli",
   "vshn/emergency-credentials-receive",
-  "vshn/k8ify"
+  "vshn/k8ify",
+  "vshn/kharon"
 ]
