@@ -9,7 +9,7 @@ if host.data.get("fluxcd", {}).get("enabled", False):
     files.block(
         name="Setup flux cli alias",
         path=f"/home/{user}/.bash_aliases",
-        marker="# ANSIBLE MANAGED BLOCK: flux cli alias",
+        marker="# {mark} ANSIBLE MANAGED BLOCK: flux cli alias",
         content="""alias flux='docker run --rm -it \\
   --user $UID \\
   --volume $KUBECONFIG:/kubeconfig \\
@@ -23,6 +23,5 @@ alias fluxa='docker run --rm -it \\
   --volume $PWD:/workspace \\
   --workdir $PWD:/workspace \\
   ghcr.io/fluxcd/flux-cli:${FLUX_CLI_VERSION:-v2.2.3} --kubeconfig=/kubeconfig --as "system:admin"'""",
-        user=user,
-        group=user,
+        try_prevent_shell_expansion=True,
     )

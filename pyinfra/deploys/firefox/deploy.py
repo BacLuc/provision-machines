@@ -1,4 +1,6 @@
 from pyinfra import host
+import io
+
 from pyinfra.operations import (
     files,
     server,
@@ -98,10 +100,10 @@ if host.data.get("firefox", {}).get("enabled", False):
     )
 
     # Install firefox addons via policies.json
-    files.file(
+    files.put(
         name="Install firefox addons via policies.json",
-        path="/etc/firefox/policies/policies.json",
-        content=str(firefox["policies"]).replace("'", '"'),
+        src=io.StringIO(str(firefox["policies"]).replace("'", '"')),
+        dest="/etc/firefox/policies/policies.json",
         _sudo=True,
         mode="644",
     )

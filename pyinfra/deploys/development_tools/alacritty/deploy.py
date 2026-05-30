@@ -1,21 +1,17 @@
-from pyinfra import host
-from pyinfra.operations import (
-    apt,
-    files,
-)
+import io
 
-# Get user from host data
+from pyinfra import host
+from pyinfra.operations import apt, files
+
 user = host.data.get("user", "ubuntu")
 
-if host.data.get("alacritty", {}).get("enabled", False):
-    # Install alacritty
+if host.data.alacritty["enabled"]:
     apt.packages(
         name="Install Alacritty",
         packages=["alacritty"],
         _sudo=True,
     )
 
-    # Create Alacritty config directory
     files.directory(
         name="Create Alacritty config directory",
         path=f"/home/{user}/.config/alacritty",
@@ -24,7 +20,6 @@ if host.data.get("alacritty", {}).get("enabled", False):
         mode="755",
     )
 
-    # Download Catppuccin Mocha theme
     files.download(
         name="Download Catppuccin Mocha theme",
         src="https://raw.githubusercontent.com/catppuccin/alacritty/f6cb5a5c2b404cdaceaff193b9c52317f62c62f7/catppuccin-mocha.toml",
@@ -34,26 +29,26 @@ if host.data.get("alacritty", {}).get("enabled", False):
         mode="644",
     )
 
-    # Get font size from host data with default
-    font_size = host.data.get("alacritty", {}).get("font_size", 12)
+    font_size = host.data.alacritty.get("font_size", 12)
 
-    # Provision Alacritty config
-    files.file(
+    alacritty_config = (
+        "import = [\n"
+        "    \"~/.config/alacritty/catppuccin-mocha.toml\"\n"
+        "]\n"
+        "\n"
+        "[font]\n"
+        f"size = {font_size}\n"
+        "\n"
+        "[mouse]\n"
+        "hide_when_typing = false\n"
+        "\n"
+        "[window]\n"
+        "startup_mode = \"Maximized\"\n"
+    )
+    files.put(
         name="Provision Alacritty config",
-        path=f"/home/{user}/.config/alacritty/alacritty.toml",
-        content=f"""import = [
-    "~/.config/alacritty/catppuccin-mocha.toml"
-]
-
-[font]
-size = {font_size}
-
-[mouse]
-hide_when_typing = false
-
-[window]
-startup_mode = "Maximized"
-""",
+        src=io.StringIO(alacritty_config),
+        dest=f"/home/{user}/.config/alacritty/alacritty.toml",
         user=user,
         group=user,
         mode="644",

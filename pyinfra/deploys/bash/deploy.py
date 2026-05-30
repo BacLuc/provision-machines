@@ -30,11 +30,9 @@ for alias in bash_aliases:
         name=f"Add bash alias: {alias['line']}",
         path=f"/home/{user}/.bash_aliases",
         line=alias["line"],
-        regex=alias["regexp"],
+        replace=alias["regexp"],
         present=True,
         _sudo=True,
-        user=user,
-        group=user,
     )
 
 # Add bash exports
@@ -49,11 +47,9 @@ for export in bash_exports:
         name=f"Add bash export: {export['line']}",
         path=f"/home/{user}/.bashrc",
         line=export["line"],
-        regex=export["regexp"],
+        replace=export["regexp"],
         present=True,
         _sudo=True,
-        user=user,
-        group=user,
     )
 
 # Add zsh exports if zsh is enabled
@@ -69,18 +65,16 @@ if host.data.get("zsh", {}).get("enabled", False):
             name=f"Add zsh export: {export['line']}",
             path=f"/home/{user}/.zshrc",
             line=export["line"],
-            regex=export["regexp"],
+            replace=export["regexp"],
             present=True,
             _sudo=True,
-            user=user,
-            group=user,
         )
 
 # Source usual bash definitions
 files.block(
     name="Source usual bash definitions",
     path=f"/home/{user}/.bashrc",
-    marker="# ANSIBLE MANAGED BLOCK: usual bash definitions",
+    marker="# {mark} ANSIBLE MANAGED BLOCK: usual bash definitions",
     content="""
 # Source bash definitions
 if [ -f /etc/bashrc ]; then
@@ -91,19 +85,16 @@ if [ -f ~/.bash_aliases ]; then
 fi
 """,
     _sudo=True,
-    user=user,
-    group=user,
 )
 
 # Add snap bin to path in .bashrc
 files.block(
     name="Add snap bin to path in .bashrc",
     path=f"/home/{user}/.bashrc",
-    marker="# ANSIBLE MANAGED BLOCK: add snap bin to path",
+    marker="# {mark} ANSIBLE MANAGED BLOCK: add snap bin to path",
     content="export PATH=\"/snap/bin:$PATH\"",
     _sudo=True,
-    user=user,
-    group=user,
+    try_prevent_shell_expansion=True,
 )
 
 # Add snap bin to path in .zshrc if zsh is enabled
@@ -111,22 +102,19 @@ if host.data.get("zsh", {}).get("enabled", False):
     files.block(
         name="Add snap bin to path in .zshrc",
         path=f"/home/{user}/.zshrc",
-        marker="# ANSIBLE MANAGED BLOCK: add snap bin to path",
+        marker="# {mark} ANSIBLE MANAGED BLOCK: add snap bin to path",
         content="export PATH=\"/snap/bin:$PATH\"",
         _sudo=True,
-        user=user,
-        group=user,
+        try_prevent_shell_expansion=True,
     )
 
 # Source autojump
 files.block(
     name="Source autojump",
     path=f"/home/{user}/.bashrc",
-    marker="# ANSIBLE MANAGED BLOCK: add autojump",
+    marker="# {mark} ANSIBLE MANAGED BLOCK: add autojump",
     content=". /usr/share/autojump/autojump.sh",
     _sudo=True,
-    user=user,
-    group=user,
 )
 
 # Source usual zsh definitions if zsh is enabled
@@ -134,13 +122,11 @@ if host.data.get("zsh", {}).get("enabled", False):
     files.block(
         name="Source usual zsh definitions",
         path=f"/home/{user}/.zshrc",
-        marker="# ANSIBLE MANAGED BLOCK: usual bash definitions",
+        marker="# {mark} ANSIBLE MANAGED BLOCK: usual bash definitions",
         content="""
 if [ -f ~/.bash_aliases ]; then
     source ~/.bash_aliases
 fi
 """,
         _sudo=True,
-        user=user,
-        group=user,
     )

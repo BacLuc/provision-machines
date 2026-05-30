@@ -1,0 +1,29 @@
+---
+services:
+  open-webui:
+    image: "ghcr.io/open-webui/open-webui:v0.9.2"
+    container_name: "open-webui"
+    ports:
+      - "127.0.0.1:13307:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "open-webui:/app/backend/data"
+    restart: "unless-stopped"
+    environment:
+      - "WEBUI_AUTH=False"
+  searxng:
+    image: ghcr.io/searxng/searxng:2026.2.11-970f2b843
+    ports:
+      - "127.0.0.1:13308:8080"
+    volumes:
+      - "searxng-data:/var/cache/searxng/"
+      - "./searngx/settings.yml:/etc/searxng/settings.yml"
+      - "./searngx/limiter.toml:/etc/searxng/limiter.toml"
+    environment:
+      SEARXNG_ENABLE_CORS: true
+
+volumes:
+  "open-webui":
+    external: true
+  searxng-data:

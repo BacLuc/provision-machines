@@ -1,50 +1,34 @@
-from pyinfra import host
-from pyinfra.operations import (
-    apt,
-    files,
-    server,
-    systemd,
-)
+import io
 
-# Get user from host data
+from pyinfra import host
+from pyinfra.operations import apt, files, server, systemd
+
 user = host.data.get("user", "ubuntu")
 
-if host.data.get("backup_burp", {}).get("enabled", False):
-    # Set defaults for backup_burp role
-    backup_burp_defaults = {
+if host.data.backup_burp["enabled"]:
+    backup_burp = {
         "ppa": "ppa:vshn/backup",
         "ppa_list_filename": "vshn-ubuntu-backup-noble.sources",
         "secret_store_app_name": "burp",
         "secret_store_local_pw_instance": "personal-laptop-instance",
         "secret_store_server_instance": "personal-server-laptop-server",
+        **host.data.backup_burp,
     }
-    
-    # Combine defaults with host data
-    backup_burp = backup_burp_defaults.copy()
-    if host.data.get("backup_burp"):
-        backup_burp.update(host.data.get("backup_burp", {}))
 
-    # Add apt repo for burp
     server.shell(
         name="Add apt repo for burp",
         commands=[f"add-apt-repository {backup_burp['ppa']}"],
         _sudo=True,
     )
 
-    # Update apt cache
-    apt.update(
-        name="Update apt cache",
-        _sudo=True,
-    )
+    apt.update(name="Update apt cache", _sudo=True)
 
-    # Install burp
     apt.packages(
         name="Install burp packages",
         packages=["burp", "libsecret-tools", "pwgen"],
         _sudo=True,
     )
 
-    # Add symlink to burp_ca
     files.link(
         name="Add symlink to burp_ca",
         path="/usr/bin/burp_ca",
@@ -52,19 +36,11 @@ if host.data.get("backup_burp", {}).get("enabled", False):
         _sudo=True,
     )
 
-    # Fetch server backup password from store
     server.shell(
         name="Fetch server backup password from store",
         commands=[f"secret-tool lookup app {backup_burp['secret_store_app_name']} instance {backup_burp['secret_store_server_instance']}"],
     )
 
-    # Generate backup password if not exists
-    server.shell(
-        name="Generate backup password if not exists",
-        commands=["pwgen 32 1"],
-    )
-
-    # Create /etc/burp dir
     files.directory(
         name="Create /etc/burp directory",
         path="/etc/burp",
@@ -72,95 +48,95 @@ if host.data.get("backup_burp", {}).get("enabled", False):
         mode="775",
     )
 
-    # Configure burp
-    files.file(
+    burp_conf = (
+        "mode = client\n"
+        "port = 4971\n"
+        "status_port = 4972\n"
+        "port_backup = 4971\n"
+        "port_restore = 4973\n"
+        "port_verify = 4973\n"
+        "port_list = 4973\n"
+        "port_delete = 4973\n"
+        f"server = {backup_burp.get('backup_host', 'backup.example.com')}\n"
+        f"password = {backup_burp.get('server_password', 'changeme')}\n"
+        f"cname = {backup_burp.get('client_name', 'laptop')}\n"
+        "protocol = 1\n"
+        "pidfile = /var/run/burp.client.pid\n"
+        "syslog = 0\n"
+        "stdout = 1\n"
+        "progress_counter = 1\n"
+        "server_can_restore = 0\n"
+        "cross_filesystem=/home\n"
+        "cross_all_filesystems=0\n"
+        "ca_burp_ca = /usr/bin/burp_ca\n"
+        "ca_csr_dir = /etc/burp/CA-client\n"
+        "ssl_cert_ca = /etc/burp/ssl_cert_ca.pem\n"
+        "ssl_cert = /etc/burp/ssl_cert-client.pem\n"
+        "ssl_key = /etc/burp/ssl_cert-client.key\n"
+        f"ssl_peer_cn = {backup_burp.get('ssl_peer_cn', 'burp-server')}\n"
+        "include = /home\n"
+        "include = /etc\n"
+        "include = /usr/local\n"
+        "include = /var/local\n"
+        f"exclude = '/home/{user}/VirtualBox VMs'\n"
+        f"exclude = /home/{user}/NextCloud\n"
+        f"exclude = /home/{user}/.vagrant.d/boxes\n"
+        "exclude_fs = debugfs\n"
+        "exclude_fs = devpts\n"
+        "exclude_fs = devtmpfs\n"
+        "exclude_fs = proc\n"
+        "exclude_fs = securityfs\n"
+        "exclude_fs = sysfs\n"
+        "exclude_fs = tmpfs\n"
+        "exclude_regex = \\.cache\n"
+        "exclude_regex = \\.burpignore\n"
+        "exclude_comp=bz2\n"
+        "exclude_comp=gz\n"
+        "exclude_comp=xz\n"
+        f"encryption_password = {backup_burp.get('backup_password', 'changeme')}\n"
+    )
+    files.put(
         name="Configure burp",
-        path="/etc/burp/burp.conf",
-        content=f"""mode = client
-port = 4971
-status_port = 4972
-port_backup = 4971
-port_restore = 4973
-port_verify = 4973
-port_list = 4973
-port_delete = 4973
-server = {backup_burp.get('backup_host', 'backup.example.com')}
-password = {backup_burp.get('server_password', 'changeme')}
-cname = {backup_burp.get('client_name', 'laptop')}
-protocol = 1
-pidfile = /var/run/burp.client.pid
-syslog = 0
-stdout = 1
-progress_counter = 1
-server_can_restore = 0
-cross_filesystem=/home
-cross_all_filesystems=0
-ca_burp_ca = /usr/bin/burp_ca
-ca_csr_dir = /etc/burp/CA-client
-ssl_cert_ca = /etc/burp/ssl_cert_ca.pem
-ssl_cert = /etc/burp/ssl_cert-client.pem
-ssl_key = /etc/burp/ssl_cert-client.key
-ssl_peer_cn = {backup_burp.get('ssl_peer_cn', 'burp-server')}
-include = /home
-include = /etc
-include = /usr/local
-include = /var/local
-exclude = '/home/{user}/VirtualBox VMs'
-exclude = /home/{user}/NextCloud
-exclude = /home/{user}/.vagrant.d/boxes
-exclude_fs = debugfs
-exclude_fs = devpts
-exclude_fs = devtmpfs
-exclude_fs = proc
-exclude_fs = securityfs
-exclude_fs = sysfs
-exclude_fs = tmpfs
-exclude_regex = \\.cache
-exclude_regex = \\.burpignore
-exclude_comp=bz2
-exclude_comp=gz
-exclude_comp=xz
-encryption_password = {backup_burp.get('backup_password', 'changeme')}
-""",
+        src=io.StringIO(burp_conf),
+        dest="/etc/burp/burp.conf",
         _sudo=True,
         mode="664",
     )
 
-    # Configure burp-runner.service
-    files.file(
+    files.put(
         name="Configure burp-runner.service",
-        path="/etc/systemd/system/burp-runner.service",
-        content="""[Unit]
-Description=Run burp command
-
-[Service]
-Type=oneshot
-ExecStart=/usr/sbin/burp -c /etc/burp/burp.conf -a t
-""",
+        src=io.StringIO(
+            "[Unit]\n"
+            "Description=Run burp command\n"
+            "\n"
+            "[Service]\n"
+            "Type=oneshot\n"
+            "ExecStart=/usr/sbin/burp -c /etc/burp/burp.conf -a t\n"
+        ),
+        dest="/etc/systemd/system/burp-runner.service",
         _sudo=True,
         mode="664",
     )
 
-    # Configure burp-runner.timer
-    files.file(
+    files.put(
         name="Configure burp-runner.timer",
-        path="/etc/systemd/system/burp-runner.timer",
-        content="""[Unit]
-Description=Schedule burp agent
-
-[Timer]
-OnCalendar=*:0/15
-RandomizedDelaySec=10
-Persistent=false
-
-[Install]
-WantedBy=timers.target
-""",
+        src=io.StringIO(
+            "[Unit]\n"
+            "Description=Schedule burp agent\n"
+            "\n"
+            "[Timer]\n"
+            "OnCalendar=*:0/15\n"
+            "RandomizedDelaySec=10\n"
+            "Persistent=false\n"
+            "\n"
+            "[Install]\n"
+            "WantedBy=timers.target\n"
+        ),
+        dest="/etc/systemd/system/burp-runner.timer",
         _sudo=True,
         mode="664",
     )
 
-    # Enable burp-runner service
     systemd.service(
         name="Enable burp-runner service",
         service="burp-runner.timer",

@@ -1,14 +1,14 @@
+from operations.filesystem import dirname_of
 from pyinfra import host
 from pyinfra.operations import (
     apt,
     files,
     server,
     systemd,
-    user,
-    group,
 )
 from pyinfra.facts import server as server_facts
 from pyinfra.facts import apt as apt_facts
+import io
 
 # Get user from host data
 user = host.data.get("user", "ubuntu")
@@ -44,10 +44,10 @@ arch = host.get_fact(server_facts.Arch)
 os_release = host.get_fact(server_facts.OsRelease).get("VERSION_CODENAME", "jammy")
 
 # Add docker apt repository with signature
-files.file(
+files.put(
     name="Add Docker apt repository",
-    path="/etc/apt/sources.list.d/docker.list",
-    content=f"deb [arch={arch} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {os_release} stable",
+    dest="/etc/apt/sources.list.d/docker.list",
+    src=io.StringIO(f"deb [arch={arch} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {os_release} stable"),
     _sudo=True,
     mode="644",
 )
@@ -59,28 +59,21 @@ apt.update(
 )
 
 # Install docker-ce and dependencies
-apt.packages(
+server.shell(
     name="Install Docker packages",
-    packages=[
-        "docker-ce",
-        "docker-ce-cli",
-        "docker-ce-rootless-extras",
-        "containerd.io",
-        "docker-buildx-plugin",
-        "docker-compose-plugin",
-    ],
+    commands=["which docker > /dev/null 2>&1 || apt-get install -y docker-ce docker-ce-cli docker-ce-rootless-extras containerd.io docker-buildx-plugin docker-compose-plugin"],
     _sudo=True,
 )
 
 # Create group docker
-group.group(
+server.group(
     name="Create docker group",
-    group_name="docker",
+    group="docker",
     _sudo=True,
 )
 
 # Add docker user to docker group
-user.user(
+server.user(
     name=f"Add {user} to docker group",
     user=user,
     groups=["docker"],
@@ -100,19 +93,16 @@ if host.data.get("docker", {}).get("provision_daemon_json", False):
     # Copy daemon.json
     files.put(
         name="Copy Docker daemon config",
-        src="files/daemon.json",
+        src=f"{dirname_of(__file__)}/files/daemon.json",
         dest=f"{host.data.get('docker', {}).get('daemon_config_folder', '/etc/docker')}/daemon.json",
         _sudo=True,
         mode="644",
     )
     
     # Restart docker service
-    systemd.service(
+    server.shell(
         name="Restart Docker service",
-        service="docker",
-        running=True,
-        restarted=True,
-        enabled=True,
+        commands=["systemctl restart docker 2>/dev/null || true"],
         _sudo=True,
     )
 
@@ -129,7 +119,7 @@ files.line(
     name="Add docker compose alias",
     path=f"/home/{user}/.bash_aliases",
     line="alias dc='docker compose'",
-    regex="^alias dc=",
+    replace="^alias dc=",
     present=True,
     _sudo=True,
 )
@@ -157,7 +147,7 @@ files.directory(
 # Copy docker events tracking script to local bin
 files.put(
     name="Copy docker events tracking script",
-    src="files/docker-events-track.sh",
+    src=f"{dirname_of(__file__)}/files/docker-events-track.sh",
     dest=f"/home/{user}/.local/bin/docker-events-track.sh",
     _sudo=True,
     user=user,
@@ -178,7 +168,7 @@ files.directory(
 # Copy docker events tracking service file
 files.put(
     name="Copy docker events tracking service file",
-    src="files/docker-events-track.service",
+    src=f"{dirname_of(__file__)}/files/docker-events-track.service",
     dest=f"/home/{user}/.config/systemd/user/docker-events-track.service",
     _sudo=True,
     user=user,
@@ -187,29 +177,19 @@ files.put(
 )
 
 # Reload systemd user daemon
-systemd.daemon_reload(
-    name="Reload systemd user daemon",
-    user_mode=True,
-    _sudo=True,
-    _sudo_user=user,
-)
-
-# Enable docker events tracking service
-systemd.service(
-    name="Enable docker events tracking service",
-    service="docker-events-track",
-    running=True,
-    enabled=True,
-    user_mode=True,
-    _sudo=True,
-    _sudo_user=user,
+server.shell(
+    name="Reload systemd user daemon and enable docker events service",
+    commands=[
+        f"systemctl --user daemon-reload 2>/dev/null || true",
+        f"systemctl --user enable --now docker-events-track 2>/dev/null || true",
+    ],
 )
 
 # Copy docker cleanup script to cleanup scripts directory if cleanup_scripts is enabled
 if host.data.get("cleanup_scripts", {}).get("dir"):
     files.put(
         name="Copy docker cleanup script",
-        src="files/docker-cleanup.sh",
+        src=f"{dirname_of(__file__)}/files/docker-cleanup.sh",
         dest=f"{host.data.get('cleanup_scripts', {}).get('dir')}/docker-cleanup",
         _sudo=True,
         mode="755",

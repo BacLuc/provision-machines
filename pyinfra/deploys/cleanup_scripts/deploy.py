@@ -1,3 +1,4 @@
+from operations.filesystem import dirname_of
 from pyinfra import host
 from pyinfra.operations import (
     files,
@@ -17,7 +18,7 @@ files.directory(
 # Copy cleanup script
 files.put(
     name="Copy cleanup script",
-    src="files/cleanup-script.sh",
+    src=f"{dirname_of(__file__)}/files/cleanup-script.sh",
     dest="/usr/local/bin/cleanup-script",
     _sudo=True,
     mode="755",

@@ -1,3 +1,7 @@
+import os
+
+user = os.environ.get("USER", "ubuntu")
+
 ai_agent_devcontainer = {
     "enabled": True
 }
@@ -60,12 +64,17 @@ docker = {
 }
 
 alacritty = {
-    "enabled": True,
+    "enabled": False,
     "font_size": 12,
 }
 
 backup_burp = {
     "enabled": False,
+    "ppa": "ppa:vshn/backup",
+    "ppa_list_filename": "vshn-ubuntu-backup-noble.sources",
+    "secret_store_app_name": "burp",
+    "secret_store_local_pw_instance": "personal-laptop-instance",
+    "secret_store_server_instance": "personal-server-laptop-server",
 }
 
 bash = {
@@ -83,6 +92,10 @@ basic_utils = {
 cleanup_scripts = {
     "enabled": True,
     "dir": "/usr/local/bin/cleanup_scripts.d",
+}
+
+update_packages_script = {
+    "dir": "/usr/local/bin/update-script.d",
 }
 
 devcontainer_cli = {
@@ -120,6 +133,7 @@ gnome = {
 nvm = {
     # renovate: datasource=github-releases depName=nvm-sh/nvm
     "nvm_version": "v0.40.4",
+    "enabled": False,
 }
 
 kubectl = {
@@ -137,19 +151,19 @@ tmux = {
     "enabled": False,
 }
 
-enable_nvim = False
-
-enable_lazygit = False
+nvim = {
+    "enabled": False,
+}
 
 lazygit = {
+    "enabled": False,
     # renovate: datasource=github-releases depName=jesseduffield/lazygit
     "lazygit_version": "0.61.1",
     "lazygit_checksum": "5c7c81884167cf38561c82704ec8783bcd199f484e6c63c781783f4f5a662a2a",
 }
 
-enable_ollama = False
-
 ollama = {
+    "enabled": False,
     # renovate: datasource=github-releases depName=ollama/ollama
     "ollama_version": "0.20.3",
     "model": "qwen2.5:3b",
@@ -166,9 +180,8 @@ snap = {
     },
 }
 
-enable_sysctl = False
-
 sysctl = {
+    "enabled": False,
     "settings": {
         "fs.inotify.max_queued_events": 1048576,
         "fs.inotify.max_user_instances": 1048576,
@@ -180,38 +193,28 @@ motd = {
     "enable_disk_usage": False,
 }
 
-enable_alacritty = False
-
-alacritty = {
-    "font_size": 12,
-}
-
-enable_firefox = False
-
-firefox = {
-    "enabled": False,
-}
-
-enable_zed = False
-
 zed = {
+    "enabled": False,
     "enable_helm_support": True,
     "enable_memory_monitor": True,
     "memory_monitor_limit_gb": 10,
     "memory_monitor_cron_frequency": "*/5 * * * *",
 }
 
-enable_vifm = False
+vifm = {
+    "enabled": False,
+}
 
-enable_jetbrains = False
+jetbrains = {
+    "enabled": False,
+}
 
 okular = {
     "enabled": False,
 }
 
-enable_ubuntu_desktop = True
-
 ubuntu_desktop = {
+    "enabled": True,
     "enable_dependencies": True,
     "enable_favorite_apps": True,
     "enable_keyboard_layouts": True,
@@ -224,38 +227,32 @@ hashicorp_apt_repo = {
     "enabled": False,
 }
 
-enable_hashicorp_vault_cli = False
-
-enable_php_development = False
+hashicorp_vault_cli = {
+    "enabled": False,
+}
 
 php_development = {
+    "enabled": False,
     # renovate: datasource=github-tags depName=php/php-src
     "php_version": "8.4.10",
 }
 
-enable_openwebui = False
-
-openwebui_compose_project_dir = "/home/ubuntu/openwebui"
-
-enable_vagrant = False
-
-enable_fluxcd = False
-
-enable_backup_burp = False
-
-backup_burp = {
-    "ppa": "ppa:vshn/backup",
-    "ppa_list_filename": "vshn-ubuntu-backup-noble.sources",
-    "secret_store_app_name": "burp",
-    "secret_store_local_pw_instance": "personal-laptop-instance",
-    "secret_store_server_instance": "personal-server-laptop-server",
+openwebui = {
+    "enabled": False,
+    "compose_project_dir": "/home/ubuntu/openwebui",
 }
 
-enable_displaylink_driver = False
-
-gnome = {
-    "enable_customize_gnome": False,
+vagrant = {
+    "enabled": False,
 }
 
-enable_ubuntu_cleanup = True
+vshn_emergency_credentials_receive = {
+    "enabled": False,
+    # renovate: datasource=github-releases depName=vshn/emergency-credentials-receive
+    "emergency_credentials_receive_version": "1.2.2",
+    "checksum": "60eff914cb5e4b8771dd8606ba1b324e3183000c1a0fd91fa4ae2c82ad788afc",
+}
 
+ubuntu_cleanup = {
+    "enabled": True,
+}

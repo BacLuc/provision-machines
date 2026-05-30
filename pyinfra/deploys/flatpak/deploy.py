@@ -1,3 +1,4 @@
+from operations.filesystem import dirname_of
 from pyinfra import host
 from pyinfra.operations import (
     apt,
@@ -29,7 +30,7 @@ if host.data.get("flatpaks"):
 if host.data.get("update_packages_script", {}).get("dir"):
     files.put(
         name="Add flatpak update script",
-        src="files/flatpak-upgrade.sh",
+        src=f"{dirname_of(__file__)}/files/flatpak-upgrade.sh",
         dest=f"{host.data.get('update_packages_script', {}).get('dir')}/flatpak-upgrade",
         _sudo=True,
         mode="755",

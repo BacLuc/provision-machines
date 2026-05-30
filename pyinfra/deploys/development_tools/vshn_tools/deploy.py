@@ -44,14 +44,31 @@ download(
     _if=lambda: enabled,
 )
 
-# Commodore Python version compatibility
-commodore_python_version = 3.12
+# renovate: datasource=github-releases depName=astral-sh/uv
+python_uv_version = "0.6.0"
+python_uv_checksum = "becf19e97d1fd659d2ad44c3e753ab5f3dd6551de64e39241170ae883ce570a2"
+python_uvx_checksum = "80ad7e812aac189dedf7451e1680640a013adaebece2844489b8b5321ed3f27f"
 
-# noinspection PyUnusedImports
-import deploys.development_tools.python.uv
+github_release_binary(
+    url=f"https://releases.astral.sh/github/uv/releases/download/{python_uv_version}/uv-x86_64-unknown-linux-gnu.tar.gz",
+    binary_name="uv",
+    checksum=python_uv_checksum,
+    strip_components=1,
+    _if=enabled,
+)
+
+github_release_binary(
+    url=f"https://releases.astral.sh/github/uv/releases/download/{python_uv_version}/uv-x86_64-unknown-linux-gnu.tar.gz",
+    binary_name="uvx",
+    checksum=python_uvx_checksum,
+    strip_components=1,
+    _if=enabled,
+)
+
+commodore_python_version = 3.12
 
 shell(
     name="Install commodore",
-    commands=f"/home/{user_name}/bin/uv  tool install --python=python{commodore_python_version} --python-preference=system syn-commodore",
+    commands=f"/home/{user_name}/bin/uv tool install --python=python{commodore_python_version} --python-preference=system syn-commodore",
     _if=[lambda: enabled, lambda: not os.path.exists(f"/home/{user_name}/.local/bin/commodore")],
 )
