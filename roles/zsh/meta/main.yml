@@ -1,5 +1,0 @@
----
-dependencies:
-  - role: docker
-  - role: homebrew
-  - role: update_packages_script

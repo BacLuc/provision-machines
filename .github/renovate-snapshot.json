@@ -1,5 +1,6 @@
 [
   "actions/checkout",
+  "astral-sh/setup-uv",
   "astral-sh/uv",
   "databus23/helm-diff",
   "git-lfs/git-lfs",
@@ -8,6 +9,7 @@
   "jlandowner/helm-chartsnap",
   "jsonnet-bundler/jsonnet-bundler",
   "mcr.microsoft.com/devcontainers/universal",
+  "nodejs/node",
   "nvm-sh/nvm",
   "ollama/ollama",
   "php/php-src",

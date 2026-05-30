@@ -34,6 +34,13 @@
         "\"version\":\\s*['\"]?(?<currentValue>\\d+)['\"]?.*?\"id\":\\s*['\"]?(?<depName>[^'\"]+)['\"]?"
       ],
       "datasourceTemplate": "devcontainer-feature"
+    },
+    {
+      "fileMatch": [".*"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\n\\s*[\"\\w][^:=\\n]*[:=]\\s*['\"]*(?<currentValue>v?[0-9][\\w.-]*)"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
     }
   ],
   "packageRules": [

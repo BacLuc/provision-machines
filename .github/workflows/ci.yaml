@@ -7,63 +7,55 @@ name: "Run provisioning on ubuntu"
   workflow_dispatch:
 
 jobs:
-  run_provisioning:
-    name: "Run provisioning on ubuntu"
-    runs-on: ubuntu-24.04
-    steps:
-      - name: "uninstall homebrew"
-        run: |
-          sudo rm -rf /home/linuxbrew
-
-      - name: "pull homebrew image"
-        run: |
-          HOMEBREW_VERSION=4.6.14
-          docker pull homebrew/brew:$HOMEBREW_VERSION
-
-      - name: "install correct ansible"
-        run: |
-          sudo apt-get install -y software-properties-common
-          sudo add-apt-repository -y ppa:ansible/ansible
-          sudo apt-get update
-          sudo apt-get purge ansible -y
-          sudo apt-get install -y ansible
-          ansible --version
-
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: "run provisioning"
-        run: |
-          cp ci-inventory.yaml inventory/local.yaml
-          ./provision.sh
-
-      - name: "test update script"
-        run: sudo update-script
-
-      - name: "print journalctl"
-        if: always()
-        run: journalctl
-
-      - name: "run provisioning a second time"
-        run: |
-          ./provision.sh
-
-  check_format:
-    name: "check format"
+  pyinfra_lint:
+    name: "pyinfra lint"
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: "check format"
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: "install dependencies"
+        run: uv sync --frozen --all-extras
+
+      - name: "pytest"
+        run: uv run pytest
+
+      - name: "ruff check"
+        run: uv run ruff check .
+
+      - name: "mypy"
+        run: uv run mypy .
+
+      - name: "isort"
+        run: uv run isort --check .
+
+      - name: "run prettier"
         run: |
-          docker compose run --rm prettier
+          # renovate: datasource=docker depName=ghcr.io/bacluc/prettier-image/prettier-image
+          prettier_image_version="3.8.1"
+          docker run --rm -v $PWD:/workdir -w /workdir -u $UID ghcr.io/bacluc/prettier-image/prettier-image:${prettier_image_version}
           git diff --exit-code
 
-  lint:
-    name: "lint"
+  run_pyinfra:
+    name: "Run pyinfra on ubuntu"
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - run: docker compose run --rm --quiet-pull yamllint
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
 
-      - run: docker compose run --rm --quiet-pull ansible-lint
+      - name: "install dependencies"
+        run: uv sync --frozen
+
+      - name: "run pyinfra"
+        run: uv run scripts/run_pyinfra_local.py
+
+      - name: "run update-script"
+        run: sudo update-script
+
+      - name: "run cleanup-script"
+        run: sudo cleanup-script
+
+      - name: "run pyinfra a second time"
+        run: uv run scripts/run_pyinfra_local.py

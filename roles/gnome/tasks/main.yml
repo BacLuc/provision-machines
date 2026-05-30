@@ -1,7 +1,0 @@
-- name: "customize gnome"
-  when: enable_customize_gnome | default(false)
-  block:
-    - name: "install gnome extensions app"
-      community.general.flatpak:
-        name:
-          - org.gnome.Extensions

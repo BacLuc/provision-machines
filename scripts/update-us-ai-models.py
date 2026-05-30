@@ -16,19 +16,20 @@ import getpass
 import json
 import os
 import sys
-from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 API_BASE_URL = "https://us-ai.corp.vshn.net/api/v1"
 CONFIG_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "roles",
+    "deploys",
+    "development_tools",
     "ai_agent_devcontainer",
     "files",
     "opencode",
     "opencode.json",
 )
-PROVIDER_NAME = "us-ai"
+PROVIDER_NAME = "vshn-us-ai"
 
 # Price class prefixes, in order of preference for the "one per class" default
 PRICE_CLASSES = [
@@ -168,10 +169,7 @@ def filter_models(models, mode="default", price_class=None):
 
     # Filter by specific price class if requested
     if price_class:
-        available = [
-            m for m in available
-            if get_price_class(m.get("id", "")) == price_class
-        ]
+        available = [m for m in available if get_price_class(m.get("id", "")) == price_class]
 
     if mode == "all" or mode == "list":
         return available
@@ -214,7 +212,7 @@ def filter_models(models, mode="default", price_class=None):
 
 def update_config(models, config_path, npm_package=None, provider_name=None, api_base_url=None):
     """Update the opencode.json config with the given models."""
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = json.load(f)
 
     provider_name = provider_name or PROVIDER_NAME
@@ -232,9 +230,6 @@ def update_config(models, config_path, npm_package=None, provider_name=None, api
     provider_config = {
         "npm": npm_package or "@ai-sdk/openai-compatible",
         "name": "VSHN US AI",
-        "options": {
-            "baseURL": api_base_url + "/v1" if not api_base_url.endswith("/v1") else api_base_url,
-        },
         "models": sorted_models,
     }
 
@@ -270,12 +265,12 @@ def list_models(models):
                 print(f"    {mid:50s}  →  {name}")
 
     if "other" in by_class:
-        print(f"\n  OTHER:")
+        print("\n  OTHER:")
         for mid, name in sorted(by_class["other"]):
             print(f"    {mid:50s}  →  {name}")
 
     if presets:
-        print(f"\n  PRESETS (excluded by default):")
+        print("\n  PRESETS (excluded by default):")
         for model in presets:
             mid = model.get("id", "")
             name = model.get("name", mid)
@@ -283,15 +278,15 @@ def list_models(models):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Update VSHN US AI models in opencode config"
-    )
+    parser = argparse.ArgumentParser(description="Update VSHN US AI models in opencode config")
     parser.add_argument(
-        "--all", action="store_true",
+        "--all",
+        action="store_true",
         help="Include all non-preset models (not just one per price class)",
     )
     parser.add_argument(
-        "--list", action="store_true",
+        "--list",
+        action="store_true",
         help="List available models without updating config",
     )
     parser.add_argument(

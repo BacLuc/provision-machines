@@ -1,4 +1,9 @@
+.coverage
 .idea
 .junie
+.venv
 /.ansible
-/inventory/local.yaml
+/group_data/local.py
+/group_data/local.yaml
+__pycache__/
+pyinfra-debug.log*
