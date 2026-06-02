@@ -67,3 +67,55 @@ jobs:
       - run: docker compose run --rm --quiet-pull yamllint
 
       - run: docker compose run --rm --quiet-pull ansible-lint
+
+  pyinfra_lint:
+    name: "pyinfra lint"
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: pyinfra
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: "install dependencies"
+        run: uv sync --frozen --extra dev
+
+      - name: "ruff check"
+        run: uv run ruff check .
+
+      - name: "ruff format check"
+        run: uv run ruff format --check .
+
+      - name: "mypy"
+        run: uv run mypy .
+
+      - name: "pytest"
+        run: uv run pytest
+
+  run_pyinfra:
+    name: "Run pyinfra on ubuntu"
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: pyinfra
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: "install dependencies"
+        run: uv sync --frozen
+
+      - name: "run pyinfra"
+        run: uv run pyinfra inventory.py deploy.py -y
+
+      - name: "run update-script"
+        run: sudo update-script
+
+      - name: "run cleanup-script"
+        run: sudo cleanup-script
+
+      - name: "run pyinfra a second time"
+        run: uv run pyinfra inventory.py deploy.py -y
