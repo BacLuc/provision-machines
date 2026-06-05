@@ -16,7 +16,7 @@ USER codespace
 
 ENV NVM_DIR=/home/codespace/.nvm
 # renovate: datasource=github-releases depName=nvm-sh/nvm
-ENV NVM_VERSION=0.40.4
+ENV NVM_VERSION=0.40.5
 # renovate: datasource=github-tags depName=nodejs/node
 ENV NODE_VERSION=24
 
