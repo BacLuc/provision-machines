@@ -137,6 +137,36 @@
           "name": "zai/glm-4.5"
         }
       }
+    },
+    "vshn-us-ai": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "VSHN US AI",
+      "models": {
+        "-claude-haiku-v45": {
+          "name": "Claude Haiku 4.5 (preset)"
+        },
+        "-claude-sonnet-v46": {
+          "name": "Claude Sonnet 4.6 (preset)"
+        },
+        "byusage.nebius/deepseek-ai/DeepSeek-V3.2": {
+          "name": "deepseek-v3.2 (byusage)"
+        },
+        "expensive.gemini-3-flash": {
+          "name": "gemini-3-flash (expensive)"
+        },
+        "expensive.gpt-5.3-codex": {
+          "name": "GPT-5.3 Codex (expensive)"
+        },
+        "expensive.gpt-5.5": {
+          "name": "GPT-5.5 (expensive)"
+        },
+        "openrouter.deepseek/deepseek-chat-v3.1": {
+          "name": "deepseek-v3.1 (openrouter)"
+        },
+        "subscription.glm-5.1": {
+          "name": "glm-5.1 (subscription)"
+        }
+      }
     }
   }
 }

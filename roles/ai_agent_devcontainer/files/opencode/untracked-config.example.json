@@ -35,6 +35,12 @@
       "options": {
         "apiKey": "apikey"
       }
+    },
+    "vshn-us-ai": {
+      "options": {
+        "baseURL": "baseurl",
+        "apiKey": "apikey"
+      }
     }
   }
 }
