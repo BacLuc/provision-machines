@@ -15,7 +15,7 @@ if host.data.homebrew["enabled"]:
     user_id = host.get_fact(Command, "id -u")
 
     # renovate: datasource=docker depName=homebrew/brew
-    homebrew_version = "4.6.14"
+    homebrew_version = "4.6.20"
 
     files.directory(
         name="Create linuxbrew home dir",
