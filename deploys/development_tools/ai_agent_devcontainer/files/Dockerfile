@@ -25,11 +25,15 @@ ENV NVM_DIR=/home/codespace/.nvm
 ENV NVM_VERSION=0.40.5
 # renovate: datasource=github-tags depName=nodejs/node
 ENV NODE_VERSION=24
+# renovate: datasource=npm depName=@google/gemini-cli
+ENV GEMINI_CLI_VERSION=0.45.2
+# renovate: datasource=npm depName=@openai/codex
+ENV CODEX_VERSION=0.137.0
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash && \
     . /home/codespace/.nvm/nvm.sh && \
     nvm install ${NODE_VERSION} && \
-    npm install -g opencode-ai
+    npm install -g opencode-ai @google/gemini-cli@${GEMINI_CLI_VERSION} @openai/codex@${CODEX_VERSION}
 
 ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.json
 

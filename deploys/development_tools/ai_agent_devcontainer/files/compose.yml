@@ -20,6 +20,14 @@ services:
         source: ${HOME}/${PROVISION_MACHINES_DIR:-projects/provision-machines}/deploys/development_tools/ai_agent_devcontainer/files/claude
         target: /home/codespace/.claude
         consistency: cached
+      - type: bind
+        source: ${HOME}/${PROVISION_MACHINES_DIR:-projects/provision-machines}/deploys/development_tools/ai_agent_devcontainer/files/gemini
+        target: /home/codespace/.gemini
+        consistency: cached
+      - type: bind
+        source: ${HOME}/${PROVISION_MACHINES_DIR:-projects/provision-machines}/deploys/development_tools/ai_agent_devcontainer/files/codex
+        target: /home/codespace/.codex
+        consistency: cached
       - type: volume
         source: docker-data
         target: /var/lib/docker
@@ -30,6 +38,9 @@ services:
       - OPENCODE_PORT=${OPENCODE_PORT:-4096}
       - GIT_AUTHOR_NAME
       - GIT_AUTHOR_EMAIL
+      - GEMINI_API_KEY
+      - GOOGLE_GEMINI_BASE_URL
+      - OPENAI_API_KEY
     ports:
       - "127.0.0.1:${OPENCODE_PORT:-4096}:4096"
 

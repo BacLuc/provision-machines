@@ -4,3 +4,7 @@
 !/claude/settings.json
 !opencode.json
 !/untracked-config.example.json
+!/gemini/
+!/gemini/settings.example.json
+!/codex/
+!/codex/config.example.toml
