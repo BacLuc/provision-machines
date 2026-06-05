@@ -33,7 +33,8 @@ ENV CODEX_VERSION=0.137.0
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash && \
     . /home/codespace/.nvm/nvm.sh && \
     nvm install ${NODE_VERSION} && \
-    npm install -g opencode-ai @google/gemini-cli@${GEMINI_CLI_VERSION} @openai/codex@${CODEX_VERSION}
+    npm install -g opencode-ai @google/gemini-cli@${GEMINI_CLI_VERSION} @openai/codex@${CODEX_VERSION} && \
+    curl -fsSL https://antigravity.google/cli/install.sh | bash
 
 ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.json
 
