@@ -16,6 +16,10 @@ services:
         source: ${HOME}/${PROVISION_MACHINES_DIR:-projects/provision-machines}/deploys/development_tools/ai_agent_devcontainer/files/opencode
         target: /home/codespace/.config/opencode
         consistency: cached
+      - type: bind
+        source: ${HOME}/${PROVISION_MACHINES_DIR:-projects/provision-machines}/deploys/development_tools/ai_agent_devcontainer/files/claude
+        target: /home/codespace/.claude
+        consistency: cached
       - type: volume
         source: docker-data
         target: /var/lib/docker

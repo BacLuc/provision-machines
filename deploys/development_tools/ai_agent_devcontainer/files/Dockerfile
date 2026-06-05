@@ -1,11 +1,17 @@
 # renovate: datasource=docker depName=mcr.microsoft.com/devcontainers/universal
 FROM mcr.microsoft.com/devcontainers/universal:6.0.3-noble@sha256:beb3274e5487f10de92c5e02923abe13bd2f2a647e712b32c303a9e91ab7c273
 
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+RUN sudo install -d -m 0755 /etc/apt/keyrings \
+    && sudo curl -fsSL https://downloads.claude.ai/keys/claude-code.asc \
+      -o /etc/apt/keyrings/claude-code.asc \
+    && echo "deb [signed-by=/etc/apt/keyrings/claude-code.asc] https://downloads.claude.ai/claude-code/apt/stable stable main" \
+      | sudo tee /etc/apt/sources.list.d/claude-code.list \
+    && apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
     ansible \
     python3-pip \
     python3-apt \
+    claude-code \
     curl \
     git \
     netcat-openbsd \
