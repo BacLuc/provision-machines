@@ -33,6 +33,8 @@ if host.data.alacritty["enabled"]:
 
     font_size = host.data.alacritty["font_size"]
     default_shell = "/bin/zsh" if host.data.zsh["enabled"] else "/bin/bash"
+    # noinspection PyRedeclaration
+    default_shell = "/bin/zsh"
 
     alacritty_config = f"""import = [
     "~/.config/alacritty/catppuccin-mocha.toml"
