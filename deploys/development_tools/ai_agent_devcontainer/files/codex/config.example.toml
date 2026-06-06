@@ -1,8 +1,7 @@
-model = "o4-mini"
-model_provider = "custom"
+model = "glm-5.1"
+model_provider = "vshn-us-ai"
 
-[model_providers.custom]
-name = "Custom Provider"
-base_url = "https://your-endpoint/v1"
-env_key = "OPENAI_API_KEY"
-wire_api = "responses"
+[model_providers.vshn-us-ai]
+name = "vshn-us-ai"
+base_url = "BASE_URL"
+env_http_headers = { "Authorization" = "Bearer: API_KEY" }
