@@ -1,0 +1,2 @@
+alias flux='docker run --rm -it --user $UID --volume $KUBECONFIG:/kubeconfig --volume $PWD:/workspace --workdir $PWD:/workspace ghcr.io/fluxcd/flux-cli:${FLUX_CLI_VERSION:-v2.2.3} --kubeconfig=/kubeconfig'
+alias fluxa='docker run --rm -it --user $UID --volume $KUBECONFIG:/kubeconfig --volume $PWD:/workspace --workdir $PWD:/workspace ghcr.io/fluxcd/flux-cli:${FLUX_CLI_VERSION:-v2.2.3} --kubeconfig=/kubeconfig --as "system:admin"'

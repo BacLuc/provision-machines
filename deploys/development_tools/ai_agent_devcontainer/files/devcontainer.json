@@ -8,7 +8,12 @@
       "extensions": []
     }
   },
+  "dotfiles": {
+    "repository": "./dotfiles",
+    "targetPath": "~/.dotfiles",
+    "installCommand": "install.sh"
+  },
   "remoteUser": "codespace",
-  "postStartCommand": "bash -c 'init-ai-devcontainer-home && (git lfs uninstall || true) && echo OpenCode starting on port ${OPENCODE_PORT:-4096}... && cd /workspaces/${localWorkspaceFolderBasename} && opencode web --hostname 0.0.0.0 --port 4096'",
+  "postStartCommand": "bash -c 'bash /workspaces/${localWorkspaceFolderBasename}/dotfiles/install.sh && init-ai-devcontainer-home && (git lfs uninstall || true) && echo OpenCode starting on port ${OPENCODE_PORT:-4096}... && cd /workspaces/${localWorkspaceFolderBasename} && opencode web --hostname 0.0.0.0 --port 4096'",
   "updateRemoteUserUID": false
 }

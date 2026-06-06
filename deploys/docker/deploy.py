@@ -112,14 +112,6 @@ if host.data.docker["enabled"]:
         _sudo=True,
     )
 
-    files.line(
-        name="Add docker compose alias",
-        path=f"/home/{user}/.bash_aliases",
-        line="^alias dc=",
-        replace="alias dc='docker compose'",
-        present=True,
-    )
-
     files.directory(
         name="Create docker metadata directory",
         path=f"/home/{user}/.local/share/docker-image-usage",

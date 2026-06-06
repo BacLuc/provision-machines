@@ -20,30 +20,6 @@ if php_development["enabled"]:
         group=user,
     )
 
-    phpenv_path_block = """\
-export PATH="$HOME/.phpenv/bin:$PATH"
-eval "$(phpenv init -)"
-"""
-
-    files.put(
-        name="Add phpenv to path in bash",
-        src=io.StringIO(phpenv_path_block),
-        dest=f"/home/{user}/.bashrc.d/phpenv.sh",
-        user=user,
-        group=user,
-        mode="644",
-    )
-
-    if host.data.zsh["enabled"]:
-        files.put(
-            name="Add phpenv to path in zsh",
-            src=io.StringIO(phpenv_path_block),
-            dest=f"/home/{user}/.zshrc.d/phpenv.zsh",
-            user=user,
-            group=user,
-            mode="644",
-        )
-
     files.put(
         name="Add script to update phpenv",
         src=io.StringIO(

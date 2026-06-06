@@ -47,33 +47,6 @@ if enabled:
         is_tar=False,
     )
 
-    files.put(
-        name="Add kharon completion for bash",
-        src=io.StringIO("source <(kharon completion bash)\n"),
-        dest=f"/home/{user_name}/.bashrc.d/kharon-completion.sh",
-        user=user_name,
-        group=user_name,
-        mode="644",
-    )
-
-    if host.data.zsh["enabled"]:
-        files.put(
-            name="Add kharon completion for zsh",
-            src=io.StringIO("source <(kharon completion zsh)\n"),
-            dest=f"/home/{user_name}/.zshrc.d/kharon-completion.zsh",
-            user=user_name,
-            group=user_name,
-            mode="644",
-        )
-
-    files.line(
-        name="Add kharon alias",
-        path=f"/home/{user_name}/.bash_aliases",
-        line="^alias kl=",
-        replace="alias kl='kharon oc-web-login'",
-        present=True,
-    )
-
 # renovate: datasource=github-releases depName=jsonnet-bundler/jsonnet-bundler
 jsonnet_bundler_version = "0.6.3"
 jsonnet_bundler_checksum = "424be2836ffee389d93a8cb873eb891a69fef4509026c7c1a825943292b8c841"

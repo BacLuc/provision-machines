@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm info *)",
+      "Bash(node -e \"const m = require\\('/workspaces/provision-machines-agent/.venv/bin/../../../.nvm/versions/node/$\\(node --version)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ]
+  }
+}

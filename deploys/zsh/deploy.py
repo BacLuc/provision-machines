@@ -70,24 +70,6 @@ ZSH_TMUX_AUTOCONNECT=false""",
             present=True,
         )
 
-    files.put(
-        name="Add lesspipe script",
-        src=io.StringIO('[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"\n'),
-        dest=f"/home/{user}/.zshrc.d/lesspipe.zsh",
-        user=user,
-        group=user,
-        mode="644",
-    )
-
-    files.put(
-        name="Add homebrew to path in zsh",
-        src=io.StringIO(f'PATH="$PATH:{HOMEBREW_BIN}"\n'),
-        dest=f"/home/{user}/.zshrc.d/homebrew-path.zsh",
-        user=user,
-        group=user,
-        mode="644",
-    )
-
     files.block(
         name="Add zsh-syntax-highlighting to zshrc",
         path=f"/home/{user}/.zshrc",
@@ -132,20 +114,6 @@ su "$user" -c "/home/{user}/.oh-my-zsh/tools/upgrade.sh"
         content=f"""source {completions_dir}/_docker
 
 complete -F _docker dc""",
-    )
-
-    files.put(
-        name="Add zsh prompt theme",
-        src=io.StringIO(
-            """PROMPT='
-%{$fg_bold[green]%}%~%{$reset_color%}$(git_prompt_info)$(virtualenv_prompt_info)$(azure_prompt_info) k:$(kubectx_prompt_info) ⌚ %{$fg_bold[red]%}%*%{$reset_color%}
-$ '
-"""
-        ),
-        dest=f"/home/{user}/.zshrc.d/prompt.zsh",
-        user=user,
-        group=user,
-        mode="644",
     )
 
     files.block(
