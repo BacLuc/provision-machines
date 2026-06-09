@@ -103,7 +103,7 @@ basic_utils = {
     "enable_signal": False,
     "enable_java": True,
     "enable_ssh_config_dir": True,
-    "ssh_config_paths_to_include": [],
+    "ssh_config_paths_to_include": ["./config.d/*"],
     "enable_openvpn_config_import_network_manager": True,
     "enable_zoom": False,
     "enable_go": False,
