@@ -2,9 +2,13 @@
 !/agents
 !/claude/
 !/claude/settings.json
-!opencode.json
-!/untracked-config.example.json
-!/gemini/
-!/gemini/settings.example.json
 !/codex/
 !/codex/config.example.toml
+!/gemini/
+!/gemini/settings.example.json
+!/untracked-config.example.json
+!opencode.json
+Dockerfile
+compose.yml
+devcontainer.json
+start-ai-agent-devcontainer.sh
