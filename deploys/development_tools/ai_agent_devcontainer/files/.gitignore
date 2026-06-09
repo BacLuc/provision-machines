@@ -7,8 +7,8 @@
 !/gemini/
 !/gemini/settings.example.json
 !/untracked-config.example.json
+!Dockerfile
+!compose.yml
+!devcontainer.json
 !opencode.json
-Dockerfile
-compose.yml
-devcontainer.json
-start-ai-agent-devcontainer.sh
+!start-ai-agent-devcontainer.sh
