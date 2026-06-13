@@ -1,6 +1,6 @@
 import io
 
-from pyinfra import host
+from pyinfra import host, local
 from pyinfra.facts.files import File
 from pyinfra.operations import files, server
 
@@ -10,6 +10,7 @@ from operations.user import get_user_name
 user = get_user_name()
 
 if host.data.fzf["enabled"]:
+    local.include("deploys/homebrew/deploy.py")
     if host.get_fact(File, f"{HOMEBREW_BIN}/fzf") is None:
         server.shell(
             name="Install fzf via brew",
