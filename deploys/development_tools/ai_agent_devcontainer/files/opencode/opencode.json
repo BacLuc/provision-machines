@@ -2,8 +2,8 @@
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
     "opencode-gemini-auth@1.4.9",
-    "bacluc-opencode-completion-check-command@0.3.0",
-    "bacluc-opencode-keep-running@0.3.0"
+    "bacluc-opencode-completion-check-command@0.6.0",
+    "bacluc-opencode-keep-running@0.4.0"
   ],
   "default_agent": "coordinator",
   "provider": {
