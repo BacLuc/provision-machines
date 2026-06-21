@@ -20,6 +20,8 @@ if host.data.homebrew["enabled"]:
     files.directory(
         name="Create linuxbrew home dir",
         path=HOMEBREW_HOME,
+        user=user,
+        group=user,
         _sudo=True,
         mode="755",
     )
@@ -77,7 +79,7 @@ exit $exit_code"""
         src=io.StringIO(
             f"""#!/bin/sh
 HOMEBREW_VERSION={homebrew_version}
-docker run --rm -v {HOMEBREW_HOME}:{HOMEBREW_HOME} --user {user_id} homebrew/brew:$HOMEBREW_VERSION brew "$@"
+docker run --rm -v {HOMEBREW_HOME}:{HOMEBREW_HOME} --user {user_id} -e HOMEBREW_NO_SANDBOX_LINUX=1 homebrew/brew:$HOMEBREW_VERSION brew "$@"
 """
         ),
         dest=user_brew_bin(user),
@@ -93,4 +95,18 @@ docker run --rm -v {HOMEBREW_HOME}:{HOMEBREW_HOME} --user {user_id} homebrew/bre
         user=user,
         group=user,
         mode="644",
+    )
+
+    brew = user_brew_bin(user)
+    files.put(
+        name="Add script to update brew packages",
+        src=io.StringIO(
+            f"""{brew} update
+{brew} upgrade
+{brew} cleanup
+"""
+        ),
+        dest=f"{host.data.update_packages_script['dir']}/brew-upgrade",
+        _sudo=True,
+        mode="755",
     )
