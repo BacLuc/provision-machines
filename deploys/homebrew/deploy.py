@@ -101,7 +101,10 @@ docker run --rm -v {HOMEBREW_HOME}:{HOMEBREW_HOME} --user {user_id} -e HOMEBREW_
     files.put(
         name="Add script to update brew packages",
         src=io.StringIO(
-            f"""{brew} update
+            f"""
+{brew} cleanup
+{brew} update
+{brew} update
 {brew} upgrade
 {brew} cleanup
 """
