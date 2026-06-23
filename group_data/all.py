@@ -209,7 +209,7 @@ ollama = {
 }
 
 homebrew = {
-    "enabled": False,
+    "enabled": True,
 }
 
 snap = {
