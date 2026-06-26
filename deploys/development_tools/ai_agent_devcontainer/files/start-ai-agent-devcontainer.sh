@@ -9,7 +9,9 @@ PORT_MAP_FILE="$PORT_MAP_DIR/port_map"
 
 find_free_port() {
   local port=4096
-  while nc -z 127.0.0.1 "$port" 2>/dev/null; do
+  local mapped_ports
+  mapped_ports=$(awk '{print $2}' "$PORT_MAP_FILE" 2>/dev/null || true)
+  while nc -z 127.0.0.1 "$port" 2>/dev/null || grep -qx "$port" <<< "$mapped_ports"; do
     port=$((port + 1))
     if [[ $port -gt 9999 ]]; then
       port=$((RANDOM % 60000 + 4000))
