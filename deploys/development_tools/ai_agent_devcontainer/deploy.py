@@ -1,7 +1,8 @@
 import os
 
 from pyinfra import host, local
-from pyinfra.operations import files
+from pyinfra.facts.files import Directory
+from pyinfra.operations import files, server
 
 from operations.filesystem import DEPLOYS_DIR
 from operations.user import get_user_name
@@ -13,6 +14,13 @@ if host.data.ai_agent_devcontainer["enabled"]:
     files_dir = os.path.join(deploy_dir, "files")
 
     local.include(f"{DEPLOYS_DIR}/development_tools/devcontainer_cli/deploy.py")
+
+    server.shell(
+        name="Create ai-agent-devcontainer-home docker volume",
+        commands=["docker volume create ai-agent-devcontainer-home"],
+        _sudo=True,
+        _if=lambda: host.get_fact(Directory, "/var/lib/docker/volumes/ai-agent-devcontainer-home") is None,
+    )
 
     files.directory(
         name="Ensure ai-agent-devcontainer config directory exists",

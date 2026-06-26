@@ -29,6 +29,9 @@ services:
         target: /home/codespace/.codex
         consistency: cached
       - type: volume
+        source: ai-agent-devcontainer-home
+        target: /home/codespace
+      - type: volume
         source: docker-data
         target: /var/lib/docker
     user: codespace
@@ -45,4 +48,6 @@ services:
       - "127.0.0.1:${OPENCODE_PORT:-4096}:4096"
 
 volumes:
+  ai-agent-devcontainer-home:
+    external: true
   docker-data:
