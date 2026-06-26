@@ -4,6 +4,9 @@ set -e
 
 CONFIG_DIR="$HOME/${PROVISION_MACHINES_DIR:-projects/provision-machines}/deploys/development_tools/ai_agent_devcontainer/files"
 
+PORT_MAP_DIR="$HOME/.config/ai-agent-devcontainer"
+PORT_MAP_FILE="$PORT_MAP_DIR/port_map"
+
 find_free_port() {
   local port=4096
   while nc -z 127.0.0.1 "$port" 2>/dev/null; do
@@ -15,15 +18,25 @@ find_free_port() {
   echo "$port"
 }
 
-if [[ -n "$OPENCODE_PORT" ]]; then
-  if ! [[ "$OPENCODE_PORT" =~ ^[0-9]+$ ]] || [[ "$OPENCODE_PORT" -lt 1024 ]] || [[ "$OPENCODE_PORT" -gt 65535 ]]; then
-    echo "Error: OPENCODE_PORT must be a valid port number (1024-65535)" >&2
-    exit 1
+lookup_port() {
+  local dir="$1"
+  if [[ -f "$PORT_MAP_FILE" ]]; then
+    awk -v d="$dir" '$1 == d { print $2 }' "$PORT_MAP_FILE"
   fi
-else
-  OPENCODE_PORT=$(find_free_port)
-fi
-export OPENCODE_PORT
+}
+
+save_port() {
+  local dir="$1"
+  local port="$2"
+  mkdir -p "$PORT_MAP_DIR"
+  touch "$PORT_MAP_FILE"
+  local existing
+  existing=$(awk -v d="$dir" '$1 != d' "$PORT_MAP_FILE" 2>/dev/null || true)
+  {
+    printf "%s\n" "$existing"
+    printf "%s %s\n" "$dir" "$port"
+  } | grep -v '^$' | sort > "$PORT_MAP_FILE"
+}
 
 WORKSPACE_DIR=$(pwd)
 export WORKSPACE_DIR
@@ -32,6 +45,20 @@ WORKSPACE_BASENAME=$(basename "$WORKSPACE_DIR")
 WORKING_DIR="/workspaces/${WORKSPACE_BASENAME}"
 export WORKING_DIR
 export WORKSPACE_BASENAME
+
+if [[ -n "$OPENCODE_PORT" ]]; then
+  if ! [[ "$OPENCODE_PORT" =~ ^[0-9]+$ ]] || [[ "$OPENCODE_PORT" -lt 1024 ]] || [[ "$OPENCODE_PORT" -gt 65535 ]]; then
+    echo "Error: OPENCODE_PORT must be a valid port number (1024-65535)" >&2
+    exit 1
+  fi
+else
+  OPENCODE_PORT=$(lookup_port "$WORKING_DIR")
+  if [[ -z "$OPENCODE_PORT" ]]; then
+    OPENCODE_PORT=$(find_free_port)
+  fi
+fi
+save_port "$WORKING_DIR" "$OPENCODE_PORT"
+export OPENCODE_PORT
 
 # Generate a unique compose project name based on the workspace path
 # This allows running multiple devcontainers simultaneously

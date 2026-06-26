@@ -15,6 +15,14 @@ if host.data.ai_agent_devcontainer["enabled"]:
     local.include(f"{DEPLOYS_DIR}/development_tools/devcontainer_cli/deploy.py")
 
     files.directory(
+        name="Ensure ai-agent-devcontainer config directory exists",
+        path=f"/home/{user_name}/.config/ai-agent-devcontainer",
+        user=user_name,
+        group=user_name,
+        mode="755",
+    )
+
+    files.directory(
         name="Ensure user bin directory exists",
         path=f"/home/{user_name}/bin",
         user=user_name,
