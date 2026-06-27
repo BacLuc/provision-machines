@@ -208,6 +208,14 @@ ollama = {
     "model": "qwen2.5:3b",
 }
 
+ask_ai = {
+    "enabled": True,
+    "endpoint": "https://router.requesty.ai/v1",
+    "model": "novita/deepseek/deepseek-v3.2",
+    # Set in local.py — written directly into ~/.config/aichat/config.yaml (mode 600)
+    "api_key": "",
+}
+
 homebrew = {
     "enabled": True,
 }
