@@ -46,3 +46,12 @@ if host.data.ai_agent_devcontainer["enabled"]:
         group=user_name,
         mode="775",
     )
+
+    files.put(
+        name="Copy devcontainer shell script",
+        src=os.path.join(files_dir, "shell-ai-agent-devcontainer.sh"),
+        dest=f"/home/{user_name}/bin/shell-ai-agent-devcontainer",
+        user=user_name,
+        group=user_name,
+        mode="775",
+    )
