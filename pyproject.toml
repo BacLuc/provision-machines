@@ -20,7 +20,7 @@ dev = [
     "pytest-mock==3.15.1",
     "pytest==9.0.3",
     "ruff==0.15.12",
-    "types-requests==2.33.0.20260408",
+    "types-requests==2.33.0.20260518",
 ]
 
 [tool.black]
