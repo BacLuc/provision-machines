@@ -20,7 +20,7 @@ ENV NVM_VERSION=0.40.5
 # renovate: datasource=github-tags depName=nodejs/node
 ENV NODE_VERSION=24
 # renovate: datasource=npm depName=@google/gemini-cli
-ENV GEMINI_CLI_VERSION=0.45.2
+ENV GEMINI_CLI_VERSION=0.49.0
 # renovate: datasource=npm depName=@openai/codex
 ENV CODEX_VERSION=0.137.0
 
