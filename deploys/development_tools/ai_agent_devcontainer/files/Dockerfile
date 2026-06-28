@@ -18,7 +18,7 @@ ENV NVM_DIR=/home/codespace/.nvm
 # renovate: datasource=github-releases depName=nvm-sh/nvm
 ENV NVM_VERSION=0.40.5
 # renovate: datasource=github-tags depName=nodejs/node
-ENV NODE_VERSION=24
+ENV NODE_VERSION=26.4.0
 # renovate: datasource=npm depName=@google/gemini-cli
 ENV GEMINI_CLI_VERSION=0.45.2
 # renovate: datasource=npm depName=@openai/codex
