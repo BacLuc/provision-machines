@@ -161,9 +161,9 @@ complete -F __start_kubectl k
         )
 
     # renovate: datasource=github-releases depName=databus23/helm-diff
-    helm_diff_version = "3.15.6"
+    helm_diff_version = "3.15.10"
     helm_diff_path = f"/home/{user}/.local/share/helm/plugins/helm-diff/bin/diff"
-    helm_diff_checksum = "e3800f74f6271ded023fdf4cee56f8b314bbef3c20d360625610031349f4b63c"
+    helm_diff_checksum = "4128d6059d4dbeed97a1a67b53a8c621d90a2854a4688fd1e7f98e54bcd57f85"
 
     if host.get_fact(Sha256File, helm_diff_path) != helm_diff_checksum:
         server.shell(
