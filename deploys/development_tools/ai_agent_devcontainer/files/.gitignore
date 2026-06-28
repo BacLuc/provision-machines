@@ -12,4 +12,5 @@
 !devcontainer.json
 !opencode.json
 !start-ai-agent-devcontainer.sh
+!shell-ai-agent-devcontainer.sh
 !init-home.sh
