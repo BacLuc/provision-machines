@@ -36,3 +36,11 @@ ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.json
 ENV OPENCODE_PORT=4096
 
 USER root
+
+# Add nvm initialization for interactive zsh sessions.
+# /etc/zsh/zshrc is sourced for every interactive zsh shell and is NOT part of
+# the home volume, so this works for new and existing home volumes alike.
+RUN printf '\n# NVM initialization\nexport NVM_DIR="/home/codespace/.nvm"\n[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"\n' >> /etc/zsh/zshrc
+
+COPY init-home.sh /usr/local/bin/init-ai-devcontainer-home
+RUN chmod +x /usr/local/bin/init-ai-devcontainer-home
