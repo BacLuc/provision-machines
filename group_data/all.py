@@ -208,6 +208,11 @@ ollama = {
     "model": "qwen2.5:3b",
 }
 
+ai_simulator = {
+    "enabled": False,
+    "port": 11435,
+}
+
 t3_code = {
     "enabled": False,
 }

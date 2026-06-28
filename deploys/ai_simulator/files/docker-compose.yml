@@ -1,0 +1,8 @@
+---
+services:
+  ai-simulator:
+    build: .
+    container_name: ai-simulator
+    ports:
+      - "11435:11435"
+    restart: unless-stopped
