@@ -1,12 +1,12 @@
 import io
 
-from pyinfra import host
 from pyinfra.facts.files import File
 from pyinfra.facts.server import Command
-from pyinfra.operations import files, server
 
 from operations.homebrew import HOMEBREW_BIN, HOMEBREW_BREW_BIN, HOMEBREW_HOME, HOMEBREW_LINUXBREW, user_brew_bin
 from operations.user import get_user_name
+from pyinfra import host
+from pyinfra.operations import files, server
 
 user = get_user_name()
 

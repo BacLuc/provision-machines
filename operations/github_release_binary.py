@@ -1,11 +1,12 @@
 import tempfile
 from typing import Callable, Union
 
-from pyinfra import host, logger
 from pyinfra.facts.files import Sha256File
 from pyinfra.facts.server import User
 from pyinfra.operations.files import directory, download
 from pyinfra.operations.server import shell
+
+from pyinfra import host, logger
 
 
 def github_release_binary(

@@ -1,7 +1,6 @@
+from operations.filesystem import dirname_of
 from pyinfra import host
 from pyinfra.operations import files
-
-from operations.filesystem import dirname_of
 
 files.directory(
     name="Create cleanup scripts folder",

@@ -1,6 +1,5 @@
-from pyinfra import host
-
 from operations.github_release_binary import github_release_binary
+from pyinfra import host
 
 # renovate: datasource=github-releases depName=astral-sh/uv
 python_uv_version = "0.6.0"

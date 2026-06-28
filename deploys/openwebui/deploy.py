@@ -1,11 +1,11 @@
 import io
 
-from pyinfra import host
 from pyinfra.facts.files import Directory
-from pyinfra.operations import files, server, systemd
 
 from operations.filesystem import dirname_of
 from operations.user import get_user_name
+from pyinfra import host
+from pyinfra.operations import files, server, systemd
 
 user = get_user_name()
 

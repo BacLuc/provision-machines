@@ -1,3 +1,4 @@
+from operations.filesystem import DEPLOYS_DIR, dirname_of
 from pyinfra import host, local
 from pyinfra.operations import (
     apt,
@@ -5,8 +6,6 @@ from pyinfra.operations import (
     flatpak,
     server,
 )
-
-from operations.filesystem import DEPLOYS_DIR, dirname_of
 
 if host.data.flatpak["enabled"]:
     apt.packages(

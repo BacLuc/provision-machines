@@ -1,9 +1,8 @@
 import io
 
+from operations.user import get_user_name
 from pyinfra import host
 from pyinfra.operations import apt, files
-
-from operations.user import get_user_name
 
 user = get_user_name()
 

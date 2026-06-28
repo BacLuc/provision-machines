@@ -1,12 +1,12 @@
 import io
 
-from pyinfra import host
 from pyinfra.facts.files import File, Sha256File
-from pyinfra.operations import files, server, snap
 
 from operations.github_release_binary import github_release_binary
 from operations.homebrew import HOMEBREW_BIN, user_brew_bin
 from operations.user import get_user_name
+from pyinfra import host
+from pyinfra.operations import files, server, snap
 
 user = get_user_name()
 kubectl = host.data.kubectl

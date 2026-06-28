@@ -1,6 +1,7 @@
+from pyinfra.operations.server import shell
+
 from pyinfra import host
 from pyinfra.operations import apt
-from pyinfra.operations.server import shell
 
 if host.data.basicsetup["enabled"]:
     basic_tools = host.data.basicsetup["basic_tools"]

@@ -1,8 +1,9 @@
 import io
 
-from pyinfra import host
 from pyinfra.facts import server as server_facts
 from pyinfra.facts.files import File
+
+from pyinfra import host
 from pyinfra.operations import apt, files, server
 
 if host.data.hashicorp_apt_repo["enabled"] or host.data.hashicorp_vault_cli["enabled"] or host.data.vagrant["enabled"]:

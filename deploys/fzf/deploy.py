@@ -1,11 +1,11 @@
 import io
 
-from pyinfra import host, local
 from pyinfra.facts.files import File
-from pyinfra.operations import files, server
 
 from operations.homebrew import HOMEBREW_BIN, user_brew_bin
 from operations.user import get_user_name
+from pyinfra import host, local
+from pyinfra.operations import files, server
 
 user = get_user_name()
 

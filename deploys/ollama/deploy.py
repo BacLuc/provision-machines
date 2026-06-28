@@ -1,10 +1,10 @@
 import io
 
-from pyinfra import host
 from pyinfra.facts.files import File
-from pyinfra.operations import apt, files, server, systemd
 
 from operations.user import get_user_name
+from pyinfra import host
+from pyinfra.operations import apt, files, server, systemd
 
 user = get_user_name()
 ollama = host.data.ollama

@@ -1,6 +1,5 @@
-from pyinfra import host
-
 from operations.github_release_binary import github_release_binary
+from pyinfra import host
 
 git_lfs = host.data.git_lfs
 

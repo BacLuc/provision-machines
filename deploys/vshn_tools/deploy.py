@@ -1,14 +1,14 @@
 import io
 import os
 
-from pyinfra import host, local
-from pyinfra.operations import files
 from pyinfra.operations.files import download
 from pyinfra.operations.server import shell
 
 from operations.filesystem import DEPLOYS_DIR
 from operations.github_release_binary import github_release_binary
 from operations.user import get_user_name
+from pyinfra import host, local
+from pyinfra.operations import files
 
 enabled = host.data.vshn_tools["enabled"]
 user_name = get_user_name()
