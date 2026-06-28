@@ -208,6 +208,11 @@ ollama = {
     "model": "qwen2.5:3b",
 }
 
+ai_simulator = {
+    "enabled": False,
+    "port": 11435,
+}
+
 ask_ai = {
     "enabled": True,
     "endpoint": "https://router.requesty.ai/v1",

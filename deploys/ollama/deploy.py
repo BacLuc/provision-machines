@@ -2,6 +2,7 @@ import io
 
 from pyinfra import host
 from pyinfra.facts.files import File
+from pyinfra.facts.server import Command
 from pyinfra.operations import apt, files, server, systemd
 
 from operations.user import get_user_name
@@ -88,55 +89,69 @@ PARAMETER use_mmap false
             _if=lambda: model_mmap_file.changed,
         )
 
-    apt.packages(
-        name="Install nftables",
-        packages=["nftables"],
-        _sudo=True,
+    ufw_active = (
+        host.get_fact(Command, "systemctl is-active ufw 2>/dev/null || echo inactive").strip()
+        == "active"
     )
 
-    files.directory(
-        name="Create nftables.conf.d directory",
-        path="/etc/nftables.conf.d",
-        _sudo=True,
-        mode="755",
-    )
+    if ufw_active:
+        server.shell(
+            name="Allow private-network access to ollama port via UFW",
+            commands=[
+                "ufw allow from 127.0.0.0/8 to any port 11434 proto tcp comment 'ollama'",
+                "ufw allow from 10.0.0.0/8 to any port 11434 proto tcp comment 'ollama'",
+                "ufw allow from 172.16.0.0/12 to any port 11434 proto tcp comment 'ollama'",
+                "ufw allow from 192.168.0.0/16 to any port 11434 proto tcp comment 'ollama'",
+            ],
+            _sudo=True,
+        )
+    else:
+        apt.packages(
+            name="Install nftables",
+            packages=["nftables"],
+            _sudo=True,
+        )
 
-    nftables_ollama_file = files.put(
-        name="Deploy nftables configuration for ollama to conf.d",
-        src=io.StringIO(
-            """table inet ollama_filter {
+        files.directory(
+            name="Create nftables.conf.d directory",
+            path="/etc/nftables.conf.d",
+            _sudo=True,
+            mode="755",
+        )
+
+        nftables_ollama_file = files.put(
+            name="Deploy nftables configuration for ollama to conf.d",
+            src=io.StringIO(
+                """table inet ollama_filter {
     chain input {
         type filter hook input priority 10; policy accept;
 
-        iif "lo" tcp dport 11434 accept
-
-        iifname "docker*" tcp dport 11434 accept
-        iifname "br-*" tcp dport 11434 accept
+        tcp dport 11434 ip saddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } accept
 
         tcp dport 11434 drop
     }
 }
 """
-        ),
-        dest="/etc/nftables.conf.d/ollama.conf",
-        _sudo=True,
-        mode="644",
-    )
+            ),
+            dest="/etc/nftables.conf.d/ollama.conf",
+            _sudo=True,
+            mode="644",
+        )
 
-    nftables_root_file = files.block(
-        name="Ensure nftables includes conf.d directory",
-        path="/etc/nftables.conf",
-        marker="# {mark} PYINFRA MANAGED BLOCK: include conf.d",
-        content='include "/etc/nftables.conf.d/*.conf"',
-        _sudo=True,
-    )
+        nftables_root_file = files.block(
+            name="Ensure nftables includes conf.d directory",
+            path="/etc/nftables.conf",
+            marker="# {mark} PYINFRA MANAGED BLOCK: include conf.d",
+            content='include "/etc/nftables.conf.d/*.conf"',
+            _sudo=True,
+        )
 
-    systemd.service(
-        name="Ensure nftables service is enabled and running",
-        service="nftables",
-        daemon_reload=True,
-        enabled=True,
-        running=True,
-        _sudo=True,
-        _if=lambda: nftables_root_file.changed or nftables_ollama_file.changed,
-    )
+        systemd.service(
+            name="Ensure nftables service is enabled and running",
+            service="nftables",
+            daemon_reload=True,
+            enabled=True,
+            running=True,
+            _sudo=True,
+            _if=lambda: nftables_root_file.changed or nftables_ollama_file.changed,
+        )

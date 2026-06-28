@@ -44,6 +44,7 @@ services:
       - GEMINI_API_KEY
       - GOOGLE_GEMINI_BASE_URL
       - OPENAI_API_KEY
+      - OLLAMA_HOST=http://host.docker.internal:11435
     ports:
       - "127.0.0.1:${OPENCODE_PORT:-4096}:4096"
 
