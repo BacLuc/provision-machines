@@ -1,6 +1,7 @@
-from operations.github_release_binary import github_release_binary
 from pyinfra import host
 from pyinfra.operations import apt
+
+from operations.github_release_binary import github_release_binary
 
 lazygit = host.data.lazygit
 

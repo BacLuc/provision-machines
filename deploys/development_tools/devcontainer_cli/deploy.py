@@ -1,6 +1,7 @@
-from operations.filesystem import DEPLOYS_DIR
 from pyinfra import host, local
 from pyinfra.operations import npm
+
+from operations.filesystem import DEPLOYS_DIR
 
 if host.data.devcontainer_cli["enabled"]:
     local.include(f"{DEPLOYS_DIR}/docker/deploy.py")

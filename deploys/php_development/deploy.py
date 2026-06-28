@@ -1,10 +1,10 @@
 import io
 
+from pyinfra import host
 from pyinfra.facts.files import File
+from pyinfra.operations import apt, files, git, server
 
 from operations.user import get_user_name
-from pyinfra import host
-from pyinfra.operations import apt, files, git, server
 
 user = get_user_name()
 php_development = host.data.php_development

@@ -1,6 +1,5 @@
-from pyinfra.facts.server import Command
-
 from pyinfra import host
+from pyinfra.facts.server import Command
 from pyinfra.operations import apt, files
 
 if host.data.displaylink_driver["enabled"]:

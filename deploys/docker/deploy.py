@@ -1,15 +1,15 @@
 import io
 
-from pyinfra.facts import server as server_facts
-
-from operations.filesystem import dirname_of
-from operations.user import get_user_name
 from pyinfra import host
+from pyinfra.facts import server as server_facts
 from pyinfra.operations import (
     apt,
     files,
     server,
 )
+
+from operations.filesystem import dirname_of
+from operations.user import get_user_name
 
 user = get_user_name()
 

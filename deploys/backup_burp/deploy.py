@@ -1,11 +1,11 @@
 import io
 
+from pyinfra import host
 from pyinfra.facts.files import File
 from pyinfra.facts.server import Command
+from pyinfra.operations import apt, files, server, systemd
 
 from operations.user import get_user_name
-from pyinfra import host
-from pyinfra.operations import apt, files, server, systemd
 
 user = get_user_name()
 backup_burp = host.data.backup_burp

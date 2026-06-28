@@ -1,8 +1,5 @@
-from pyinfra.facts.files import Directory, File
-
-from operations.filesystem import DEPLOYS_DIR, dirname_of
-from operations.user import get_user_name
 from pyinfra import host, local
+from pyinfra.facts.files import Directory, File
 from pyinfra.operations import (
     apt,
     files,
@@ -10,6 +7,9 @@ from pyinfra.operations import (
     server,
     snap,
 )
+
+from operations.filesystem import DEPLOYS_DIR, dirname_of
+from operations.user import get_user_name
 
 user = get_user_name()
 

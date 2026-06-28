@@ -1,12 +1,12 @@
 import io
 import json
 
+from pyinfra import host
 from pyinfra.facts.files import Directory, File, Link
+from pyinfra.operations import crontab, files, flatpak, server, systemd
 
 from operations.homebrew import HOMEBREW_CELLAR, user_brew_bin
 from operations.user import get_user_name
-from pyinfra import host
-from pyinfra.operations import crontab, files, flatpak, server, systemd
 
 user = get_user_name()
 zed = host.data.zed
