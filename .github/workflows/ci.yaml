@@ -33,7 +33,7 @@ jobs:
       - name: "run prettier"
         run: |
           # renovate: datasource=docker depName=ghcr.io/bacluc/prettier-image/prettier-image
-          prettier_image_version="3.8.3"
+          prettier_image_version="3.8.4"
           docker run --rm -v $PWD:/workdir -w /workdir -u $UID ghcr.io/bacluc/prettier-image/prettier-image:${prettier_image_version}
           git diff --exit-code
 
