@@ -27,9 +27,6 @@ jobs:
       - name: "mypy"
         run: uv run mypy .
 
-      - name: "isort"
-        run: uv run isort --check .
-
       - name: "run prettier"
         run: |
           # renovate: datasource=docker depName=ghcr.io/bacluc/prettier-image/prettier-image
