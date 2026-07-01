@@ -58,7 +58,7 @@ PRESET_MODEL_IDS = {
 # Preferred model per price class (model_id -> display name suffix)
 PREFERRED_MODELS = {
     "byusage": "byusage.nebius/deepseek-ai/DeepSeek-V3.2",
-    "subscription": "subscription.glm-5.1",
+    "subscription": "subscription.glm-5.2",
     "expensive": "expensive.gemini-3-flash",
     "openrouter": "openrouter.deepseek/deepseek-chat-v3.1",
 }
