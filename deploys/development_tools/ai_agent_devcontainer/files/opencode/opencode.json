@@ -69,7 +69,7 @@
       },
       "models": {
         "glm-5.1": {
-          "name": "glm-5.1"
+          "name": "glm-5.2"
         },
         "glm-5": {
           "name": "glm-5"
@@ -166,8 +166,8 @@
         "openrouter.deepseek/deepseek-chat-v3.1": {
           "name": "deepseek-v3.1 (openrouter)"
         },
-        "subscription.glm-5.1": {
-          "name": "glm-5.1 (subscription)"
+        "subscription.glm-5.2": {
+          "name": "glm-5.2 (subscription)"
         }
       }
     }
