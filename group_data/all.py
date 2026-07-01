@@ -284,7 +284,7 @@ hashicorp_vault_cli = {
 php_development = {
     "enabled": False,
     # renovate: datasource=github-tags depName=php/php-src
-    "php_version": "8.4.10",
+    "php_version": "8.5.8",
 }
 
 openwebui = {
