@@ -296,7 +296,7 @@ php_development = {
 }
 
 openwebui = {
-    "enabled": False,
+    "enabled": True,
 }
 
 vagrant = {
