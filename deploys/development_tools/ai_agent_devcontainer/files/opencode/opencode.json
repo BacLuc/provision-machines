@@ -68,7 +68,7 @@
         "baseURL": "https://opencode.ai/zen/go/v1"
       },
       "models": {
-        "glm-5.1": {
+        "glm-5.2": {
           "name": "glm-5.2"
         },
         "glm-5": {
