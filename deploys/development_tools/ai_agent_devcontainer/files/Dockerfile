@@ -23,12 +23,19 @@ ENV NODE_VERSION=26.4.0
 ENV GEMINI_CLI_VERSION=0.49.0
 # renovate: datasource=npm depName=@openai/codex
 ENV CODEX_VERSION=0.142.4
+# renovate: datasource=npm depName=t3
+ENV T3_CODE_VERSION=0.0.28
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash && \
     . /home/codespace/.nvm/nvm.sh && \
     nvm install ${NODE_VERSION} && \
     curl -fsSL https://claude.ai/install.sh | bash && \
-    npm install -g opencode-ai @google/gemini-cli@${GEMINI_CLI_VERSION} @openai/codex@${CODEX_VERSION} && \
+    npm install -g \
+      opencode-ai \
+      @google/gemini-cli@${GEMINI_CLI_VERSION} \
+      @openai/codex@${CODEX_VERSION} \
+      t3@${T3_CODE_VERSION} \
+    && \
     curl -fsSL https://antigravity.google/cli/install.sh | bash
 
 ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.json
