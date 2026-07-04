@@ -18,6 +18,13 @@ SEED_COMMANDS=(
     "uv run scripts/run_pyinfra_local.py"
     "uv run scripts/lint.py"
     "docker compose up -d"
+    "docker compose run --rm e2e npm run lint"
+    "docker compose exec frontend npm run lint"
+    "docker compose run --rm prettier"
+    "docker compose exec api composer run cs-fix"
+    "docker compose exec api composer run update-snapshots"
+    "docker compose exec api composer run test tests/Api/Users"
+    "docker compose --profile e2e run --rm e2e npx playwright test tests/5-cross-browser-tests/login.spec.ts"
     "nvm use"
 )
 
