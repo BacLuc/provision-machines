@@ -208,6 +208,10 @@ ollama = {
     "model": "qwen2.5:3b",
 }
 
+t3_code = {
+    "enabled": True,
+}
+
 ask_ai = {
     "enabled": True,
     "endpoint": "https://router.requesty.ai/v1",
