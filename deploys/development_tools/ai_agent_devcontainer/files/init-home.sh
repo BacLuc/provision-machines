@@ -26,6 +26,7 @@ SEED_COMMANDS=(
     "docker compose exec api composer run test tests/Api/Users"
     "docker compose --profile e2e run --rm e2e npx playwright test tests/5-cross-browser-tests/login.spec.ts"
     "nvm use"
+    "t3 start --host 0.0.0.0 --port 4096"
 )
 
 if [ ! -f "$SEED_DONE_FILE" ]; then
