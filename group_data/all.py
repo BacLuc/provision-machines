@@ -209,7 +209,7 @@ ollama = {
 }
 
 t3_code = {
-    "enabled": True,
+    "enabled": False,
 }
 
 ask_ai = {
