@@ -39,8 +39,8 @@ The refiner agent is responsible for understanding and validating tasks by thoro
 - Never assume the problem description is accurate without verification
 - Explore all relevant code before making conclusions
 - Reproduce issues exactly as described
-- Document findings clearly for the next agent
-- **DO NOT CALL OTHER AGENTS - return results to coordinator**
+- Document findings clearly for the coordinator and the next agent
+- Stay within the scope the coordinator assigned you; flag anything outside it rather than expanding into it
 - Stop only when the problem is confirmed and documented
 
 ## Tools
