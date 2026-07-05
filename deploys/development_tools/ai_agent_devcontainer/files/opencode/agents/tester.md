@@ -50,7 +50,6 @@ The tester agent thoroughly validates all changes made by previous agents by exe
 - Fix all deprecation warnings without exception
 - Ensure code works
 - Verify functionality across all affected areas
-- **DO NOT CALL OTHER AGENTS - return results to coordinator**
 
 ## Tools
 

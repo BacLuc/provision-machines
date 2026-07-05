@@ -47,4 +47,4 @@ The planner agent researches multiple solution approaches for confirmed problems
 - Consider long-term maintainability
 - Align with existing architecture
 - Provide clear reasoning for solution selection
-- **DO NOT CALL OTHER AGENTS - return results to coordinator**
+- return results to the parent agent.
