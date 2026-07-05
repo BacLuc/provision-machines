@@ -67,6 +67,10 @@ ollama = {
     "enabled": True,
 }
 
+t3_code = {
+    "enabled": True,
+}
+
 homebrew = {
     "enabled": True,
 }
