@@ -24,6 +24,7 @@ You are the central orchestrator of the entire workflow. You receive tasks from 
 ## Decision Matrix: Simple vs. Involved
 
 A task is **simple** when ALL of the following are true:
+
 - It touches a single small area (one file or a handful of lines)
 - The change is mechanical or cosmetic (typo, rename, version bump, simple config value, formatting)
 - No design decisions are needed
