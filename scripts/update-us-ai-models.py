@@ -2,7 +2,7 @@
 """Update VSHN US AI models in the opencode config.
 
 Fetches the model list from us-ai.corp.vshn.net and updates the
-us-ai provider section in the opencode.json config file.
+us-ai provider section in the opencode.jsonc config file.
 
 Usage:
     scripts/update-us-ai-models.py                  # Update with one model per price class
@@ -27,7 +27,7 @@ CONFIG_PATH = os.path.join(
     "ai_agent_devcontainer",
     "files",
     "opencode",
-    "opencode.json",
+    "opencode.jsonc",
 )
 PROVIDER_NAME = "vshn-us-ai"
 
@@ -210,10 +210,66 @@ def filter_models(models, mode="default", price_class=None):
     return result
 
 
+def strip_jsonc_comments(text):
+    """Remove // line comments and /* */ block comments from JSONC text, preserving string contents."""
+    result = []
+    i = 0
+    n = len(text)
+    in_string = False
+    while i < n:
+        if in_string:
+            if text[i] == "\\" and i + 1 < n:
+                result.append(text[i])
+                result.append(text[i + 1])
+                i += 2
+                continue
+            if text[i] == '"':
+                in_string = False
+            result.append(text[i])
+            i += 1
+        elif text[i : i + 2] == "//":
+            while i < n and text[i] != "\n":
+                i += 1
+        elif text[i : i + 2] == "/*":
+            i += 2
+            while i < n and text[i : i + 2] != "*/":
+                i += 1
+            i += 2
+        elif text[i] == '"':
+            in_string = True
+            result.append(text[i])
+            i += 1
+        else:
+            result.append(text[i])
+            i += 1
+    return "".join(result)
+
+
+def npm_name(spec):
+    """Extract the npm package name from a 'name@version' spec, or None if no version."""
+    at = spec.rfind("@")
+    if at <= 0:
+        return None
+    return spec[:at]
+
+
+def inject_plugin_comments(text, plugins):
+    """Insert renovate comment lines before each plugin entry in JSON output."""
+    for spec in plugins:
+        name = npm_name(spec)
+        if not name:
+            continue
+        text = text.replace(
+            f'    "{spec}"',
+            f'    // renovate: datasource=npm depName={name}\n    "{spec}"',
+        )
+    return text
+
+
 def update_config(models, config_path, npm_package=None, provider_name=None, api_base_url=None):
-    """Update the opencode.json config with the given models."""
+    """Update the opencode.jsonc config with the given models."""
     with open(config_path) as f:
-        config = json.load(f)
+        config = json.loads(strip_jsonc_comments(f.read()))
 
     provider_name = provider_name or PROVIDER_NAME
     api_base_url = api_base_url or API_BASE_URL
@@ -224,7 +280,6 @@ def update_config(models, config_path, npm_package=None, provider_name=None, api
         display_name = get_display_name(model)
         models_dict[model_id] = {"name": display_name}
 
-    # Sort models by key for deterministic output
     sorted_models = dict(sorted(models_dict.items()))
 
     provider_config = {
@@ -235,8 +290,11 @@ def update_config(models, config_path, npm_package=None, provider_name=None, api
 
     config["provider"][provider_name] = provider_config
 
+    text = json.dumps(config, indent=2)
+    text = inject_plugin_comments(text, config.get("plugin", []))
+
     with open(config_path, "w") as f:
-        json.dump(config, f, indent=2)
+        f.write(text)
         f.write("\n")
 
     print(f"Updated {len(sorted_models)} models in {config_path}")
@@ -307,7 +365,7 @@ def main():
     parser.add_argument(
         "--config-path",
         default=CONFIG_PATH,
-        help=f"Path to opencode.json (default: {CONFIG_PATH})",
+        help=f"Path to opencode.jsonc (default: {CONFIG_PATH})",
     )
 
     args = parser.parse_args()

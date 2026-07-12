@@ -7,11 +7,11 @@
 !/codex/config.example.toml
 !/gemini/
 !/gemini/settings.example.json
-!/untracked-config.example.json
+!/untracked-config.example.jsonc
 !Dockerfile
 !compose.yml
 !devcontainer.json
-!opencode.json
+!opencode.jsonc
 !start-ai-agent-devcontainer.sh
 !shell-ai-agent-devcontainer.sh
 !init-home.sh
