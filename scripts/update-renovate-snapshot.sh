@@ -19,14 +19,21 @@ show_help() {
 }
 
 check_snapshot() {
-    generate_snapshot > $SNAPSHOT_FILE
+    write_snapshot
     git diff --exit-code $SNAPSHOT_FILE
 }
 
 generate_snapshot() {
     # Use DEBUG level to get packageFiles with docker dependencies
-    docker run --rm -e LOG_LEVEL=debug -e LOG_FORMAT=json -v "$PWD:/workspace" -w /workspace renovate/renovate --platform=local 2>/tmp/renovate-err.log | jq -s \
-        '(map(select(.level==40)) | first).githubDeps as $githubDeps | [((map(select(.msg == "packageFiles with updates")) | first | .config.dockerfile[].deps[].depName) // null)] as $dockerDeps | ($githubDeps + $dockerDeps) | unique'
+    docker run --rm -e LOG_LEVEL=debug -e LOG_FORMAT=json -v "$REPO_ROOT:/workspace" -w /workspace renovate/renovate --platform=local 2>/tmp/renovate-err.log | jq -s \
+        '(map(select(.githubDeps)) | first | .githubDeps) as $githubDeps | [((map(select(.msg == "packageFiles with updates")) | first | .config.dockerfile[].deps[].depName) // null)] as $dockerDeps | ($githubDeps + $dockerDeps) | unique'
+}
+
+write_snapshot() {
+    local tmp
+    tmp=$(mktemp)
+    generate_snapshot > "$tmp"
+    mv "$tmp" "$SNAPSHOT_FILE"
 }
 
 # Main script logic
@@ -39,7 +46,7 @@ case "${1:-}" in
         exit $?
         ;;
     --update|-u)
-        generate_snapshot > $SNAPSHOT_FILE
+        write_snapshot
         ;;
     "")
         echo -e "No option specified. Use --help for usage."
