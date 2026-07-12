@@ -2,6 +2,7 @@
 !/agents
 !/claude/
 !/claude/settings.json
+!/claude/skills/**/*
 !/codex/
 !/codex/config.example.toml
 !/gemini/
