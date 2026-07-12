@@ -39,6 +39,6 @@ jobs:
           ./scripts/update-renovate-snapshot.sh --update
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .github/renovate-snapshot.yaml
+          git add .github/renovate-snapshot.json
           git commit -m "chore: update renovate dependency snapshot [skip ci]" || echo "No changes to commit"
           git push
