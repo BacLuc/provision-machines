@@ -39,6 +39,13 @@
       "datasourceTemplate": "devcontainer-feature"
     },
     {
+      "fileMatch": ["\\.jsonc$"],
+      "matchStrings": [
+        "\/\/\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s*depName=(?<depName>[^\\s]+).*\\n\\s*\"[^\"]*@(?<currentValue>[0-9][\\w.-]*)"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
       "fileMatch": [".*"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\n\\s*[\"\\w][^:=\\n]*[:=]\\s*['\"]*(?<currentValue>v?[0-9][\\w.-]*)"

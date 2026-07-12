@@ -38,7 +38,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/instal
     && \
     curl -fsSL https://antigravity.google/cli/install.sh | bash
 
-ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.json
+ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.jsonc
 
 ENV OPENCODE_PORT=4096
 
