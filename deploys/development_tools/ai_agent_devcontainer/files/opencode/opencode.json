@@ -4,7 +4,13 @@
     "@dietrichgebert/ponytail@4.8.4",
     "opencode-gemini-auth@1.4.9",
     "bacluc-opencode-completion-check-command@0.6.0",
-    "opencode-auto-resume@1.0.18"
+    [
+      "opencode-auto-resume@1.0.18",
+      {
+        "chunkTimeoutMs": 300000,
+        "maxRetries": 10
+      }
+    ]
   ],
   "default_agent": "coordinator",
   "provider": {
