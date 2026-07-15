@@ -90,9 +90,10 @@ fi
 devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" &
 
 ENCODED_PATH=$(echo -n "${WORKING_DIR}" | base64 -w0)
-echo "Waiting for http://localhost:${OPENCODE_PORT}/${ENCODED_PATH} to respond..."
-until curl -s -f "http://localhost:${OPENCODE_PORT}/${ENCODED_PATH}" > /dev/null; do
+opencode_url="http://localhost:${OPENCODE_PORT}/${ENCODED_PATH}"
+echo "Waiting for ${opencode_url} to respond..."
+until curl -s -f "${opencode_url}" > /dev/null; do
   sleep 1
 done
 
-echo "http://localhost:${OPENCODE_PORT}/${ENCODED_PATH}"
+echo "${opencode_url}"
