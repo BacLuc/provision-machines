@@ -92,6 +92,9 @@ devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" &
 encoded_path=$(echo -n "${WORKING_DIR}" | base64 -w0)
 opencode_url="http://localhost:${OPENCODE_PORT}/${encoded_path}"
 echo "Waiting for ${opencode_url} to respond..."
+if [[ "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
+  open "$opencode_url"
+fi
 until curl -s -f "${opencode_url}" > /dev/null; do
   sleep 1
 done
