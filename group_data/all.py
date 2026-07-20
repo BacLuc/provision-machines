@@ -150,7 +150,7 @@ flatpak = {
 flatpaks: list[str] = []
 
 fluxcd = {
-    "enabled": False,
+    "enabled": True,
 }
 
 fzf = {
