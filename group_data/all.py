@@ -187,7 +187,7 @@ kubectl = {
 }
 
 tmux = {
-    "enabled": False,
+    "enabled": True,
 }
 
 nvim = {
