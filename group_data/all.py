@@ -191,7 +191,7 @@ tmux = {
 }
 
 nvim = {
-    "enabled": False,
+    "enabled": True,
 }
 
 lazygit = {
