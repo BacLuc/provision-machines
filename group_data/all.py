@@ -290,7 +290,7 @@ hashicorp_apt_repo = {
 }
 
 hashicorp_vault_cli = {
-    "enabled": False,
+    "enabled": True,
 }
 
 php_development = {
