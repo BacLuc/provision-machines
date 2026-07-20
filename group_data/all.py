@@ -225,7 +225,7 @@ homebrew = {
 }
 
 snap = {
-    "enabled": False,
+    "enabled": True,
     "refresh": {
         "timer": "4:00-9:00",
     },
