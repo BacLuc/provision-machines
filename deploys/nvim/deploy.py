@@ -1,9 +1,8 @@
-import io
-
 from pyinfra import host
-from pyinfra.facts.files import File
-from pyinfra.operations import files, git, server
+from pyinfra.facts.files import Directory, File
+from pyinfra.operations import files, server
 
+from operations.filesystem import dirname_of
 from operations.homebrew import HOMEBREW_BIN, user_brew_bin
 from operations.user import get_user_name
 
@@ -11,6 +10,7 @@ user = get_user_name()
 
 if host.data.nvim["enabled"]:
     nvim_bin = f"{HOMEBREW_BIN}/nvim"
+    nvim_config_dir = f"/home/{user}/.config/nvim"
 
     server.shell(
         name="Install neovim via brew",
@@ -18,27 +18,21 @@ if host.data.nvim["enabled"]:
         _if=lambda: host.get_fact(File, nvim_bin) is None,
     )
 
-    git.repo(
-        name="Install NormalNvim distribution",
-        src="https://github.com/BacLuc/NormalNvim.git",
-        dest=f"/home/{user}/.config/nvim",
-        user=user,
-        group=user,
+    server.shell(
+        name="Remove stale neovim config directory",
+        commands=[f"rm -rf {nvim_config_dir}"],
+        _sudo=True,
+        _if=lambda: host.get_fact(Directory, nvim_config_dir) is not None,
     )
 
     files.put(
-        name="Add script to update nvim",
-        src=io.StringIO(
-            f"""user="{user}"
-version=origin/main
-
-su "$user" -c "git -C /home/{user}/.config/nvim fetch"
-su "$user" -c "git -C /home/{user}/.config/nvim reset --hard $version"
-"""
-        ),
-        dest=f"{host.data.update_packages_script['dir']}/normal-neovim-upgrade",
-        _sudo=True,
-        mode="755",
+        name="Deploy minimal nvim init.lua",
+        src=f"{dirname_of(__file__)}/files/init.lua",
+        dest=f"{nvim_config_dir}/init.lua",
+        user=user,
+        group=user,
+        mode="644",
+        create_remote_dir=True,
     )
 
     server.shell(
