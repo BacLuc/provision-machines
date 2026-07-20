@@ -56,3 +56,7 @@ jobs:
 
       - name: "run pyinfra a second time"
         run: uv run scripts/run_pyinfra_local.py
+
+      - name: "show journalctl output"
+        if: always()
+        run: journalctl --no-pager -x --since "1 hour ago"
