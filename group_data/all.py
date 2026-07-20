@@ -265,7 +265,7 @@ jetbrains = {
 }
 
 okular = {
-    "enabled": False,
+    "enabled": True,
 }
 
 ubuntu_desktop = {
