@@ -154,7 +154,7 @@ fluxcd = {
 }
 
 fzf = {
-    "enabled": False,
+    "enabled": True,
 }
 
 git_lfs = {
