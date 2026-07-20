@@ -249,7 +249,7 @@ motd = {
 }
 
 zed = {
-    "enabled": False,
+    "enabled": True,
     "enable_helm_support": True,
     "enable_memory_monitor": True,
     "memory_monitor_limit_gb": 10,
