@@ -82,17 +82,31 @@ if basic_utils["enable_keepassxc"]:
         present=True,
     )
 
+    files.directory(
+        name="Ensure KeePassXC config directory exists",
+        path=f"/home/{user}/.var/app/org.keepassxc.KeePassXC/config/keepassxc",
+        user=user,
+        mode="775",
+    )
+
+    files.directory(
+        name="Ensure KeePassXC cache directory exists",
+        path=f"/home/{user}/.var/app/org.keepassxc.KeePassXC/cache/keepassxc",
+        user=user,
+        mode="775",
+    )
+
     if gcr_ssh_agent["enable"]:
         override_exists = server.shell(
             name="Check if override already exists",
             commands="flatpak override org.keepassxc.KeePassXC --show",
         )
 
-        override = f"filesystems={gcr_ssh_agent_socket};"
         server.shell(
             name="Configure override",
-            commands=f"flatpak override org.keepassxc.KeePassXC --{override}",
+            commands=f"flatpak override org.keepassxc.KeePassXC --filesystem={gcr_ssh_agent_socket}",
             _if=lambda: gcr_ssh_agent_socket not in override_exists.stdout,
+            _sudo=True,
         )
 
         files.block(
@@ -105,26 +119,12 @@ if basic_utils["enable_keepassxc"]:
     keepass_config = f"/home/{user}/.var/app/org.keepassxc.KeePassXC/config/keepassxc/keepassxc.ini"
     keepass_cache_ini = f"/home/{user}/.var/app/org.keepassxc.KeePassXC/cache/keepassxc/keepassxc.ini"
 
-    files.directory(
-        name="Ensure KeePassXC cache directory exists",
-        path=f"/home/{user}/.var/app/org.keepassxc.KeePassXC/config/keepassxc",
-        user=user,
-        mode="775",
-    )
-
     files.block(
         name="Configure auto type in KeePassXC",
         path=keepass_config,
         marker="# {mark} PYINFRA MANAGED BLOCK: configure auto type",
         content="""GlobalAutoTypeKey=65
     GlobalAutoTypeModifiers=201326592""",
-    )
-
-    files.directory(
-        name="Ensure KeePassXC cache directory exists",
-        path=f"/home/{user}/.var/app/org.keepassxc.KeePassXC/cache/keepassxc",
-        user=user,
-        mode="775",
     )
 
     if gcr_ssh_agent["enable"]:
@@ -210,6 +210,12 @@ if basic_utils["enable_ssh_config_dir"]:
 #         )
 
 if gcr_ssh_agent["enable"]:
+    apt.packages(
+        name="Install libsecret-tools for secret-tool",
+        packages=["libsecret-tools"],
+        _sudo=True,
+    )
+
     ssh_key_path = f"/home/{user}/.ssh/{basic_utils['ssh_key']['filename']}"
     ssh_key_exists = host.get_fact(File, ssh_key_path)
 
