@@ -261,7 +261,7 @@ vifm = {
 }
 
 jetbrains = {
-    "enabled": False,
+    "enabled": True,
 }
 
 okular = {
