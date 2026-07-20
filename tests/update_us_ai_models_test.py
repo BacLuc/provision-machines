@@ -76,3 +76,38 @@ def test_round_trip_preserves_plugins_with_comments() -> None:
     reparsed = json.loads(mod.strip_jsonc_comments(text))
     assert reparsed["plugin"] == config["plugin"]
     assert reparsed["provider"] == config["provider"]
+
+
+def test_inject_plugin_comments_handles_array_form() -> None:
+    import json
+
+    plugins = ["opencode-gemini-auth@1.4.9", ["opencode-auto-resume@1.1.3", {"chunkTimeoutMs": 300000}]]
+    config = {"plugin": plugins}
+    text = json.dumps(config, indent=2)
+    result = mod.inject_plugin_comments(text, plugins)
+    assert "// renovate: datasource=npm depName=opencode-gemini-auth" in result
+    assert "// renovate: datasource=npm depName=opencode-auto-resume" in result
+    assert result.count("// renovate:") == 2
+    assert '"opencode-gemini-auth@1.4.9"' in result
+    assert '"opencode-auto-resume@1.1.3"' in result
+    reparsed = json.loads(mod.strip_jsonc_comments(result))
+    assert reparsed["plugin"] == plugins
+
+
+def test_round_trip_preserves_array_form_plugins() -> None:
+    import json
+
+    config = {
+        "$schema": "https://opencode.ai/config.json",
+        "plugin": [
+            "opencode-gemini-auth@1.4.9",
+            ["opencode-auto-resume@1.1.3", {"chunkTimeoutMs": 300000, "maxRetries": 10}],
+        ],
+        "provider": {"vshn-us-ai": {"name": "VSHN US AI"}},
+    }
+    text = json.dumps(config, indent=2)
+    text = mod.inject_plugin_comments(text, config["plugin"])
+    reparsed = json.loads(mod.strip_jsonc_comments(text))
+    assert reparsed["plugin"] == config["plugin"]
+    assert reparsed["provider"] == config["provider"]
+    assert "// renovate: datasource=npm depName=opencode-auto-resume" in text

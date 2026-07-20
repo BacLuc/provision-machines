@@ -256,13 +256,22 @@ def npm_name(spec):
 def inject_plugin_comments(text, plugins):
     """Insert renovate comment lines before each plugin entry in JSON output."""
     for spec in plugins:
-        name = npm_name(spec)
-        if not name:
-            continue
-        text = text.replace(
-            f'    "{spec}"',
-            f'    // renovate: datasource=npm depName={name}\n    "{spec}"',
-        )
+        if isinstance(spec, list):
+            inner = spec[0] if spec else None
+            if not inner:
+                continue
+            name = npm_name(inner)
+            if not name:
+                continue
+            marker = f'    [\n      "{inner}"'
+            repl = f'    // renovate: datasource=npm depName={name}\n    [\n      "{inner}"'
+        else:
+            name = npm_name(spec)
+            if not name:
+                continue
+            marker = f'    "{spec}"'
+            repl = f'    // renovate: datasource=npm depName={name}\n    "{spec}"'
+        text = text.replace(marker, repl, 1)
     return text
 
 

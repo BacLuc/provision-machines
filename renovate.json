@@ -38,7 +38,7 @@
     {
       "fileMatch": ["\\.jsonc$"],
       "matchStrings": [
-        "//\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s*depName=(?<depName>[^\\s]+).*\\n\\s*\"[^\"]*@(?<currentValue>[0-9][\\w.-]*)"
+        "//\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s*depName=(?<depName>[^\\s]+).*\\n\\s*(\\[\\s*)?\"[^\"]*@(?<currentValue>[0-9][\\w.-]*)"
       ],
       "datasourceTemplate": "{{{datasource}}}"
     },
