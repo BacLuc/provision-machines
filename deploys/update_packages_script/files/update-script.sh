@@ -55,9 +55,9 @@ find "$update_scripts_dir" -maxdepth 1 -type f -executable -print | while IFS= r
         exit_code=$?
         log "✗ $script_name failed with exit code: $exit_code"
         log_script_output "$script_name" "$output"
-
-        exit $exit_code
     fi
 done
 
 log "Update script completed"
+
+exit 0

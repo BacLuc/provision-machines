@@ -9,6 +9,7 @@ from pyinfra.operations import (
 )
 
 from operations.filesystem import DEPLOYS_DIR, dirname_of
+from operations.homebrew import HOMEBREW_BIN, user_brew_bin
 from operations.user import get_user_name
 
 user = get_user_name()
@@ -74,12 +75,23 @@ if basic_utils["enable_keepassxc"]:
     local.include(f"{DEPLOYS_DIR}/flatpak/deploy.py")
     flatpak.packages(packages=["org.keepassxc.KeePassXC"])
 
+    keepassxc_platform = "QT_QPA_PLATFORM=xcb"
+    keepassxc_override = server.shell(
+        name="Check keepassxc platform override",
+        commands="flatpak override org.keepassxc.KeePassXC --show",
+    )
+    server.shell(
+        name="Force keepassxc to use xcb platform",
+        commands=f"flatpak override org.keepassxc.KeePassXC --env={keepassxc_platform}",
+        _sudo=True,
+        _if=lambda: keepassxc_platform not in keepassxc_override.stdout,
+    )
+
     files.line(
-        name="modify desktop file",
+        name="Remove stray Exec line from bash_aliases",
         path=f"/home/{user}/.bash_aliases",
         line="^Exec=",
-        replace="Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=keepassxc --file-forwarding org.keepassxc.KeePassXC --platform xcb @@ %f @@",
-        present=True,
+        present=False,
     )
 
     if gcr_ssh_agent["enable"]:
@@ -378,37 +390,35 @@ if basic_utils["enable_zoom"]:
     flatpak.packages(packages=["us.zoom.Zoom"])
 
 if basic_utils["enable_go"]:
-    """
-    TODO
-    goenv_bin = f"{homebrew_binaries_path}/goenv"
+    local.include(f"{DEPLOYS_DIR}/homebrew/deploy.py")
 
+    goenv_bin = f"{HOMEBREW_BIN}/goenv"
     server.shell(
         name="Install goenv via brew",
-        commands=[f"/home/{user}/bin/brew install goenv"],
+        commands=[f"{user_brew_bin(user)} install goenv"],
         _if=lambda: host.get_fact(File, goenv_bin) is None,
     )
-    """
 
     files.block(
         name="Setup goenv for bash",
         path=f"/home/{user}/.bashrc",
         marker="# {mark} ANSIBLE MANAGED BLOCK: add goenv",
-        content="""\
+        content=f"""\
 export GOENV_ROOT="$HOME/.goenv"
-eval "$($HOME/.goenv/bin/goenv init -)"\
+eval "$({HOMEBREW_BIN}/goenv init -)"\
 """,
         try_prevent_shell_expansion=True,
     )
 
-    if zsh_enabled:
+    zshrc_path = f"/home/{user}/.zshrc"
+    if zsh_enabled or host.get_fact(File, zshrc_path) is not None:
         files.block(
             name="Setup goenv for zsh",
-            path=f"/home/{user}/.zshrc",
+            path=zshrc_path,
             marker="# {mark} ANSIBLE MANAGED BLOCK: add goenv",
-            content="""\
+            content=f"""\
 export GOENV_ROOT="$HOME/.goenv"
-export PATH="$GOENV_ROOT/bin:$PATH"
-eval "$($HOME/.goenv/bin/goenv init -)"\
+eval "$({HOMEBREW_BIN}/goenv init -)"\
 """,
             try_prevent_shell_expansion=True,
         )
