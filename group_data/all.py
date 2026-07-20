@@ -269,7 +269,7 @@ okular = {
 }
 
 ubuntu_desktop = {
-    "enabled": False,
+    "enabled": True,
     "enable_dependencies": True,
     "enable_favorite_apps": True,
     "enable_keyboard_layouts": True,
