@@ -140,3 +140,13 @@ PARAMETER use_mmap false
         _sudo=True,
         _if=lambda: nftables_root_file.changed or nftables_ollama_file.changed,
     )
+
+    server.shell(
+        name="Restart docker to restore its iptables chains after nftables reload",
+        commands=["systemctl restart docker"],
+        _sudo=True,
+        _if=lambda: (
+            (nftables_root_file.changed or nftables_ollama_file.changed)
+            and host.data.get("docker", {}).get("enabled", False)
+        ),
+    )

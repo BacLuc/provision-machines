@@ -68,6 +68,13 @@ WantedBy=multi-user.target
         mode="644",
     )
 
+    server.shell(
+        name="Restart docker before starting openwebui to ensure iptables chains exist",
+        commands=["systemctl restart docker"],
+        _sudo=True,
+        _if=lambda: systemd_file.changed or compose_file.changed,
+    )
+
     systemd.service(
         name="Enable and start openwebui service",
         service="openwebui",
