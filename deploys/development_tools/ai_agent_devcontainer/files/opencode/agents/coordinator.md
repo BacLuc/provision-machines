@@ -2,8 +2,7 @@
 description: Coordinates subagents
 mode: all
 temperature: 0.1
-permissions:
-  *: allow
+permission: allow
 ---
 
 # Coordinator Agent

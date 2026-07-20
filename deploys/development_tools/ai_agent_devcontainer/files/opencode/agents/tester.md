@@ -2,8 +2,7 @@
 description: Tests your changes
 mode: all
 temperature: 0.1
-permissions:
-  *: allow
+permission: allow
 ---
 
 # Tester Agent
