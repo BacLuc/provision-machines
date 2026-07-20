@@ -136,7 +136,7 @@ devcontainer_cli = {
 }
 
 displaylink_driver = {
-    "enabled": False,
+    "enabled": True,
 }
 
 firefox = {

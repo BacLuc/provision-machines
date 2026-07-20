@@ -3,7 +3,7 @@ from pyinfra.facts.server import Command
 from pyinfra.operations import apt, files
 
 if host.data.displaylink_driver["enabled"]:
-    installed = "displaylink-driver" in host.get_fact(Command, "dpkg -l | grep displaylink-driver || true")
+    installed = "displaylink-driver" in (host.get_fact(Command, "dpkg -l | grep displaylink-driver || true") or "")
 
     if not installed:
         files.download(
