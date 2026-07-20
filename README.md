@@ -27,3 +27,16 @@ uv run scripts/run_pyinfra_local.py
 ```shell
 uv run scripts/lint.py
 ```
+
+# Run with opencode-desktop
+
+cat ~/.local/share/applications/ai.opencode.desktop.desktop
+[Desktop Entry]
+Name=OpenCode
+Exec=env OPENCODE_CONFIG=/home/${USER}/.opencode/untracked-config.json /opt/OpenCode/ai.opencode.desktop --auto %U
+Terminal=false
+Type=Application
+Icon=ai.opencode.desktop
+StartupWMClass=ai.opencode.desktop
+MimeType=x-scheme-handler/opencode;
+Categories=Development;%
