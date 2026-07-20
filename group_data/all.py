@@ -236,7 +236,7 @@ snaps: list[str] = []
 classic_snaps: list[str] = []
 
 sysctl = {
-    "enabled": False,
+    "enabled": True,
     "settings": {
         "fs.inotify.max_queued_events": 1048576,
         "fs.inotify.max_user_instances": 1048576,
