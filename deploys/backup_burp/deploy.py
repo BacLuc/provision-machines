@@ -36,7 +36,7 @@ if backup_burp["enabled"]:
         _sudo=True,
     )
 
-    server_pw = host.get_fact(Command, f"secret-tool lookup app {app_name} instance {server_instance} || true").strip()
+    server_pw = (host.get_fact(Command, f"secret-tool lookup app {app_name} instance {server_instance} || true") or "").strip()
     if len(server_pw) <= 12:
         raise ValueError(
             f"Please add the server password with: "
