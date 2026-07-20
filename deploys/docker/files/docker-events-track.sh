@@ -41,19 +41,16 @@ docker events --format '{{json .}}' 2>/dev/null | while read -r event; do
   [ -z "$event" ] && continue
   
   # Extract event type and image from the JSON
-  local event_type
   event_type=$(echo "$event" | jq -r '.Type + "." .Action' 2>/dev/null)
   
   case "$event_type" in
     "container.start")
-      local image
       image=$(echo "$event" | jq -r '.Actor.Attributes.image' 2>/dev/null)
       if [ -n "$image" ] && [ "$image" != "null" ]; then
         update_image_usage "$image"
       fi
       ;;
     "image.pull")
-      local image_name
       image_name=$(echo "$event" | jq -r '.Actor.Attributes.name' 2>/dev/null)
       if [ -n "$image_name" ] && [ "$image_name" != "null" ]; then
         update_image_usage "$image_name"
