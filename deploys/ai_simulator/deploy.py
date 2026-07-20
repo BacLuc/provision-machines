@@ -84,10 +84,7 @@ WantedBy=multi-user.target
         _if=lambda: systemd_file.changed or compose_file.changed or server_file.changed or dockerfile.changed,
     )
 
-    ufw_active = (
-        host.get_fact(Command, "systemctl is-active ufw 2>/dev/null || echo inactive").strip()
-        == "active"
-    )
+    ufw_active = host.get_fact(Command, "systemctl is-active ufw 2>/dev/null || echo inactive").strip() == "active"
 
     if ufw_active:
         # UFW runs its drop rules at nftables priority 0; a custom nftables accept at

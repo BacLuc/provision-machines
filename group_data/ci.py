@@ -67,6 +67,10 @@ ollama = {
     "enabled": True,
 }
 
+ai_simulator = {
+    "enabled": True,
+}
+
 t3_code = {
     "enabled": True,
 }

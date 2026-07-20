@@ -14,6 +14,7 @@
   "ollama/ollama",
   "php/php-src",
   "pingdotgg/t3code",
+  "python",
   "rajatjindal/kubectl-modify-secret",
   "robscott/kube-capacity",
   "sigoden/aichat",

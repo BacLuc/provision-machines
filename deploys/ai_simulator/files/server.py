@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Lightweight AI simulator — OpenAI- and Ollama-compatible fake API."""
+
 import json
 import time
 import uuid
@@ -56,20 +57,24 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         path = self.path.split("?")[0]
         if path in ("/v1/models", "/v1/models/"):
-            self._send_json({
-                "object": "list",
-                "data": [
-                    {"id": m["id"], "object": "model", "created": 1700000000, "owned_by": "simulator"}
-                    for m in MODELS
-                ],
-            })
+            self._send_json(
+                {
+                    "object": "list",
+                    "data": [
+                        {"id": m["id"], "object": "model", "created": 1700000000, "owned_by": "simulator"}
+                        for m in MODELS
+                    ],
+                }
+            )
         elif path == "/api/tags":
-            self._send_json({
-                "models": [
-                    {"name": m["name"], "model": m["name"], "size": m["size"], "details": {"family": "simulator"}}
-                    for m in MODELS
-                ]
-            })
+            self._send_json(
+                {
+                    "models": [
+                        {"name": m["name"], "model": m["name"], "size": m["size"], "details": {"family": "simulator"}}
+                        for m in MODELS
+                    ]
+                }
+            )
         elif path in ("/", "/health", "/healthz"):
             self._send_json({"status": "ok", "simulator": True})
         else:
@@ -95,45 +100,89 @@ class Handler(BaseHTTPRequestHandler):
         cid = f"chatcmpl-{uuid.uuid4().hex[:8]}"
         now = int(time.time())
         if body.get("stream"):
-            self._send_sse([
-                {"id": cid, "object": "chat.completion.chunk", "created": now, "model": model,
-                 "choices": [{"index": 0, "delta": {"role": "assistant", "content": text}, "finish_reason": None}]},
-                {"id": cid, "object": "chat.completion.chunk", "created": now, "model": model,
-                 "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]},
-            ])
+            self._send_sse(
+                [
+                    {
+                        "id": cid,
+                        "object": "chat.completion.chunk",
+                        "created": now,
+                        "model": model,
+                        "choices": [
+                            {"index": 0, "delta": {"role": "assistant", "content": text}, "finish_reason": None}
+                        ],
+                    },
+                    {
+                        "id": cid,
+                        "object": "chat.completion.chunk",
+                        "created": now,
+                        "model": model,
+                        "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
+                    },
+                ]
+            )
         else:
-            self._send_json({
-                "id": cid, "object": "chat.completion", "created": now, "model": model,
-                "choices": [{"index": 0, "message": {"role": "assistant", "content": text}, "finish_reason": "stop"}],
-                "usage": {"prompt_tokens": 10, "completion_tokens": len(text.split()), "total_tokens": 10 + len(text.split())},
-            })
+            self._send_json(
+                {
+                    "id": cid,
+                    "object": "chat.completion",
+                    "created": now,
+                    "model": model,
+                    "choices": [
+                        {"index": 0, "message": {"role": "assistant", "content": text}, "finish_reason": "stop"}
+                    ],
+                    "usage": {
+                        "prompt_tokens": 10,
+                        "completion_tokens": len(text.split()),
+                        "total_tokens": 10 + len(text.split()),
+                    },
+                }
+            )
 
     def _openai_completion(self, body: dict[str, Any]) -> None:
         prompt = body.get("prompt", "")
         text = f"[AI Simulator] {(prompt[:200] + '…') if len(prompt) > 200 else prompt}"
         model = body.get("model", "simulator:latest")
-        self._send_json({
-            "id": f"cmpl-{uuid.uuid4().hex[:8]}", "object": "text_completion",
-            "created": int(time.time()), "model": model,
-            "choices": [{"text": text, "index": 0, "finish_reason": "stop"}],
-            "usage": {"prompt_tokens": 10, "completion_tokens": len(text.split()), "total_tokens": 10 + len(text.split())},
-        })
+        self._send_json(
+            {
+                "id": f"cmpl-{uuid.uuid4().hex[:8]}",
+                "object": "text_completion",
+                "created": int(time.time()),
+                "model": model,
+                "choices": [{"text": text, "index": 0, "finish_reason": "stop"}],
+                "usage": {
+                    "prompt_tokens": 10,
+                    "completion_tokens": len(text.split()),
+                    "total_tokens": 10 + len(text.split()),
+                },
+            }
+        )
 
     def _ollama_chat(self, body: dict[str, Any]) -> None:
         text = _echo_text(body.get("messages", []))
         model = body.get("model", "simulator:latest")
         ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         final = {
-            "model": model, "created_at": ts,
+            "model": model,
+            "created_at": ts,
             "message": {"role": "assistant", "content": text},
-            "done": True, "done_reason": "stop",
-            "total_duration": 1000000, "prompt_eval_count": 10, "eval_count": len(text.split()),
+            "done": True,
+            "done_reason": "stop",
+            "total_duration": 1000000,
+            "prompt_eval_count": 10,
+            "eval_count": len(text.split()),
         }
         if body.get("stream", True):
-            self._send_ndjson([
-                {"model": model, "created_at": ts, "message": {"role": "assistant", "content": text}, "done": False},
-                final,
-            ])
+            self._send_ndjson(
+                [
+                    {
+                        "model": model,
+                        "created_at": ts,
+                        "message": {"role": "assistant", "content": text},
+                        "done": False,
+                    },
+                    final,
+                ]
+            )
         else:
             self._send_json(final)
 
@@ -143,15 +192,22 @@ class Handler(BaseHTTPRequestHandler):
         model = body.get("model", "simulator:latest")
         ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         final = {
-            "model": model, "created_at": ts, "response": text,
-            "done": True, "done_reason": "stop",
-            "total_duration": 1000000, "prompt_eval_count": 10, "eval_count": len(text.split()),
+            "model": model,
+            "created_at": ts,
+            "response": text,
+            "done": True,
+            "done_reason": "stop",
+            "total_duration": 1000000,
+            "prompt_eval_count": 10,
+            "eval_count": len(text.split()),
         }
         if body.get("stream", True):
-            self._send_ndjson([
-                {"model": model, "created_at": ts, "response": text, "done": False},
-                final,
-            ])
+            self._send_ndjson(
+                [
+                    {"model": model, "created_at": ts, "response": text, "done": False},
+                    final,
+                ]
+            )
         else:
             self._send_json(final)
 

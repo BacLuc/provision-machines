@@ -89,10 +89,7 @@ PARAMETER use_mmap false
             _if=lambda: model_mmap_file.changed,
         )
 
-    ufw_active = (
-        host.get_fact(Command, "systemctl is-active ufw 2>/dev/null || echo inactive").strip()
-        == "active"
-    )
+    ufw_active = host.get_fact(Command, "systemctl is-active ufw 2>/dev/null || echo inactive").strip() == "active"
 
     if ufw_active:
         server.shell(
