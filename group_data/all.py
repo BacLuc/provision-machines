@@ -257,7 +257,7 @@ zed = {
 }
 
 vifm = {
-    "enabled": False,
+    "enabled": True,
 }
 
 jetbrains = {
