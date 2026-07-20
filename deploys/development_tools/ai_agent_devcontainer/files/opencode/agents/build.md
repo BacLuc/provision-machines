@@ -2,8 +2,7 @@
 description: Builds your features
 mode: all
 temperature: 0.1
-permissions:
-  *: allow
+permission: allow
 ---
 
 # Builder Agent

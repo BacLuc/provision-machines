@@ -2,8 +2,7 @@
 description: Refines your tasks
 mode: all
 temperature: 0.1
-permissions:
-  *: allow
+permission: allow
 ---
 
 # Refiner Agent
