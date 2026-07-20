@@ -89,7 +89,7 @@ shell_includes = {
 }
 
 zsh = {
-    "enabled": False,
+    "enabled": True,
     "enable_zsh_autosuggestions": False,
     "completions_dir": "/home/{user}/zsh/completions",
     "motd_path": "/etc/profile.d/update-motd.sh",
