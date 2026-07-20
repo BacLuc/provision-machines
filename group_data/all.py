@@ -14,7 +14,7 @@ python = {
     },
 }
 
-vshn_tools = {"enabled": False}
+vshn_tools = {"enabled": True}
 
 basicsetup = {
     "additional_tools": [
