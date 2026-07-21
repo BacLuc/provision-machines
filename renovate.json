@@ -3,6 +3,9 @@
   "extends": ["config:base"],
   "ignorePaths": ["**/.ansible/**", "**/node_modules/**"],
   "rebaseWhen": "conflicted",
+  "baseBranchPatterns": [
+    "devel"
+  ],
   "regexManagers": [
     {
       "fileMatch": ["^playbook\\.yml$"],
