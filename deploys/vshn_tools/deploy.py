@@ -25,8 +25,8 @@ github_release_binary(
 )
 
 # renovate: datasource=github-releases depName=vshn/k8ify
-k8ify_version = "2.5.0"
-k8ify_checksum = "f3605d34439c0bef36930c71ad2b066acc0ba821e68c98e764fffc1a66dcc3b9"
+k8ify_version = "2.6.0"
+k8ify_checksum = "761a34419c92e7ef9e7225ae0f40319b1d57e045849f56ab315a8e5ad38ab210"
 
 github_release_binary(
     url=f"https://github.com/vshn/k8ify/releases/download/v{k8ify_version}/k8ify_{k8ify_version}_linux_amd64.tar.gz",

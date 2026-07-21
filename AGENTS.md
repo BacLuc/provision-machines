@@ -51,11 +51,13 @@ are assigned to a python variable or a dict entry, and have a renovate comment o
 
 ```yaml
 # renovate: datasource=github-releases depName=vshn/k8ify
-k8ify_version = "2.5.0"
+k8ify_version = "2.6.0"
+# the checksum here doesn't get updated, so it is wrong.
 k8ify_checksum = "f3605d34439c0bef36930c71ad2b066acc0ba821e68c98e764fffc1a66dcc3b9"
 
 # renovate: datasource=github-releases depName=jsonnet-bundler/jsonnet-bundler
 jsonnet_bundler_version = "0.6.3"
+# the checksum here doesn't get updated, so it is wrong.
 jsonnet_bundler_checksum = "424be2836ffee389d93a8cb873eb891a69fef4509026c7c1a825943292b8c841"
 
 ```
