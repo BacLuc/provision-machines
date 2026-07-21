@@ -41,7 +41,7 @@ docker events --format '{{json .}}' 2>/dev/null | while read -r event; do
   [ -z "$event" ] && continue
   
   # Extract event type and image from the JSON
-  event_type=$(echo "$event" | jq -r '.Type + "." .Action' 2>/dev/null)
+  event_type=$(echo "$event" | jq -r '.Type + "." + .Action' 2>/dev/null)
   
   case "$event_type" in
     "container.start")
