@@ -49,7 +49,8 @@
       "datasourceTemplate": "{{{datasource}}}"
     },
     {
-      "fileMatch": [".*"],
+      "customType": "regex",
+      "managerFilePatterns": ["/.*/"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\n\\s*[\"\\w][^:=\\n]*[:=]\\s*['\"]*(?<currentValue>v?[0-9][\\w.-]*)"
       ],
