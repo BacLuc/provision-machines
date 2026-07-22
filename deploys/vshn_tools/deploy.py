@@ -25,7 +25,7 @@ github_release_binary(
 )
 
 # renovate: datasource=github-releases depName=vshn/k8ify
-k8ify_version = "2.5.0"
+k8ify_version = "2.6.0"
 k8ify_checksum = "f3605d34439c0bef36930c71ad2b066acc0ba821e68c98e764fffc1a66dcc3b9"
 
 github_release_binary(
