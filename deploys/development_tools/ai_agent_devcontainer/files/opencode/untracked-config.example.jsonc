@@ -1,5 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "model": "my-favorite-model",
   "provider": {
     "opencode-go-anthropic": {
       "options": {
