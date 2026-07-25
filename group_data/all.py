@@ -161,7 +161,7 @@ git_lfs = {
     "enabled": True,
     # renovate: datasource=github-releases depName=git-lfs/git-lfs
     "git_lfs_version": "3.7.1",
-    "git_lfs_checksum": "1c0b6ee5200ca708c5cebebb18fdeb0e1c98f1af5c1a9cba205a4c0ab5a5ec08",
+    "git_lfs_checksum": "6b92b05c4588b4a5373b2b4102dbb302757d8ec6671da67cf9e4f9ccb01cd349",
 }
 
 gnome = {
