@@ -277,11 +277,11 @@ ubuntu_desktop = {
     "enable_gpaste_config": False,
     "enable_testing_browser_desktop": False,
     "favorite_apps": [
-        {"desktop_file_name": "Alacritty.desktop", "shortcut": "<Super>z"},
-        {"desktop_file_name": "firefox_firefox.desktop", "shortcut": "<Super>u"},
-        {"desktop_file_name": "phpstorm_phpstorm.desktop", "shortcut": "<Super>i"},
-        {"desktop_file_name": "dev.zed.Zed.desktop", "shortcut": "<Super>o"},
-        {"desktop_file_name": "gitclient.desktop", "shortcut": "<Super>g"},
+        {"desktop_file_name": "Alacritty.desktop", "shortcut": "<Super>y"},
+        {"desktop_file_name": "firefox_firefox.desktop", "shortcut": "<Super>x"},
+        {"desktop_file_name": "phpstorm_phpstorm.desktop", "shortcut": "<Super>r"},
+        {"desktop_file_name": "dev.zed.Zed.desktop", "shortcut": "<Super>f"},
+        {"desktop_file_name": "org.mozilla.Thunderbird.desktop", "shortcut": "<Super><Alt>c"},
     ],
 }
 
