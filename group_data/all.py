@@ -89,7 +89,7 @@ shell_includes = {
 }
 
 zsh = {
-    "enabled": False,
+    "enabled": True,
     "enable_zsh_autosuggestions": False,
     "completions_dir": "/home/{user}/zsh/completions",
     "motd_path": "/etc/profile.d/update-motd.sh",
@@ -171,7 +171,7 @@ gnome = {
 nvm = {
     "_sudo_for_global_install": False,
     # renovate: datasource=github-releases depName=nvm-sh/nvm
-    "nvm_version": "v0.40.5",
+    "nvm_version": "v0.40.6",
     "enabled": True,
 }
 
@@ -197,8 +197,8 @@ nvim = {
 lazygit = {
     "enabled": True,
     # renovate: datasource=github-releases depName=jesseduffield/lazygit
-    "lazygit_version": "0.62.2",
-    "lazygit_checksum": "451c3b18a99dd91f963a5b1201292704fe5f7ea04bc2bf07a683cdf24dd49052",
+    "lazygit_version": "0.63.1",
+    "lazygit_checksum": "8e033bc78c8e192dee9510e951f6c9e154289b7198d22c924ed1d0a951b0dac1",
 }
 
 ollama = {
