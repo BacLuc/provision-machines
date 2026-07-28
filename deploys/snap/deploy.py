@@ -1,5 +1,7 @@
-from pyinfra import host
-from pyinfra.operations import server, snap
+from pyinfra import host, local
+from pyinfra.operations import files, server, snap
+
+from operations.filesystem import DEPLOYS_DIR, dirname_of
 
 if host.data.snap["enabled"]:
     server.shell(
@@ -7,6 +9,8 @@ if host.data.snap["enabled"]:
         commands=[f"snap set system refresh.timer={host.data.snap['refresh']['timer']}"],
         _sudo=True,
     )
+
+    local.include(f"{DEPLOYS_DIR}/cleanup_scripts/deploy.py")
 
     if host.data.snaps:
         snap.package(
@@ -22,3 +26,11 @@ if host.data.snap["enabled"]:
             classic=True,
             _sudo=True,
         )
+
+    files.put(
+        name="Add snap cleanup script",
+        src=f"{dirname_of(__file__)}/files/snap-cleanup.sh",
+        dest=f"{host.data.cleanup_scripts['dir']}/snap-cleanup",
+        _sudo=True,
+        mode="755",
+    )

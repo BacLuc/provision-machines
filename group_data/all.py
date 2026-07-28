@@ -14,6 +14,13 @@ python = {
     },
 }
 
+ripgrep = {
+    "enabled": True,
+    # renovate: datasource=github-releases depName=BurntSushi/ripgrep
+    "ripgrep_version": "15.2.0",
+    "ripgrep_checksum": "e62198eb19b136b88c330af83647b5a962cb99b6b1f066758568f12de1974849",
+}
+
 vshn_tools = {"enabled": True}
 
 basicsetup = {

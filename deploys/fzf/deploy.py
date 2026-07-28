@@ -11,6 +11,7 @@ user = get_user_name()
 
 if host.data.fzf["enabled"]:
     local.include("deploys/homebrew/deploy.py")
+    local.include("deploys/ripgrep/deploy.py")
     if host.get_fact(File, f"{HOMEBREW_BIN}/fzf") is None:
         server.shell(
             name="Install fzf via brew",
@@ -46,6 +47,6 @@ source <({HOMEBREW_BIN}/fzf --zsh)
         name="Add goto alias",
         path=f"/home/{user}/.bash_aliases",
         line="^alias goto=",
-        replace="alias goto='cd $(find ~ -type d | fzf)'",
+        replace='alias goto=\'cd $(cd ~ && rg --files | sed "s|/[^/]*$||; t; s|^.*$||" | sed "s|^|$PWD/|" | sort -u | fzf)\'',
         present=True,
     )

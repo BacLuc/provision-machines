@@ -1,4 +1,5 @@
 [
+  "BurntSushi/ripgrep",
   "actions/checkout",
   "astral-sh/setup-uv",
   "astral-sh/uv",

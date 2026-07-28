@@ -33,6 +33,10 @@ Also read the README.md.
 Keep the style of the imports and how the group vars accessed.
 Also don't use unnecessary functions, keep the style as it was, simple and understandable.
 
+## Agent workflow
+
+When planning changes, read the relevant files directly first. Do not rely on automated refiners to categorize areas or produce useful output for every category. If the refiners do not return good output for a specific part, trust your own analysis from reading the files and proceed to the planner. You must understand the real flow end to end before picking a solution.
+
 ## Renovate
 
 Renovate must be able to update all dependencies.

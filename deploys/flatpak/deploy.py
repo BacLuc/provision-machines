@@ -27,11 +27,20 @@ if host.data.flatpak["enabled"]:
     )
 
     local.include(f"{DEPLOYS_DIR}/update_packages_script/deploy.py")
+    local.include(f"{DEPLOYS_DIR}/cleanup_scripts/deploy.py")
 
     files.put(
         name="Add flatpak update script",
         src=f"{dirname_of(__file__)}/files/flatpak-upgrade.sh",
         dest=f"{host.data.get('update_packages_script', {}).get('dir')}/flatpak-upgrade",
+        _sudo=True,
+        mode="755",
+    )
+
+    files.put(
+        name="Add flatpak remove unused script",
+        src=f"{dirname_of(__file__)}/files/flatpak-remove-unused.sh",
+        dest=f"{host.data.cleanup_scripts['dir']}/flatpak-remove-unused",
         _sudo=True,
         mode="755",
     )

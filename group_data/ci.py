@@ -38,6 +38,8 @@ fzf = {
     "enabled": True,
 }
 
+ripgrep = {"enabled": True}
+
 git_lfs = {
     "enabled": True,
 }
