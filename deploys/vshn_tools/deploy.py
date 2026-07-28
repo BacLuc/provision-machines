@@ -92,6 +92,6 @@ commodore_python_version = 3.12
 
 shell(
     name="Install commodore",
-    commands=f"/home/{user_name}/bin/uv tool install --python=python{commodore_python_version} --python-preference=system syn-commodore",
+    commands=f"/home/{user_name}/bin/uv tool install --python=python{commodore_python_version} --python-preference=system syn-commodore --force",
     _if=[lambda: enabled, lambda: not os.path.exists(f"/home/{user_name}/.local/bin/commodore")],
 )
