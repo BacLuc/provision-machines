@@ -17,6 +17,17 @@
     ]
   ],
   "default_agent": "coordinator",
+  "agent": {
+    "build": {
+      "mode": "all"
+    },
+    "general": {
+      "disable": true
+    },
+    "explore": {
+      "disable": true
+    }
+  },
   "provider": {
     "ollama": {
       "npm": "@ai-sdk/openai-compatible",
