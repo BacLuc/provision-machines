@@ -48,7 +48,7 @@ Only after the branch is set up does implementation continue.
 2. Delegate git branch setup to the build agent (`subagent_type="build"`)
 3. Delegate the implementation directly to the build agent (`subagent_type="build"`) with the plan inline
 4. Delegate testing to the tester agent (`subagent_type="tester"`)
-5. Delegate review to the reviewer agent (`subagent_type="reviewer"`)
+5. Delegate review to the review agent (`subagent_type="review"`)
 6. Compile and return the results
 
 ### For an INVOLVED task - full pipeline, always
@@ -58,7 +58,7 @@ Only after the branch is set up does implementation continue.
 3. **Plan** - delegate the consolidated refinement to the planner agent (`subagent_type="planner"`). Wait for it to return.
 4. **Build** - delegate git branch setup first, then the implementation, to the build agent (`subagent_type="build"`). Wait for it to return.
 5. **Test** - delegate to the tester agent (`subagent_type="tester"`). Wait for it to return.
-6. **Review** - delegate to the reviewer agent (`subagent_type="reviewer"`). Wait for it to return.
+6. **Review** - delegate to the review agent (`subagent_type="review"`). Wait for it to return.
 7. If the reviewer requests changes, loop back to the build agent with the specific review feedback, then re-test and re-review. Repeat until the reviewer approves.
 8. Compile and return the final results to the user.
 
