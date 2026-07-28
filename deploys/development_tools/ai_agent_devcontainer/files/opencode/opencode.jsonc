@@ -96,11 +96,14 @@
         "glm-5": {
           "name": "glm-5"
         },
-        "kimi-k2.5": {
-          "name": "kimi-k2.5"
-        },
         "kimi-k2.6": {
           "name": "kimi-k2.6"
+        },
+        "kimi-k2.7-code": {
+          "name": "kimi-k2.7-code"
+        },
+        "kimi-k3": {
+          "name": "kimi-k3"
         },
         "mimo-v2.5": {
           "name": "mimo-v2.5"
@@ -144,11 +147,14 @@
         "glm-5": {
           "name": "glm-5"
         },
-        "kimi-k2.5": {
-          "name": "kimi-k2.5"
-        },
         "kimi-k2.6": {
           "name": "kimi-k2.6"
+        },
+        "kimi-k2.7-code": {
+          "name": "kimi-k2.7-code"
+        },
+        "kimi-k3": {
+          "name": "kimi-k3"
         },
         "mimo-v2.5": {
           "name": "mimo-v2.5"
@@ -224,6 +230,9 @@
         "byusage.alibaba/qwen-max": {
           "name": "qwen-max (byusage)"
         },
+        "byusage.moonshot/kimi-k3": {
+          "name": "byusage.moonshot/kimi-k3"
+        },
         "expensive.gemini-3-flash": {
           "name": "gemini-3-flash (expensive)"
         },
@@ -235,6 +244,15 @@
         },
         "subscription.glm-5.2": {
           "name": "glm-5.2 (subscription)"
+        },
+        "subscription.kimi-k2.6": {
+          "name": "kimi-k2.6"
+        },
+        "subscription.kimi-k2.7-code": {
+          "name": "kimi-k2.7-code"
+        },
+        "subscription.kimi-k3": {
+          "name": "kimi-k3"
         }
       }
     }

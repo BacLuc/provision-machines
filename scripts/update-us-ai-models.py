@@ -69,6 +69,10 @@ EXTRA_MODELS = {
     "-claude-sonnet-v46": "Claude Sonnet 4.6 (preset)",
     "expensive.gpt-5.3-codex": "GPT-5.3 Codex (expensive)",
     "expensive.gpt-5.5": "GPT-5.5 (expensive)",
+    "subscription.kimi-k2.6": "kimi-k2.6",
+    "subscription.kimi-k2.7-code": "kimi-k2.7-code",
+    "subscription.kimi-k3": "kimi-k3",
+    "byusage.moonshot/kimi-k3": "byusage.moonshot/kimi-k3",
 }
 
 
