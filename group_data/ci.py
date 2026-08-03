@@ -122,3 +122,11 @@ vagrant = {
 ubuntu_cleanup = {
     "enabled": True,
 }
+
+ubuntu_desktop = {
+    "enabled": False,
+}
+
+displaylink_driver = {
+    "enabled": False,
+}
