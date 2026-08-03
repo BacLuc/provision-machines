@@ -64,7 +64,7 @@ lazygit = {
 }
 
 ollama = {
-    "enabled": True,
+    "enabled": False,
 }
 
 t3_code = {
@@ -76,12 +76,10 @@ homebrew = {
 }
 
 snap = {
-    "enabled": True,
+    "enabled": False,
 }
 
-snaps: list[str] = [
-    "firefox",
-]
+snaps: list[str] = []
 
 sysctl = {
     "enabled": True,
@@ -116,7 +114,7 @@ hashicorp_vault_cli = {
 }
 
 openwebui = {
-    "enabled": True,
+    "enabled": False,
 }
 
 vagrant = {
