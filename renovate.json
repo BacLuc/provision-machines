@@ -1,8 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "ignorePaths": ["**/.ansible/**", "**/node_modules/**"],
-  "rebaseWhen": "conflicted",
   "baseBranchPatterns": ["devel"],
   "customManagers": [
     {
@@ -57,6 +54,8 @@
       "datasourceTemplate": "{{{datasource}}}"
     }
   ],
+  "extends": ["config:recommended"],
+  "ignorePaths": ["**/.ansible/**", "**/node_modules/**"],
   "packageRules": [
     {
       "matchDepTypes": ["github-releases"],
@@ -70,5 +69,6 @@
       "matchDepNames": ["php/php-src"],
       "extractVersion": "^php-(?<version>.*)$"
     }
-  ]
+  ],
+  "rebaseWhen": "conflicted"
 }

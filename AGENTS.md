@@ -41,11 +41,11 @@ are assigned to a python variable or a dict entry, and have a renovate comment o
 
 ```json
 {
+  "datasourceTemplate": "{{{datasource}}}",
   "fileMatch": [".*"],
   "matchStrings": [
     "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\n\\s*[\"\\w][^:=\\n]*[:=]\\s*['\"]*(?<currentValue>v?[0-9][\\w.-]*)"
-  ],
-  "datasourceTemplate": "{{{datasource}}}"
+  ]
 }
 ```
 
