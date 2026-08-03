@@ -24,7 +24,7 @@ ENV GEMINI_CLI_VERSION=0.49.0
 # renovate: datasource=npm depName=@openai/codex
 ENV CODEX_VERSION=0.142.4
 # renovate: datasource=npm depName=t3
-ENV T3_CODE_VERSION=0.0.28
+ENV T3_CODE_VERSION=0.0.31
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash && \
     . /home/codespace/.nvm/nvm.sh && \
