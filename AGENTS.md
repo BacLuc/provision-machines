@@ -10,6 +10,11 @@ local.include(f"{DEPLOYS_DIR}/docker/deploy.py")
 
 for example.
 
+The devel branch is the branch we develop against.
+After the commits on the devel branch have proven to be stable,
+they are cherry-picked onto main.
+You as agent start your work from devel.
+
 Colocation is preferred to separating all templates out of the main script.
 
 You are running in a development container, you only brick the container if your code is wrong.
