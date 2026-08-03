@@ -4,7 +4,7 @@
     // renovate: datasource=npm depName=@dietrichgebert/ponytail
     "@dietrichgebert/ponytail@4.8.4",
     // renovate: datasource=npm depName=opencode-gemini-auth
-    "opencode-gemini-auth@1.4.9",
+    "opencode-gemini-auth@1.4.15",
     // renovate: datasource=npm depName=bacluc-opencode-completion-check-command
     "bacluc-opencode-completion-check-command@0.8.3",
     [
