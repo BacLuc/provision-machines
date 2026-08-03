@@ -103,6 +103,10 @@ okular = {
     "enabled": True,
 }
 
+zed = {
+    "enabled": False,
+}
+
 hashicorp_apt_repo = {
     "enabled": True,
 }
