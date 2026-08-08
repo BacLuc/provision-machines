@@ -6,7 +6,7 @@
     // renovate: datasource=npm depName=opencode-gemini-auth
     "opencode-gemini-auth@1.4.15",
     // renovate: datasource=npm depName=bacluc-opencode-completion-check-command
-    "bacluc-opencode-completion-check-command@0.8.4",
+    "bacluc-opencode-completion-check-command@0.9.0",
     [
       // renovate: datasource=npm depName=opencode-auto-resume
       "opencode-auto-resume@1.1.9",
