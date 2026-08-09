@@ -10,6 +10,8 @@ local.include(f"{DEPLOYS_DIR}/docker/deploy.py")
 
 for example.
 
+Do your changes on branches starting on top of the origin/devel branch.
+
 Colocation is preferred to separating all templates out of the main script.
 
 You are running in a development container, you only brick the container if your code is wrong.
