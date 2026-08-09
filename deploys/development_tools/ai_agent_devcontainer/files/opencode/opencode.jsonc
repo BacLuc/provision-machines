@@ -80,6 +80,15 @@
         },
         "qwen3.6-plus": {
           "name": "qwen3.6-plus"
+        },
+        "minimax-m3": {
+          "name": "minimax-m3"
+        },
+        "qwen3.8-max": {
+          "name": "qwen3.8-max"
+        },
+        "qwen3.7-plus": {
+          "name": "qwen3.7-plus"
         }
       }
     },
@@ -93,8 +102,8 @@
         "glm-5.2": {
           "name": "glm-5.2"
         },
-        "glm-5": {
-          "name": "glm-5"
+        "glm-5.1": {
+          "name": "glm-5.1"
         },
         "kimi-k2.6": {
           "name": "kimi-k2.6"
@@ -110,6 +119,24 @@
         },
         "mimo-v2.5-pro": {
           "name": "mimo-v2.5-pro"
+        },
+        "grok-4.5": {
+          "name": "grok-4.5"
+        },
+        "deepseek-v4-pro": {
+          "name": "deepseek-v4-pro"
+        },
+        "deepseek-v4-flash": {
+          "name": "deepseek-v4-flash"
+        },
+        "hy3": {
+          "name": "hy3"
+        },
+        "gpt-5.6-luna": {
+          "name": "gpt-5.6-luna",
+          "provider": {
+            "npm": "@ai-sdk/openai"
+          }
         }
       }
     },
@@ -131,6 +158,15 @@
         },
         "qwen3.6-plus": {
           "name": "qwen3.6-plus"
+        },
+        "minimax-m3": {
+          "name": "minimax-m3"
+        },
+        "qwen3.8-max": {
+          "name": "qwen3.8-max"
+        },
+        "qwen3.7-plus": {
+          "name": "qwen3.7-plus"
         }
       }
     },
@@ -144,8 +180,8 @@
         "glm-5.2": {
           "name": "glm-5.2"
         },
-        "glm-5": {
-          "name": "glm-5"
+        "glm-5.1": {
+          "name": "glm-5.1"
         },
         "kimi-k2.6": {
           "name": "kimi-k2.6"
@@ -161,6 +197,24 @@
         },
         "mimo-v2.5-pro": {
           "name": "mimo-v2.5-pro"
+        },
+        "grok-4.5": {
+          "name": "grok-4.5"
+        },
+        "deepseek-v4-pro": {
+          "name": "deepseek-v4-pro"
+        },
+        "deepseek-v4-flash": {
+          "name": "deepseek-v4-flash"
+        },
+        "hy3": {
+          "name": "hy3"
+        },
+        "gpt-5.6-luna": {
+          "name": "gpt-5.6-luna",
+          "provider": {
+            "npm": "@ai-sdk/openai"
+          }
         }
       }
     },
