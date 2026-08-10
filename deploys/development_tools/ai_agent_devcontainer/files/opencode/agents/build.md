@@ -35,7 +35,7 @@ Every piece of work happens on an isolated branch off the upstream main branch, 
    - Name the branch after the task, slugged, e.g. `fix-docker-volume-create` or `add-k8ify-deploy`. Keep it short and descriptive.
 3. Set up tracking against a fork if a fork remote exists:
    - Run `git remote -v` and look for a fork remote (commonly named `origin`, or a remote whose URL points to the user's personal GitHub account rather than the upstream org/repo).
-   - If a fork remote exists: `git push -u <fork-remote> <branch-name>`.
+   - If a fork remote exists: `git branch --set-upstream <fork-remote>/<branch-name>`.
 4. Only after the branch exists and is checked out, start editing files.
 
 If the coordinator already instructed you to create the branch and you have done so, do not recreate it - just confirm you are on the right branch and continue implementing.

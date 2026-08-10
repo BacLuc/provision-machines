@@ -39,7 +39,7 @@ Anything else is **involved**. When in doubt, treat the task as involved - the c
 
 Before any implementation work starts, delegate the git branch setup to the build agent so the work happens on an isolated branch off the upstream `main`, tracked against a fork if one exists. Send this instruction to the build agent as the very first delegation:
 
-> Create a new working branch off the upstream `main` for this task. If a fork remote exists, push the branch there and set up remote tracking. See the Git Workflow section of your instructions.
+> Create a new working branch off the upstream `main` for this task. Set up remote tracking for a new branch on origin. See the Git Workflow section of your instructions.
 
 Only after the branch is set up does implementation continue.
 
