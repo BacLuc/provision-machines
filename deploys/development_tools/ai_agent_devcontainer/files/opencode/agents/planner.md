@@ -2,8 +2,8 @@
 description: Plans your feature
 mode: all
 temperature: 0.1
-permissions:
-  *: allow
+permission:
+  "*": allow
 ---
 
 # Planner Agent
