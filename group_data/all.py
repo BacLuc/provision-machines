@@ -197,7 +197,7 @@ nvim = {
 lazygit = {
     "enabled": True,
     # renovate: datasource=github-releases depName=jesseduffield/lazygit
-    "lazygit_version": "0.63.1",
+    "lazygit_version": "0.64.1",
     "lazygit_checksum": "8e033bc78c8e192dee9510e951f6c9e154289b7198d22c924ed1d0a951b0dac1",
 }
 
