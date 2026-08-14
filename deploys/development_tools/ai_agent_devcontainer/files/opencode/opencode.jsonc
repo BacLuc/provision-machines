@@ -9,7 +9,7 @@
     "bacluc-opencode-completion-check-command@0.9.0",
     [
       // renovate: datasource=npm depName=opencode-auto-resume
-      "opencode-auto-resume@1.1.9",
+      "opencode-auto-resume@1.1.10",
       {
         "chunkTimeoutMs": 300000,
         "maxRetries": 10
