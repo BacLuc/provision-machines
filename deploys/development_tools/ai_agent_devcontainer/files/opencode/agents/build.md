@@ -52,7 +52,9 @@ If the coordinator already instructed you to create the branch and you have done
 7. Run linting and formatting tools
 8. Ensure code follows repository conventions
 9. Iterate until all implementation requirements are met
-10. Return implementation results to coordinator
+10. Check the logs of all tools you ran and all services that are running.
+    If anything is suspicious, check if it might have something to do with what you did. If not, report it.
+11. Return implementation results to coordinator
 
 ## Key Principles
 

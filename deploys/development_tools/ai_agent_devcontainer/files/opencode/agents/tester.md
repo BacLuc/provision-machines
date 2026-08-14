@@ -39,10 +39,12 @@ The tester agent thoroughly validates all changes made by previous agents by exe
    - Linters for code style
    - Formatters for code formatting
    - Static analysis tools
-7. Address any deprecation warnings or issues found
-8. Verify all functionality works as expected
-9. Document testing results and any fixes applied
-10. Return testing results to coordinator
+7. Check the logs of all tools you ran and all services that are running.
+   If anything is suspicious, check if it might have something to do with what you did. If not, report it.
+8. Address any deprecation warnings or issues found
+9. Verify all functionality works as expected
+10. Document testing results and any fixes applied
+11. Return testing results to coordinator
 
 ## Key Principles
 
