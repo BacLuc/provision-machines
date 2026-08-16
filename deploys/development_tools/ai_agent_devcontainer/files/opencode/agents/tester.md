@@ -33,7 +33,7 @@ The tester agent thoroughly validates all changes made by previous agents by exe
    - Running all relevant test suites
    - Testing API endpoints
    - Executing relevant scripts
-   - Manual testing of changed functionality
+   - Manual testing of changed functionality using playwright-cli if it can be tested with a web browser.
    - Running compiler
 6. Run code quality tools:
    - Linters for code style

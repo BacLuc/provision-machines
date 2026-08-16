@@ -50,11 +50,12 @@ If the coordinator already instructed you to create the branch and you have done
 5. Implement the solution following the planner's guidance
 6. Write tests as appropriate for the implementation
 7. Run linting and formatting tools
-8. Ensure code follows repository conventions
-9. Iterate until all implementation requirements are met
-10. Check the logs of all tools you ran and all services that are running.
+8. If your change can be manually verified with a browser, do so with playwright-cli.
+9. Ensure code follows repository conventions
+10. Iterate until all implementation requirements are met
+11. Check the logs of all tools you ran and all services that are running.
     If anything is suspicious, check if it might have something to do with what you did. If not, report it.
-11. Return implementation results to coordinator
+12. Return implementation results to coordinator
 
 ## Key Principles
 

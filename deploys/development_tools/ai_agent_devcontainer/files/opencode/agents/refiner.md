@@ -28,7 +28,7 @@ The refiner agent is responsible for understanding and validating tasks by thoro
 3. Read README.md and AGENTS.md for instructions about the project.
 4. Explore all mentioned code files and related components
 5. Understand the current implementation and architecture
-6. Reproduce the exact issue or behavior described in the task
+6. Reproduce the exact issue or behavior described in the task. If it can be reproduced using a web browser, do so with playwright-cli.
 7. Document findings and confirm the problem
 8. Return results to coordinator for next step
 9. **DO NOT IMPLEMENT ANY SOLUTIONS - ONLY ANALYZE AND VALIDATE**
