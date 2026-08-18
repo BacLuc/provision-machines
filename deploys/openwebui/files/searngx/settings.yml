@@ -2669,6 +2669,7 @@ engines:
     categories: [general, web]
     brave_category: search
     # brave_spellcheck: true
+    api_key: "${BRAVE_API_KEY}"
 
   - name: brave.images
     engine: brave
@@ -2676,6 +2677,7 @@ engines:
     shortcut: brimg
     categories: [images, web]
     brave_category: images
+    api_key: "${BRAVE_API_KEY}"
 
   - name: brave.videos
     engine: brave
@@ -2683,6 +2685,7 @@ engines:
     shortcut: brvid
     categories: [videos, web]
     brave_category: videos
+    api_key: "${BRAVE_API_KEY}"
 
   - name: brave.news
     engine: brave
@@ -2690,6 +2693,7 @@ engines:
     shortcut: brnews
     categories: news
     brave_category: news
+    api_key: "${BRAVE_API_KEY}"
 
   # - name: brave.goggles
   #   engine: brave

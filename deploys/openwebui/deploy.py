@@ -43,6 +43,18 @@ if host.data.openwebui["enabled"]:
         mode="644",
     )
 
+    env_file = files.put(
+        name="Deploy .env file",
+        src=io.StringIO(
+            f"""BRAVE_API_KEY={host.data.openwebui["BRAVE_API_KEY"]}
+        """
+        ),
+        dest=f"{compose_project_dir}/.env",
+        user=user,
+        group=user,
+        mode="644",
+    )
+
     systemd_file = files.put(
         name="Deploy systemd service file",
         src=io.StringIO(

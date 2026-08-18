@@ -22,6 +22,7 @@ services:
       - "./searngx/limiter.toml:/etc/searxng/limiter.toml"
     environment:
       SEARXNG_ENABLE_CORS: true
+      BRAVE_API_KEY: ${BRAVE_API_KEY}
 
 volumes:
   "open-webui":
