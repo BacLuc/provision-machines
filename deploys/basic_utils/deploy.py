@@ -70,16 +70,24 @@ if basic_utils["enable_direnv"]:
 
 gcr_ssh_agent = basic_utils["gcr_ssh_agent"]
 gcr_ssh_agent_socket = gcr_ssh_agent["socket"]
+files.line(
+    name="Remove invalid Exec lines from bash aliases",
+    path=f"/home/{user}/.bash_aliases",
+    line="^Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=keepassxc --file-forwarding org\\.keepassxc\\.KeePassXC --platform xcb @@ %f @@$",
+    present=False,
+)
+
 if basic_utils["enable_keepassxc"]:
     local.include(f"{DEPLOYS_DIR}/flatpak/deploy.py")
     flatpak.packages(packages=["org.keepassxc.KeePassXC"])
 
     files.line(
         name="modify desktop file",
-        path=f"/home/{user}/.bash_aliases",
+        path="/var/lib/flatpak/exports/share/applications/org.keepassxc.KeePassXC.desktop",
         line="^Exec=",
         replace="Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=keepassxc --file-forwarding org.keepassxc.KeePassXC --platform xcb @@ %f @@",
         present=True,
+        _sudo=True,
     )
 
     if gcr_ssh_agent["enable"]:

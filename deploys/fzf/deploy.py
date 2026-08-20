@@ -9,6 +9,20 @@ from operations.user import get_user_name
 
 user = get_user_name()
 
+files.block(
+    name="Remove legacy fzf completion from bash",
+    path=f"/home/{user}/.bashrc",
+    marker="# {mark} ANSIBLE MANAGED BLOCK: add fzf completion",
+    present=False,
+)
+
+files.block(
+    name="Remove legacy fzf completion from zsh",
+    path=f"/home/{user}/.zshrc",
+    marker="# {mark} ANSIBLE MANAGED BLOCK: add fzf completion",
+    present=False,
+)
+
 if host.data.fzf["enabled"]:
     local.include("deploys/homebrew/deploy.py")
     if host.get_fact(File, f"{HOMEBREW_BIN}/fzf") is None:
@@ -21,7 +35,7 @@ if host.data.fzf["enabled"]:
         name="Add fzf completion for bash",
         src=io.StringIO(f"""\
 FZF_DEFAULT_OPTS="--tmux"
-eval $({HOMEBREW_BIN}/fzf --bash)
+eval "$({HOMEBREW_BIN}/fzf --bash)"
 """),
         dest=f"/home/{user}/.bashrc.d/fzf-completion.sh",
         user=user,

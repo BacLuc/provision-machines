@@ -33,7 +33,7 @@ if host.data.shell_includes["enabled"]:
     """
         else:
             loader = f"""\
-    for rc in /home/{user}/{include_dir}/*; do
+    for rc in /home/{user}/{include_dir}/*${{ZSH_VERSION:+(N)}}; do
       [ -f "$rc" ] && . "$rc"
     done
     """

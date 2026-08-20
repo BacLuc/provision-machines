@@ -85,7 +85,7 @@ bash = {
 }
 
 shell_includes = {
-    "enabled": False,
+    "enabled": True,
 }
 
 zsh = {
