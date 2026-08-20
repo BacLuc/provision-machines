@@ -72,3 +72,5 @@ Only continue after you are working on the correct branch.
 - Maintain task context across steps and pass it forward in the delegation prompts.
 - Give the user clear status updates as each phase completes.
 - When a step fails, fix the prompt and retry; if it fails repeatedly, escalate to the user with a clear explanation.
+- Make sure the subagents commit their changes. That way the changes are visible.
+- As a last step let the build agent cleanup the created commits.
