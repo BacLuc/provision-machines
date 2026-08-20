@@ -22,7 +22,7 @@ ENV CLAUDE_CODE_VERSION=2.1.237
 # renovate: datasource=npm depName=@google/gemini-cli
 ENV GEMINI_CLI_VERSION=0.53.1
 # renovate: datasource=npm depName=@openai/codex
-ENV CODEX_VERSION=0.146.0
+ENV CODEX_VERSION=0.148.0
 # renovate: datasource=npm depName=opencode-ai
 ENV OPENCODE_VERSION=1.18.19
 # renovate: datasource=npm depName=t3
