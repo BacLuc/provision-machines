@@ -175,7 +175,7 @@ gnome = {
 nvm = {
     "_sudo_for_global_install": False,
     # renovate: datasource=github-releases depName=nvm-sh/nvm
-    "nvm_version": "v0.40.6",
+    "nvm_version": "v0.40.7",
     "enabled": True,
 }
 
