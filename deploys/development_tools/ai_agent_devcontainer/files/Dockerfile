@@ -14,9 +14,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 USER codespace
 
-ENV NVM_DIR=/home/codespace/.nvm
-# renovate: datasource=github-releases depName=nvm-sh/nvm
-ENV NVM_VERSION=0.40.6
+ENV NVM_DIR=/usr/local/share/nvm
 # renovate: datasource=github-tags depName=nodejs/node
 ENV NODE_VERSION=26.7.0
 # renovate: datasource=npm depName=@anthropic-ai/claude-code
@@ -30,8 +28,7 @@ ENV OPENCODE_VERSION=1.18.19
 # renovate: datasource=npm depName=t3
 ENV T3_CODE_VERSION=0.0.31
 
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash && \
-    . /home/codespace/.nvm/nvm.sh && \
+RUN . $NVM_DIR/nvm.sh && \
     nvm install ${NODE_VERSION} && \
     npm install -g \
       opencode-ai@${OPENCODE_VERSION} \
@@ -47,11 +44,6 @@ ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.jsonc
 ENV OPENCODE_PORT=4096
 
 USER root
-
-# Add nvm initialization for interactive zsh sessions.
-# /etc/zsh/zshrc is sourced for every interactive zsh shell and is NOT part of
-# the home volume, so this works for new and existing home volumes alike.
-RUN printf '\n# NVM initialization\nexport NVM_DIR="/home/codespace/.nvm"\n[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"\n' >> /etc/zsh/zshrc
 
 COPY init-home.sh /usr/local/bin/init-ai-devcontainer-home
 RUN chmod +x /usr/local/bin/init-ai-devcontainer-home
