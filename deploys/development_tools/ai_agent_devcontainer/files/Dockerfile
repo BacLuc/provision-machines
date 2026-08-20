@@ -19,6 +19,8 @@ ENV NVM_DIR=/home/codespace/.nvm
 ENV NVM_VERSION=0.40.6
 # renovate: datasource=github-tags depName=nodejs/node
 ENV NODE_VERSION=26.7.0
+# renovate: datasource=npm depName=@anthropic-ai/claude-code
+ENV CLAUDE_CODE_VERSION=2.1.237
 # renovate: datasource=npm depName=@google/gemini-cli
 ENV GEMINI_CLI_VERSION=0.53.1
 # renovate: datasource=npm depName=@openai/codex
@@ -29,9 +31,9 @@ ENV T3_CODE_VERSION=0.0.31
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash && \
     . /home/codespace/.nvm/nvm.sh && \
     nvm install ${NODE_VERSION} && \
-    curl -fsSL https://claude.ai/install.sh | bash && \
     npm install -g \
       opencode-ai \
+      @anthropic-ai/claude-code --allow-scripts=@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} \
       @google/gemini-cli@${GEMINI_CLI_VERSION} \
       @openai/codex@${CODEX_VERSION} \
       t3@${T3_CODE_VERSION} \
