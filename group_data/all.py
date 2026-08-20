@@ -139,6 +139,10 @@ displaylink_driver = {
     "enabled": True,
 }
 
+charging_state_monitor = {
+    "enabled": False,
+}
+
 firefox = {
     "enabled": True,
 }

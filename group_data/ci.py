@@ -132,3 +132,7 @@ ubuntu_desktop = {
 displaylink_driver = {
     "enabled": False,
 }
+
+charging_state_monitor = {
+    "enabled": False,
+}

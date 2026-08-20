@@ -1,0 +1,12 @@
+[Unit]
+Description=Charging State Monitor
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/charging-state-monitor.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=graphical-session.target
