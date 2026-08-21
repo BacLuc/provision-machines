@@ -24,7 +24,7 @@ ENV GEMINI_CLI_VERSION=0.56.0
 # renovate: datasource=npm depName=@openai/codex
 ENV CODEX_VERSION=0.148.0
 # renovate: datasource=npm depName=opencode-ai
-ENV OPENCODE_VERSION=1.18.19
+ENV OPENCODE_VERSION=1.18.21
 # renovate: datasource=npm depName=t3
 ENV T3_CODE_VERSION=0.0.31
 
