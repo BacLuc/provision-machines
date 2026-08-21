@@ -56,6 +56,10 @@
   ],
   "extends": ["config:recommended"],
   "ignorePaths": ["**/.ansible/**", "**/node_modules/**"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["on wednesday and thursday"]
+  },
   "packageRules": [
     {
       "matchDepTypes": ["github-releases"],
