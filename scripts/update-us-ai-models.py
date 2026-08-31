@@ -72,6 +72,10 @@ EXTRA_MODELS = {
     "subscription.kimi-k2.6": "kimi-k2.6",
     "subscription.kimi-k2.7-code": "kimi-k2.7-code",
     "subscription.kimi-k3": "kimi-k3",
+    "subscription.glm-5.3-flash": "subscription.glm-5.3-flash",
+    "subscription.gpt-5.6-luna": "subscription.gpt-5.6-luna",
+    "subscription.longcat-2.0": "subscription.longcat-2.0",
+    "subscription.qwen3.8-flash": "subscription.qwen3.8-flash",
     "byusage.moonshot/kimi-k3": "byusage.moonshot/kimi-k3",
 }
 
