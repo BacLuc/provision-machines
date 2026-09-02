@@ -2,7 +2,8 @@
 !/agents
 !/opencode/
 !/opencode/agents/
-!/opencode/agents/model-discovery.txt
+!/opencode/agents/*.md
+!/opencode/untracked-config.example.jsonc
 !/claude/
 !/claude/settings.json
 !/claude/skills/**/*

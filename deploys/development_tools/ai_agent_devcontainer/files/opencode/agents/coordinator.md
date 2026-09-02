@@ -37,12 +37,11 @@ Anything else is **involved**. When in doubt, treat the task as involved - the c
 
 ### Every normal work-agent dispatch: model discovery and carrier routing
 
-1. Call `model-discovery` directly with `subagent_type="model-discovery"` before dispatching the role. It returns `CARRIERS:` followed by usable carrier names.
-2. Select the first reported carrier in this order: `carrier-openai-terra`, `carrier-openai-sol`, `carrier-openai-gpt-5-4`.
-3. Dispatch the role through that carrier with `subagent_type` set to the selected carrier and prompt `agent: <work-agent>, <task payload verbatim>`.
-4. If discovery does not return a listed carrier, carrier dispatch fails, returns `RAWERROR:`, is empty, or does not return the role agent's result, immediately dispatch the same payload directly to `<work-agent>` with `subagent_type="<work-agent>"`. Do not retry or choose another carrier.
+1. Call `model-discovery` directly with `subagent_type="model-discovery"` before dispatching the role. Pass the role and payload. It returns `CARRIERS:` followed by ordered usable carrier names.
+2. Dispatch through the first reported carrier with `subagent_type` set to that carrier and prompt `agent: <work-agent>, <task payload verbatim>`.
+3. If discovery returns no candidate, only one provider, or carrier dispatch fails, returns `RAWERROR:`, is empty, or does not return the role agent's result, immediately dispatch the same payload directly to `<work-agent>` with `subagent_type="<work-agent>"`. Do not retry or choose another carrier.
 
-Direct fallback is required even when discovery finds only one provider or one carrier. The git branch setup delegation is the only normal-work exception: send it directly to the build agent before model discovery.
+The git branch setup delegation is the only normal-work exception: send it directly to the build agent before model discovery.
 
 ### Always - Git branch setup
 
