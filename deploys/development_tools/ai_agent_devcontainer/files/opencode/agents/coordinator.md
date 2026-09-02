@@ -68,7 +68,7 @@ Only continue after you are working on the correct branch.
 3. **Plan** - dispatch the consolidated refinement to the planner agent using the routing above. Wait for it to return.
 4. **Build** - delegate git branch setup first, directly to the build agent (`subagent_type="build"`, unrouted), then dispatch implementation to the build agent using the routing above. Wait for it to return.
 5. **Test** - dispatch to the tester agent using the routing above. Wait for it to return.
-6. **Review** - dispatch to the review agent using the routing above. Wait for it to return.
+6. **Review** - dispatch to the review agent using the routing above. Wait for it to return. You can split up the review into multiple parallel tasks.
 7. If the reviewer requests changes, dispatch the specific review feedback back to the build agent, then re-test and re-review through the same routing. Repeat until the reviewer approves.
 8. Compile and return the final results to the user.
 

@@ -1,7 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "my-favorite-model",
-  "small_model": "opencode-go-openai/kimi-k2.7-code",
   "provider": {
     "opencode-go-anthropic": {
       "options": {
@@ -9,11 +8,6 @@
       }
     },
     "opencode-go-openai": {
-      "options": {
-        "apiKey": "apiKey"
-      }
-    },
-    "opencode-go-openai-2": {
       "options": {
         "apiKey": "apiKey"
       }

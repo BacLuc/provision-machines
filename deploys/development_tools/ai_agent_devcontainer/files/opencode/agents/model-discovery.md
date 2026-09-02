@@ -54,7 +54,3 @@ For every context below the escalation logic is the same: **only climb to the $$
 **Quick default policy:** across all these, `glm`/`dev` are your day-to-day "workhorse" picks (best capability-per-dollar), `k2c`/`dev`/`dsF`/`flash-lite` are your cheap fast lane for high-volume mechanical work (refinements, boilerplate, tests), and `opus` / `gptX` / `gpro` / `qwX` are the escalation lane you reserve for architecture, gnarly legacy refactors, and deep code review.
 
 Then find the available models in the providers and pick the correct ones.
-
-## Routing policy
-
-Order only the candidates that passed the checks above. Use the task role, size, scope, and requested quality.
