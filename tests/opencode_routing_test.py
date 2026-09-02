@@ -34,11 +34,17 @@ def test_config_parses_and_loads_markdown_discovery() -> None:
     )
     assert result.returncode == 0, result.stderr
     config = load_config()
+    assert config["extends"] == ["./untracked-config.jsonc"]
     assert config["model"] == "openai/gpt-5.6-terra"
     assert config["small_model"] == "openai/gpt-5.4-mini"
     assert config["agent"]["model-discovery"]["model"] == "opencode-go-openai-2/glm-5.2"
     assert config["agent"]["model-discovery"]["prompt"] == "{file:./agents/model-discovery.md}"
     assert (OPENCODE / "agents/model-discovery.md").is_file()
+
+
+def test_live_overlay_extends_the_template_base_config() -> None:
+    dockerfile = (OPENCODE.parent / "Dockerfile").read_text()
+    assert "OPENCODE_CONFIG=/home/codespace/.config/opencode/opencode.jsonc" in dockerfile
 
 
 def test_model_discovery_precedes_carrier_and_has_direct_fallback() -> None:
