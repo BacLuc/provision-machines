@@ -22,7 +22,7 @@
   "model": "openai/gpt-5.6-terra",
   "small_model": "openai/gpt-5.4-mini",
   "default_agent": "coordinator",
-  "subagent_depth": 2,
+  "subagent_depth": 3,
   "agent": {
     "build": {
       "mode": "all"
@@ -36,7 +36,7 @@
     "model-discovery": {
       "mode": "subagent",
       "hidden": true,
-      "model": "openai/gpt-5.6-terra",
+      "model": "opencode-go-openai-2/glm-5.2",
       "description": "Discovers authenticated, tool-capable carrier models.",
       "temperature": 0.1,
       "steps": 8,

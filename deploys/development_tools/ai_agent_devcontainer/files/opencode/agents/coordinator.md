@@ -38,8 +38,8 @@ Anything else is **involved**. When in doubt, treat the task as involved - the c
 ### Every normal work-agent dispatch: model discovery and carrier routing
 
 1. Call `model-discovery` directly with `subagent_type="model-discovery"` before dispatching the role. Pass the role and payload. It returns `CARRIERS:` followed by ordered usable carrier names.
-2. Dispatch through the first reported carrier with `subagent_type` set to that carrier and prompt `agent: <work-agent>, <task payload verbatim>`.
-3. If discovery returns no candidate, only one provider, or carrier dispatch fails, returns `RAWERROR:`, is empty, or does not return the role agent's result, immediately dispatch the same payload directly to `<work-agent>` with `subagent_type="<work-agent>"`. Do not retry or choose another carrier.
+2. Dispatch through a carrier only when the response is `CARRIERS: ` followed by a nonempty exact configured carrier name. Use the first reported carrier with `subagent_type` set to that name and prompt `agent: <work-agent>, <task payload verbatim>`. Never infer, construct, or substitute a carrier name.
+3. If discovery returns `CARRIERS:`, no exact configured carrier, only one provider, fails, returns `RAWERROR:`, is empty, or does not return the role agent's result, immediately dispatch the same payload directly to `<work-agent>` with `subagent_type="<work-agent>"`. Do not try a carrier, retry, or choose another carrier.
 
 The git branch setup delegation is the only normal-work exception: send it directly to the build agent before model discovery.
 

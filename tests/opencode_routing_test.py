@@ -36,14 +36,17 @@ def test_config_parses_and_loads_markdown_discovery() -> None:
     config = load_config()
     assert config["model"] == "openai/gpt-5.6-terra"
     assert config["small_model"] == "openai/gpt-5.4-mini"
+    assert config["agent"]["model-discovery"]["model"] == "opencode-go-openai-2/glm-5.2"
     assert config["agent"]["model-discovery"]["prompt"] == "{file:./agents/model-discovery.md}"
     assert (OPENCODE / "agents/model-discovery.md").is_file()
 
 
 def test_model_discovery_precedes_carrier_and_has_direct_fallback() -> None:
     coordinator = (OPENCODE / "agents/coordinator.md").read_text()
-    assert coordinator.index("model-discovery") < coordinator.index("Dispatch through the first reported carrier")
-    assert "returns no candidate, only one provider, or carrier dispatch fails" in coordinator
+    assert coordinator.index("model-discovery") < coordinator.index("Dispatch through a carrier")
+    assert "If discovery returns `CARRIERS:`" in coordinator
+    assert "Never infer, construct, or substitute a carrier name." in coordinator
+    assert "Do not try a carrier" in coordinator
     assert 'subagent_type="<work-agent>"' in coordinator
 
 
@@ -61,6 +64,16 @@ def test_carriers_relay_roles() -> None:
         if model.startswith("opencode-go-"):
             provider, model_id = model.split("/", maxsplit=1)
             assert config["provider"][provider]["models"][model_id]["tool_call"] is True
+
+
+def test_discovery_probes_go_carriers_and_uses_three_levels() -> None:
+    config = load_config()
+    discovery = (OPENCODE / "agents/model-discovery.md").read_text()
+    assert config["subagent_depth"] == 3
+    assert "carrier-go2-glm-5-2" in discovery
+    assert "carrier-go-kimi-k2-7-code" in discovery
+    assert "Use the read tool" in discovery
+    assert "carrier-go2-glm-5-2,carrier-go-kimi-k2-7-code" in discovery
 
 
 def test_vshn_carriers_are_conditional_and_example_stays_generic() -> None:
