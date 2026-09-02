@@ -35,6 +35,16 @@ Anything else is **involved**. When in doubt, treat the task as involved - the c
 
 ## Workflow
 
+### Every work-agent dispatch: role carrier routing
+
+1. Pick the carrier for the work agent's role: build -> `carrier-code`, planner -> `carrier-plan`, refiner -> `carrier-analyze`, tester -> `carrier-test`, review -> `carrier-review`, anything else -> `carrier-general`.
+2. Dispatch the payload to that carrier (`subagent_type="carrier-<role>"`) with the prompt `agent: <work-agent>, <task payload verbatim>`. The carrier relays it to the work agent and returns the work agent's output.
+3. A dispatch failed when the reply carries an error status, `Model not found`, `Missing API key`, an empty result, or `RAWERROR:`. Then retry once on the same carrier, and if it fails again walk the fallback chain: `carrier-<role>-go`, then `carrier-general`, then `carrier-general-go`. If every link fails, surface the last error to the user verbatim.
+
+The git branch setup delegation is the one exception: send it directly to the build agent, unrouted.
+
+Routed work agents have no model pin and run on the carrier's model by inheritance. Check each returned result for the work agent's expected output, not the carrier's relay chatter - a carrier that summarized or answered itself instead of relaying is a failed relay, retry the routing.
+
 ### Always - Git branch setup
 
 Before any implementation work starts, delegate the git branch setup to the build agent so the work happens on an isolated branch off the upstream `main`, tracked against a fork if one exists. Send this instruction to the build agent as the very first delegation:
@@ -48,26 +58,26 @@ Only continue after you are working on the correct branch.
 
 1. Analyze the task, confirm it really is simple
 2. Delegate git branch setup to the build agent (`subagent_type="build"`)
-3. Delegate the implementation directly to the build agent (`subagent_type="build"`) with the plan inline
-4. Delegate testing to the tester agent (`subagent_type="tester"`)
-5. Delegate review to the review agent (`subagent_type="review"`)
+3. Route the implementation to the build agent per the routing above: `task` tool with `subagent_type="carrier-code"` and prompt `agent: build, <the plan inline>`
+4. Route testing to the tester agent per the routing above: `task` tool with `subagent_type="carrier-test"` and prompt `agent: tester, <task payload verbatim>`
+5. Route review to the review agent per the routing above: `task` tool with `subagent_type="carrier-review"` and prompt `agent: review, <task payload verbatim>`
 6. Compile and return the results
 
 ### For an INVOLVED task - full pipeline, always
 
 1. Analyze the task and identify the areas of the codebase it touches
-2. **Refine** - delegate to the refiner agent (`subagent_type="refiner"`). If the task spans multiple independent areas, launch multiple refiner delegations in parallel in a single message, each scoped to one area, and tell each refiner which area to investigate. Wait for ALL refiners to return.
-3. **Plan** - delegate the consolidated refinement to the planner agent (`subagent_type="planner"`). Wait for it to return.
-4. **Build** - delegate git branch setup first, then the implementation, to the build agent (`subagent_type="build"`). Wait for it to return.
-5. **Test** - delegate to the tester agent (`subagent_type="tester"`). Wait for it to return.
-6. **Review** - delegate to the review agent (`subagent_type="review"`). Wait for it to return.
-7. If the reviewer requests changes, loop back to the build agent with the specific review feedback, then re-test and re-review. Repeat until the reviewer approves.
+2. **Refine** - route to the refiner agent per the routing above: `task` tool with `subagent_type="carrier-analyze"` and prompt `agent: refiner, <task payload verbatim>`. If the task spans multiple independent areas, launch multiple refiner routings in parallel in a single message, each scoped to one area, and tell each refiner which area to investigate. Wait for ALL refiners to return.
+3. **Plan** - route the consolidated refinement to the planner agent per the routing above: `task` tool with `subagent_type="carrier-plan"` and prompt `agent: planner, <consolidated refinement>`. Wait for it to return.
+4. **Build** - delegate git branch setup first, directly to the build agent (`subagent_type="build"`, unrouted), then route the implementation to the build agent per the routing above: `task` tool with `subagent_type="carrier-code"` and prompt `agent: build, <the plan>`. Wait for it to return.
+5. **Test** - route to the tester agent per the routing above: `task` tool with `subagent_type="carrier-test"` and prompt `agent: tester, <task payload verbatim>`. Wait for it to return.
+6. **Review** - route to the review agent per the routing above: `task` tool with `subagent_type="carrier-review"` and prompt `agent: review, <task payload verbatim>`. Wait for it to return.
+7. If the reviewer requests changes, route the specific review feedback back to the build agent the same way (`agent: build, <review feedback>`), then re-test and re-review through the same routing. Repeat until the reviewer approves.
 8. Compile and return the final results to the user.
 
 ## Key Principles
 
 - **NEVER perform direct work** - always delegate using the `task` tool. You read files only to decide who to delegate to, you do not implement.
-- **ALWAYS use the `task` tool** with the matching `subagent_type` - subagents must never call other agents.
+- **ALWAYS use the `task` tool** - with the role carrier `subagent_type` (`carrier-<role>`, `-go` twin on fallback) for routed work agents, direct only for the git branch setup step.
 - **WAIT for each delegation** to complete before proceeding to the next step (except when launching parallel refinements, where you wait for all of them).
 - Maintain task context across steps and pass it forward in the delegation prompts.
 - Give the user clear status updates as each phase completes.

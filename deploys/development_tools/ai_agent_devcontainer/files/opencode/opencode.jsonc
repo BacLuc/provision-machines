@@ -20,6 +20,7 @@
     ]
   ],
   "default_agent": "coordinator",
+  "subagent_depth": 2,
   "agent": {
     "build": {
       "mode": "all"
@@ -29,6 +30,186 @@
     },
     "explore": {
       "disable": true
+    },
+    "carrier-analyze": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-us-ai/subscription.qwen3.7-plus",
+      "description": "Carrier relay for analysis work, pinned to vshn-us-ai qwen3.7-plus.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-plan": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-us-ai/subscription.qwen3.8-max",
+      "description": "Carrier relay for planning work, pinned to vshn-us-ai qwen3.8-max.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-code": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-us-ai/subscription.kimi-k2.7-code",
+      "description": "Carrier relay for build work, pinned to vshn-us-ai kimi-k2.7-code.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-test": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-us-ai/subscription.qwen3.8-flash",
+      "description": "Carrier relay for test work, pinned to vshn-us-ai qwen3.8-flash.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-review": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-us-ai/subscription.qwen3.7-plus",
+      "description": "Carrier relay for review work, pinned to vshn-us-ai qwen3.7-plus.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-general": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-us-ai/subscription.glm-5.2",
+      "description": "Carrier relay for unclassified work, pinned to vshn-us-ai glm-5.2.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-analyze-go": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "opencode-go-anthropic/qwen3.7-plus",
+      "description": "Go-rail fallback carrier for analysis work, pinned to opencode-go qwen3.7-plus.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-plan-go": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "opencode-go-anthropic/qwen3.8-max",
+      "description": "Go-rail fallback carrier for planning work, pinned to opencode-go qwen3.8-max.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-code-go": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "opencode-go-openai/kimi-k2.7-code",
+      "description": "Go-rail fallback carrier for build work, pinned to opencode-go kimi-k2.7-code.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-test-go": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "opencode-go-openai/deepseek-v4-flash",
+      "description": "Go-rail fallback carrier for test work, pinned to opencode-go deepseek-v4-flash.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-review-go": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "opencode-go-anthropic/qwen3.7-plus",
+      "description": "Go-rail fallback carrier for review work, pinned to opencode-go qwen3.7-plus.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-general-go": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "opencode-go-openai/glm-5.2",
+      "description": "Go-rail fallback carrier for unclassified work, pinned to opencode-go glm-5.2.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
     }
   },
   "provider": {
