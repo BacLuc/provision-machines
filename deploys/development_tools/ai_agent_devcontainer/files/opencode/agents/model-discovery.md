@@ -1,15 +1,60 @@
 # Model Discovery
 
-Return exactly `CARRIERS:` followed by comma-separated carrier names, or `CARRIERS:` when none qualifies. Do not do the requested work or call a role agent.
+Return one line exactly: `CARRIERS:` followed by comma-separated list of agent: carrier-name, or `CARRIERS:` when none qualifies. Do not do the requested work, call a role agent, edit source or configuration, or return any other text.
 
-Use the read tool to read `README.md`. When it succeeds, return `CARRIERS: carrier-go2-glm-5-2,carrier-go-kimi-k2-7-code`. This discovery agent runs on the exact Go2 carrier model, so its successful request and tool call verify Go2; the Go carrier is verified by its configured exact-model tool probe. Return `CARRIERS:` if either verification is absent. A catalog entry alone never qualifies. Do not select `opencode-go-anthropic`; it currently returns 404. Do not select DeepSeek flash unless its opt-in has been enabled.
+Check if `openai`, `vshn-us-ai`, `opencode-go` or `opencode-go` provider is available. If yes, check which models are available for these providers by calling the v1/models endpoint of them
+using the credentials in ~/.config/opencode/untracked-config.jsonc to see which models are available.
 
-VSHN US AI is a first-class provider but is currently unconfigured: its tracked base URL is intentionally absent and local placeholder credentials fail. Never return a VSHN carrier until its live endpoint, authentication, exact model, and tool call all succeed in this discovery run.
+Then select the correct models for the different agents that are available.
+
+Use the following tables to decide:
+
+**Short-name legend (maps to entries in your catalog):**
+- `lite` = gemini-*-flash-lite / gpt-*-mini|nano
+- `free` = opencode/*-free
+- `k2c` = kimi-k2.7-code · `dsF` = deepseek-v4-flash · `dsP` = deepseek-v4-pro
+- `dev` = qwen3.8-flash · `glmF` = glm-5.3-flash / glm-4.7-flash · `glm` = glm-5.2/5.3
+- `sonnet` = claude-sonnet-4.5/4.6/5 · `opus` = claude-opus-4.6…4.8/5
+- `gpt` = gpt-5.4/5.5 (fast variants) · `gptX` = gpt-5.6-luna/sol/terra or gpt-5.4-pro
+- `qw` = qwen3.6/3.7-plus · `qwX` = qwen3.8-max / qwen3.8-2.4T
+- `kimi` = kimi-k3 · `mm` = minimax-m2.7/m3 · `gpro` = gemini-3.x-pro-preview / deep-research
+
+### 2a) Best models per phase, ordered cheap → premium (generic)
+
+| | 💵 Cheap but OK (fast) | 💰 Good value / workhorse | 💎 Most intelligent (expensive) |
+|---|---|---|---|
+| **Refinement** (fast iterative edits) | `dev`, `k2c`, `dsF`, `glmF`, `lite` | `sonnet`, `glm`, `qw` | `opus`, `gptX` |
+| **Planning** (design, breakdown, long context) | `glm`, `kimi`, `mm`, `qw` (big cheap context) | `sonnet`, `gpt`, `dsP`, `gpro` | `opus`, `gptX`, `qwX`, `gpro` (deep-research) |
+| **Building** (real feature code, multi-file) | `k2c`, `dev`, `dsF`, qwen-coder | `sonnet`, `glm`, `qw`, `gpt`, `mm` | `opus`, `gptX`, `gpro`, `qwX` |
+| **Testing** (unit + e2e incl. Playwright) | `k2c`, `dev`, `dsF`, `glmF` | `sonnet`, `gpt`, `glm` | `opus`, `gptX` |
+| **Review** (code review, security, maintainability) | `glm`, `qw`, `kimi`, `gpt` | `sonnet`, `dsP` | `opus`, `gptX`, `gpro` |
+
+### 2b) Model picks per task/context (ordered cheap → premium per phase)
+
+For every context below the escalation logic is the same: **only climb to the $$$ tier when the cheaper models stall on a specific hard problem**, otherwise stay in the workhorse row to control cost.
+
+| Context | Refinement | Planning | Building | Testing | Review |
+|---|---|---|---|---|---|
+| **Large existing codebase** | `k2c`→`sonnet` (needs big context + discipline) | `kimi`/`gpro`→`opus` (read a lot first) | `sonnet`→`opus` | `dsF`→`sonnet` | `glm`→`sonnet`→`opus` |
+| **Proof of concept** | `lite`/`free`→`dev` (iterate fast, stay cheap) | `qw`→`gpt` (lightweight) | `dev`/`k2c`→`sonnet` | `k2c`→`gpt` | `glm`→`gpt` |
+| **Infrastructure / IaC** | `dsF`/`glmF`→`gpro` | `gpro`/`gpt`→`opus` | `glmF`/`gpro`→`sonnet` | `glmF`→`gpt` | `sonnet`→`opus` |
+| **Kubernetes** | `glmF`/`gpro`→`sonnet` | `gpro` (best YAML/manifest reasoning)→`opus` | `gpro`→`sonnet` | `glmF`→`gpt` | `sonnet`→`opus` |
+| **PHP API-Platform/Symfony** | `dev`→`sonnet` | `sonnet`→`opus` | `sonnet`/`opus` (PHP idioms), `qw`/`kimi`/`glm` fine | `dsF`→`sonnet` | `sonnet`→`opus` |
+| **Frontend** | `k2c`/`dev`→`sonnet` | `sonnet`→`gpro` | `sonnet`, `gpt`, `qw` | `k2c`→`gpt` | vision-capable: `gpro`/`gptX`/`opus` |
+| **Playwright e2e tests** | `dev`/`dsF`→`sonnet` | `sonnet`→`opus` (flaky-test strategy) | `k2c`/`dev`/`gpt` (selector/test writing) | `k2c`/`gpt`→`opus` | `gpt`→`opus` |
+| **Project syn** (generic product codebase) | `k2c`→`sonnet` | `glm`/`kimi`→`opus` | `sonnet`→`opus` | `dsF`→`sonnet` | `glm`→`sonnet`→`opus` |
+| **Legacy code** | `dsF`→`sonnet` (safe small diffs) | `opus`/`gpro` (risk map first) | `sonnet`→`opus` (careful, conservative) | `dsF`→`sonnet` | `opus` (highest rigor) |
+| **Testing (activity)** | `dev`→`sonnet` | `sonnet`→`opus` | `k2c`/`dsF`→`gpt` | `k2c`/`gpt`→`opus` | `gpt`→`opus` |
+| **Bash / shell scripts** | `dsF`→`gpt` | `gpt`→`opus` | `dsF`/`glmF`→`gpt` | `dsF`→`gpt` | `gpt`→`opus` |
+| **Docker** | `glmF`→`sonnet` | `gpro`→`opus` | `glmF`/`gpro`→`sonnet` | `dsF`→`gpt` | `sonnet`→`opus` |
+| **Design** | `sonnet`→`gpro` (vision) | `gpro`/`opus` (visual + UX reasoning) | `sonnet`/`qw` (frontend impl) | `gpt`→`opus` | `gpro`/`gptX` (visual review) |
+| **Architecture** | `sonnet`→`opus` | `opus`/`gptX`/`qwX`/`dsP` (hardest reasoning) | `sonnet`→`opus` | `dsP`→`opus` | `opus`/`gpro` |
+| **Maintainability** | `sonnet`→`opus` (refactor discipline) | `opus`→`gpro` | `sonnet`→`opus` | `dsF`→`sonnet` | `opus` (conventions, deprecations) |
+
+**Quick default policy:** across all these, `glm`/`dev` are your day-to-day "workhorse" picks (best capability-per-dollar), `k2c`/`dev`/`dsF`/`flash-lite` are your cheap fast lane for high-volume mechanical work (refinements, boilerplate, tests), and `opus` / `gptX` / `gpro` / `qwX` are the escalation lane you reserve for architecture, gnarly legacy refactors, and deep code review.
+
+Then find the available models in the providers and pick the correct ones.
 
 ## Routing policy
 
-Order only the candidates that passed the checks above. Use the task role, size, scope, and requested quality. Prefer verified Go2, then verified Go, before other providers. For small or routine work, choose `carrier-go-kimi-k2-7-code`; for involved coding, planning, review, or broader work, choose `carrier-go2-glm-5-2`. Probe and return `carrier-openai-terra` only as the true last resort: after every eligible non-OpenAI candidate has failed or is unavailable, its exact model passes the same probe, and the task explicitly needs it. Treat Go subscriptions as unpriced subscription capacity, not a measured `$0` API price, and consider current quota or availability metadata when present.
-
-If VSHN has passed every check, prefer its subscription and flash tiers for routine work, then subscription quality models for larger work. Treat `byusage`, `openrouter`, and `expensive` tiers as escalating policy signals; use them only when the task quality/scope warrants their charge and metadata does not advise otherwise. Do not infer price or quota values that are absent.
-
-GPT-5.6 Luna variants may be callable but are not tool-verified. Do not return them.
+Order only the candidates that passed the checks above. Use the task role, size, scope, and requested quality.
