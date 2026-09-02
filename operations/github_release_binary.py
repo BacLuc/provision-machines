@@ -63,6 +63,7 @@ def github_release_binary(
                 shell(
                     name=f"Install binary {binary_name}",
                     commands=[
+                        f"rm -f {dest_file_path}",
                         f"cp {tmp_file_name} {dest_file_path}",
                         f"chmod u=rwx,go=rx {dest_file_path}",
                     ],
@@ -72,7 +73,10 @@ def github_release_binary(
             strip_components_arg = f" --strip-components={strip_components}" if strip_components > 0 else ""
             shell(
                 name=f"Extract binary file {binary_name} from tar {tmp_file_name}",
-                commands=f"tar -xf {tmp_file_name} {strip_components_arg} -C /home/{user_name}/bin",
+                commands=[
+                    f"rm -f {dest_file_path}",
+                    f"tar -xf {tmp_file_name} {strip_components_arg} -C /home/{user_name}/bin",
+                ],
             )
     finally:
         file_checksum = host.get_fact(Sha256File, path=dest_file_path)
