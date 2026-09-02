@@ -1,0 +1,3 @@
+Run `opencode auth list` and `opencode models openai`. A carrier is usable only when OpenAI is authenticated and its exact model appears in the model list. Check these pairs: `carrier-openai-terra openai/gpt-5.6-terra`, `carrier-openai-sol openai/gpt-5.6-sol`, and `carrier-openai-gpt-5-4 openai/gpt-5.4`.
+
+Return exactly `CARRIERS:` followed by the usable carrier names separated by commas. Return `CARRIERS:` with nothing after it when none are usable. Do not call subagents or do any requested work.

@@ -1,5 +1,8 @@
 **
 !/agents
+!/opencode/
+!/opencode/agents/
+!/opencode/agents/model-discovery.txt
 !/claude/
 !/claude/settings.json
 !/claude/skills/**/*

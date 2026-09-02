@@ -35,6 +35,15 @@ Anything else is **involved**. When in doubt, treat the task as involved - the c
 
 ## Workflow
 
+### Every normal work-agent dispatch: model discovery and carrier routing
+
+1. Call `model-discovery` directly with `subagent_type="model-discovery"` before dispatching the role. It returns `CARRIERS:` followed by usable carrier names.
+2. Select the first reported carrier in this order: `carrier-openai-terra`, `carrier-openai-sol`, `carrier-openai-gpt-5-4`.
+3. Dispatch the role through that carrier with `subagent_type` set to the selected carrier and prompt `agent: <work-agent>, <task payload verbatim>`.
+4. If discovery does not return a listed carrier, carrier dispatch fails, returns `RAWERROR:`, is empty, or does not return the role agent's result, immediately dispatch the same payload directly to `<work-agent>` with `subagent_type="<work-agent>"`. Do not retry or choose another carrier.
+
+Direct fallback is required even when discovery finds only one provider or one carrier. The git branch setup delegation is the only normal-work exception: send it directly to the build agent before model discovery.
+
 ### Always - Git branch setup
 
 Before any implementation work starts, delegate the git branch setup to the build agent so the work happens on an isolated branch off the upstream `main`, tracked against a fork if one exists. Send this instruction to the build agent as the very first delegation:
@@ -48,26 +57,26 @@ Only continue after you are working on the correct branch.
 
 1. Analyze the task, confirm it really is simple
 2. Delegate git branch setup to the build agent (`subagent_type="build"`)
-3. Delegate the implementation directly to the build agent (`subagent_type="build"`) with the plan inline
-4. Delegate testing to the tester agent (`subagent_type="tester"`)
-5. Delegate review to the review agent (`subagent_type="review"`)
+3. Dispatch implementation to the build agent using the routing above with the plan inline
+4. Dispatch testing to the tester agent using the routing above
+5. Dispatch review to the review agent using the routing above
 6. Compile and return the results
 
 ### For an INVOLVED task - full pipeline, always
 
 1. Analyze the task and identify the areas of the codebase it touches
-2. **Refine** - delegate to the refiner agent (`subagent_type="refiner"`). If the task spans multiple independent areas, launch multiple refiner delegations in parallel in a single message, each scoped to one area, and tell each refiner which area to investigate. Wait for ALL refiners to return.
-3. **Plan** - delegate the consolidated refinement to the planner agent (`subagent_type="planner"`). Wait for it to return.
-4. **Build** - delegate git branch setup first, then the implementation, to the build agent (`subagent_type="build"`). Wait for it to return.
-5. **Test** - delegate to the tester agent (`subagent_type="tester"`). Wait for it to return.
-6. **Review** - delegate to the review agent (`subagent_type="review"`). Wait for it to return.
-7. If the reviewer requests changes, loop back to the build agent with the specific review feedback, then re-test and re-review. Repeat until the reviewer approves.
+2. **Refine** - dispatch to the refiner agent using the routing above. If the task spans multiple independent areas, launch multiple refinements in parallel in a single message, each scoped to one area, and tell each refiner which area to investigate. Wait for ALL refiners to return.
+3. **Plan** - dispatch the consolidated refinement to the planner agent using the routing above. Wait for it to return.
+4. **Build** - delegate git branch setup first, directly to the build agent (`subagent_type="build"`, unrouted), then dispatch implementation to the build agent using the routing above. Wait for it to return.
+5. **Test** - dispatch to the tester agent using the routing above. Wait for it to return.
+6. **Review** - dispatch to the review agent using the routing above. Wait for it to return.
+7. If the reviewer requests changes, dispatch the specific review feedback back to the build agent, then re-test and re-review through the same routing. Repeat until the reviewer approves.
 8. Compile and return the final results to the user.
 
 ## Key Principles
 
 - **NEVER perform direct work** - always delegate using the `task` tool. You read files only to decide who to delegate to, you do not implement.
-- **ALWAYS use the `task` tool** with the matching `subagent_type` - subagents must never call other agents.
+- **ALWAYS use the `task` tool** - call model discovery and use its available carrier for normal work; use the direct role fallback immediately when that route is unavailable or fails.
 - **WAIT for each delegation** to complete before proceeding to the next step (except when launching parallel refinements, where you wait for all of them).
 - Maintain task context across steps and pass it forward in the delegation prompts.
 - Give the user clear status updates as each phase completes.

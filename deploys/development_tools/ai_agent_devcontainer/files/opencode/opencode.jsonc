@@ -19,7 +19,9 @@
       }
     ]
   ],
+  "model": "openai/gpt-5.6-terra",
   "default_agent": "coordinator",
+  "subagent_depth": 2,
   "agent": {
     "build": {
       "mode": "all"
@@ -29,6 +31,62 @@
     },
     "explore": {
       "disable": true
+    },
+    "model-discovery": {
+      "mode": "subagent",
+      "hidden": true,
+      "description": "Discovers authenticated tool-capable OpenAI carrier models.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow"
+      },
+      "prompt": "{file:./agents/model-discovery.txt}"
+    },
+    "carrier-openai-terra": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "openai/gpt-5.6-terra",
+      "description": "Carrier relay using OpenAI GPT-5.6 Terra.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-openai-sol": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "openai/gpt-5.6-sol",
+      "description": "Carrier relay using OpenAI GPT-5.6 Sol.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-openai-gpt-5-4": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "openai/gpt-5.4",
+      "description": "Carrier relay using OpenAI GPT-5.4.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
     }
   },
   "provider": {
