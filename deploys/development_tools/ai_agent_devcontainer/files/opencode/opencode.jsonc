@@ -33,18 +33,6 @@
     "explore": {
       "disable": true
     },
-    "model-discovery": {
-      "mode": "subagent",
-      "hidden": true,
-      "model": "opencode-go-openai-2/glm-5.2",
-      "description": "Discovers authenticated, tool-capable carrier models.",
-      "temperature": 0.1,
-      "steps": 8,
-      "permission": {
-        "*": "allow"
-      },
-      "prompt": "{file:./agents/model-discovery.md}"
-    },
     "carrier-go2-glm-5-2": {
       "mode": "subagent",
       "hidden": true,
