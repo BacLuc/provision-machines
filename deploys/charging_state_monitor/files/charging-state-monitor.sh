@@ -16,7 +16,7 @@ while true; do
     echo "measured acpi -a: '$ac_adapter'"
     echo "measured acpi -b: '$battery'"
     echo "bad_since: $bad_since s, last_notified: $last_notified s"
-    if echo "$ac_adapter" | grep -q "on-line" && echo "$battery" | grep -q "Discharging"; then
+    if echo "$ac_adapter" | grep -q "off-line" && echo "$battery" | grep -q "Discharging"; then
         if [ "$bad_since" -eq 0 ]; then
             bad_since=$now
         fi
