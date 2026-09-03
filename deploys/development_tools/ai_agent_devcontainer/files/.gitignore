@@ -3,6 +3,7 @@
 !/opencode/
 !/opencode/agents/
 !/opencode/agents/*.md
+!/opencode/agents/relay.txt
 !/opencode/untracked-config.example.jsonc
 !/claude/
 !/claude/settings.json
