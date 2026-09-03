@@ -15,6 +15,7 @@ import argparse
 import getpass
 import json
 import os
+import re
 import sys
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -30,6 +31,7 @@ CONFIG_PATH = os.path.join(
     "opencode.jsonc",
 )
 PROVIDER_NAME = "vshn-us-ai"
+CARRIER_PREFIX = "carrier-vshn-"
 
 # Price class prefixes, in order of preference for the "one per class" default
 PRICE_CLASSES = [
@@ -261,35 +263,139 @@ def npm_name(spec):
     return spec[:at]
 
 
-def update_config(models, config_path, npm_package=None, provider_name=None, api_base_url=None):
-    """Update the opencode.jsonc config with the given models."""
-    with open(config_path) as f:
-        config = json.loads(strip_jsonc_comments(f.read()))
+def match_brace(text, open_pos):
+    """Return the index of the closing brace matching the '{' at open_pos, skipping string contents."""
+    depth = 0
+    i = open_pos
+    in_string = False
+    while i < len(text):
+        char = text[i]
+        if in_string:
+            if char == "\\":
+                i += 2
+                continue
+            if char == '"':
+                in_string = False
+        elif char == '"':
+            in_string = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return i
+        i += 1
+    raise ValueError("Unbalanced braces in config")
 
+
+def render_json_value(value, indent):
+    """Render a value as JSON with indent 2, shifted so every line sits at the given base indent."""
+    lines = json.dumps(value, indent=2).splitlines()
+    body = "\n".join(" " * indent + line for line in lines[1:])
+    return lines[0] + "\n" + body
+
+
+def carrier_name(model_key):
+    """Build the carrier agent name for a model key."""
+    slug = re.sub(r"-+", "-", re.sub(r"[.:/]", "-", model_key.lower())).strip("-")
+    return f"{CARRIER_PREFIX}{slug}"
+
+
+def render_carrier_entry(name, model_key, provider_name):
+    """Render a carrier agent block in the committed opencode.jsonc style."""
+    entry = {
+        "mode": "subagent",
+        "hidden": True,
+        "model": f"{provider_name}/{model_key}",
+        "description": f"Carrier relay using {provider_name} {model_key}.",
+        "temperature": 0.1,
+        "steps": 8,
+        "permission": {"*": "allow", "task": {"*": "allow"}},
+        "prompt": "{file:./agents/relay.txt}",
+    }
+    return f'    "{name}": ' + render_json_value(entry, 4)
+
+
+def last_carrier_end(text):
+    """Return the closing brace index of the last carrier entry in the raw text."""
+    last = None
+    for match in re.finditer(r'^    "carrier-[^"]+": \{', text, re.M):
+        last = match_brace(text, match.end() - 1)
+    if last is None:
+        raise ValueError("No carrier entries found")
+    return last
+
+
+def remove_carrier_entry(text, name):
+    """Remove one carrier entry together with its separating comma from the raw text."""
+    start = text.index(f'\n    "{name}": ') + 1
+    end = match_brace(text, text.index("{", start))
+    if text[end + 1] == ",":
+        return text[:start] + text[text.index("\n", end + 1) + 1 :]
+    comma = text.rindex(",", 0, start)
+    return text[:comma] + text[end + 1 :]
+
+
+def append_carrier_entry(text, name, model_key, provider_name):
+    """Insert a carrier entry right after the last existing carrier block."""
+    end = last_carrier_end(text)
+    entry = render_carrier_entry(name, model_key, provider_name)
+    return text[: end + 1] + ",\n" + entry + text[end + 1 :]
+
+
+def replace_provider_models(text, provider_name, models_dict):
+    """Replace a provider's models object, keeping every other byte of the raw text intact."""
+    provider_at = text.index(f'"{provider_name}": {{')
+    models_at = text.index('"models": {', provider_at)
+    start = text.index("{", models_at)
+    end = match_brace(text, start)
+    line_start = text.rindex("\n", 0, models_at) + 1
+    return text[:start] + render_json_value(models_dict, models_at - line_start) + text[end + 1 :]
+
+
+def sync_carriers(text, config, provider_name, models_dict):
+    """Keep carrier agents in sync with the provider model set, touching only its own carriers."""
+    prefix = f"{provider_name}/"
+    agents = config["agent"]
+    carrier_models = {
+        name: str(agent.get("model", ""))
+        for name, agent in agents.items()
+        if name.startswith("carrier-") and isinstance(agent, dict)
+    }
+    pinned = {model for model in carrier_models.values() if model.startswith(prefix)}
+
+    for name, model in sorted(carrier_models.items()):
+        key = model.removeprefix(prefix) if model.startswith(prefix) else None
+        if key is not None and name.startswith(CARRIER_PREFIX) and key not in models_dict:
+            text = remove_carrier_entry(text, name)
+
+    for model_key in models_dict:
+        if prefix + model_key not in pinned:
+            text = append_carrier_entry(text, carrier_name(model_key), model_key, provider_name)
+    return text
+
+
+def update_config(models, config_path, npm_package=None, provider_name=None, api_base_url=None):
+    """Update the opencode.jsonc config with the given models, preserving all comments."""
     provider_name = provider_name or PROVIDER_NAME
-    api_base_url = api_base_url or API_BASE_URL
+
+    with open(config_path) as f:
+        text = f.read()
+
+    config = json.loads(strip_jsonc_comments(text))
 
     models_dict = {}
     for model in models:
         model_id = model.get("id", "")
-        display_name = get_display_name(model)
-        models_dict[model_id] = {"name": display_name}
+        models_dict[model_id] = {"name": get_display_name(model)}
 
     sorted_models = dict(sorted(models_dict.items()))
 
-    provider_config = {
-        "npm": npm_package or "@ai-sdk/openai-compatible",
-        "name": "VSHN US AI",
-        "models": sorted_models,
-    }
-
-    config["provider"][provider_name] = provider_config
-
-    text = json.dumps(config, indent=2)
+    text = replace_provider_models(text, provider_name, sorted_models)
+    text = sync_carriers(text, config, provider_name, sorted_models)
 
     with open(config_path, "w") as f:
         f.write(text)
-        f.write("\n")
 
     print(f"Updated {len(sorted_models)} models in {config_path}")
 

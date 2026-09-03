@@ -3,7 +3,7 @@ description: Discovers which models to use
 mode: subagent
 hidden: true
 temperature: 0.1
-steps: 15
+steps: 25
 permission:
   "*": allow
 ---
