@@ -13,7 +13,7 @@ services:
     environment:
       - "WEBUI_AUTH=False"
   searxng:
-    image: ghcr.io/searxng/searxng:2026.2.11-970f2b843
+    image: ghcr.io/searxng/searxng:2026.2.16-8e824017d
     depends_on:
       valkey:
         condition: service_healthy
@@ -25,7 +25,6 @@ services:
       - "./searngx/limiter.toml:/etc/searxng/limiter.toml"
     environment:
       SEARXNG_ENABLE_CORS: true
-      BRAVE_API_KEY: ${BRAVE_API_KEY}
   valkey:
     image: valkey/valkey:8.1-alpine
     restart: "unless-stopped"
