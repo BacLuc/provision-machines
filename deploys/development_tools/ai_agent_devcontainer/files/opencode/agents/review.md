@@ -2,7 +2,7 @@
 description: Reviews your changes
 mode: all
 temperature: 0.1
-permissions:
+permission:
   read: allow
   write: deny
   edit: deny
