@@ -2662,38 +2662,14 @@ engines:
     timeout: 9.0
 
   - name: brave
-    engine: brave
+    engine: braveapi
     shortcut: br
     time_range_support: true
-    paging: true
+    paging: false
     categories: [general, web]
     brave_category: search
     # brave_spellcheck: true
-    api_key: "${BRAVE_API_KEY}"
-
-  - name: brave.images
-    engine: brave
-    network: brave
-    shortcut: brimg
-    categories: [images, web]
-    brave_category: images
-    api_key: "${BRAVE_API_KEY}"
-
-  - name: brave.videos
-    engine: brave
-    network: brave
-    shortcut: brvid
-    categories: [videos, web]
-    brave_category: videos
-    api_key: "${BRAVE_API_KEY}"
-
-  - name: brave.news
-    engine: brave
-    network: brave
-    shortcut: brnews
-    categories: news
-    brave_category: news
-    api_key: "${BRAVE_API_KEY}"
+    api_key: {{ brave_api_key | tojson }}
 
   # - name: brave.goggles
   #   engine: brave

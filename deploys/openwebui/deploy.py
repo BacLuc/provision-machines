@@ -27,11 +27,19 @@ if host.data.openwebui["enabled"]:
         mode="755",
     )
 
-    files.sync(
+    searngx_dir = files.sync(
         name="Copy searngx directory",
         src=f"{dirname_of(__file__)}/files/searngx",
         dest=f"{compose_project_dir}/searngx",
         mode="755",
+    )
+
+    settings_file = files.template(
+        name="Render SearXNG settings",
+        src=f"{dirname_of(__file__)}/files/searngx/settings.yml.j2",
+        dest=f"{compose_project_dir}/searngx/settings.yml",
+        mode="600",
+        brave_api_key=host.data.openwebui["BRAVE_API_KEY"],
     )
 
     compose_file = files.put(
@@ -52,7 +60,7 @@ if host.data.openwebui["enabled"]:
         dest=f"{compose_project_dir}/.env",
         user=user,
         group=user,
-        mode="644",
+        mode="600",
     )
 
     systemd_file = files.put(
@@ -84,7 +92,7 @@ WantedBy=multi-user.target
         name="Restart docker before starting openwebui to ensure iptables chains exist",
         commands=["systemctl restart docker"],
         _sudo=True,
-        _if=lambda: systemd_file.changed or compose_file.changed,
+        _if=lambda: systemd_file.changed or compose_file.changed or env_file.changed,
     )
 
     systemd.service(
@@ -94,5 +102,11 @@ WantedBy=multi-user.target
         enabled=True,
         restarted=True,
         _sudo=True,
-        _if=lambda: systemd_file.changed or compose_file.changed,
+        _if=lambda: (
+            searngx_dir.changed
+            or settings_file.changed
+            or systemd_file.changed
+            or compose_file.changed
+            or env_file.changed
+        ),
     )

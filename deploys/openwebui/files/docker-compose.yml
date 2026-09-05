@@ -13,7 +13,7 @@ services:
     environment:
       - "WEBUI_AUTH=False"
   searxng:
-    image: ghcr.io/searxng/searxng:2026.2.11-970f2b843
+    image: ghcr.io/searxng/searxng:2026.2.16-8e824017d
     ports:
       - "127.0.0.1:13308:8080"
     volumes:
@@ -22,7 +22,6 @@ services:
       - "./searngx/limiter.toml:/etc/searxng/limiter.toml"
     environment:
       SEARXNG_ENABLE_CORS: true
-      BRAVE_API_KEY: ${BRAVE_API_KEY}
 
 volumes:
   "open-webui":
