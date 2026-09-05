@@ -27,7 +27,7 @@ if host.data.openwebui["enabled"]:
         mode="755",
     )
 
-    files.sync(
+    searngx_dir = files.sync(
         name="Copy searngx directory",
         src=f"{dirname_of(__file__)}/files/searngx",
         dest=f"{compose_project_dir}/searngx",
@@ -84,7 +84,7 @@ WantedBy=multi-user.target
         name="Restart docker before starting openwebui to ensure iptables chains exist",
         commands=["systemctl restart docker"],
         _sudo=True,
-        _if=lambda: systemd_file.changed or compose_file.changed or env_file.changed,
+        _if=lambda: searngx_dir.changed or systemd_file.changed or compose_file.changed or env_file.changed,
     )
 
     systemd.service(
@@ -94,5 +94,5 @@ WantedBy=multi-user.target
         enabled=True,
         restarted=True,
         _sudo=True,
-        _if=lambda: systemd_file.changed or compose_file.changed or env_file.changed,
+        _if=lambda: searngx_dir.changed or systemd_file.changed or compose_file.changed or env_file.changed,
     )

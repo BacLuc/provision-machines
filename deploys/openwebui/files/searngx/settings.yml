@@ -115,7 +115,7 @@ valkey:
   # URL to connect valkey database. Is overwritten by ${SEARXNG_VALKEY_URL}.
   # https://docs.searxng.org/admin/settings/settings_valkey.html#settings-valkey
   # url: valkey://localhost:6379/0
-  url: false
+  url: valkey://valkey:6379/0
 
 ui:
   # Custom static path - leave it blank if you didn't change
@@ -2662,7 +2662,7 @@ engines:
     timeout: 9.0
 
   - name: brave
-    engine: brave
+    engine: braveapi
     shortcut: br
     time_range_support: true
     paging: false
@@ -2672,7 +2672,7 @@ engines:
     api_key: "${BRAVE_API_KEY}"
 
   - name: brave.images
-    engine: brave
+    engine: braveapi
     network: brave
     shortcut: brimg
     categories: [images, web]
@@ -2681,7 +2681,7 @@ engines:
     disabled: true
 
   - name: brave.videos
-    engine: brave
+    engine: braveapi
     network: brave
     shortcut: brvid
     categories: [videos, web]
@@ -2690,7 +2690,7 @@ engines:
     disabled: true
 
   - name: brave.news
-    engine: brave
+    engine: braveapi
     network: brave
     shortcut: brnews
     categories: news
