@@ -87,7 +87,7 @@ server:
   base_url: false # "http://example.com/location"
   # rate limit the number of request on the instance, block some bots.
   # Is overwritten by ${SEARXNG_LIMITER}
-  limiter: false
+  limiter: true
   # enable features designed only for public instances.
   # Is overwritten by ${SEARXNG_PUBLIC_INSTANCE}
   public_instance: false
@@ -2665,7 +2665,7 @@ engines:
     engine: brave
     shortcut: br
     time_range_support: true
-    paging: true
+    paging: false
     categories: [general, web]
     brave_category: search
     # brave_spellcheck: true
@@ -2678,6 +2678,7 @@ engines:
     categories: [images, web]
     brave_category: images
     api_key: "${BRAVE_API_KEY}"
+    disabled: true
 
   - name: brave.videos
     engine: brave
@@ -2686,6 +2687,7 @@ engines:
     categories: [videos, web]
     brave_category: videos
     api_key: "${BRAVE_API_KEY}"
+    disabled: true
 
   - name: brave.news
     engine: brave
@@ -2694,6 +2696,7 @@ engines:
     categories: news
     brave_category: news
     api_key: "${BRAVE_API_KEY}"
+    disabled: true
 
   # - name: brave.goggles
   #   engine: brave

@@ -52,7 +52,7 @@ if host.data.openwebui["enabled"]:
         dest=f"{compose_project_dir}/.env",
         user=user,
         group=user,
-        mode="644",
+        mode="600",
     )
 
     systemd_file = files.put(
@@ -84,7 +84,7 @@ WantedBy=multi-user.target
         name="Restart docker before starting openwebui to ensure iptables chains exist",
         commands=["systemctl restart docker"],
         _sudo=True,
-        _if=lambda: systemd_file.changed or compose_file.changed,
+        _if=lambda: systemd_file.changed or compose_file.changed or env_file.changed,
     )
 
     systemd.service(
@@ -94,5 +94,5 @@ WantedBy=multi-user.target
         enabled=True,
         restarted=True,
         _sudo=True,
-        _if=lambda: systemd_file.changed or compose_file.changed,
+        _if=lambda: systemd_file.changed or compose_file.changed or env_file.changed,
     )
