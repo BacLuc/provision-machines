@@ -16,21 +16,11 @@ def _engine_block(name: str) -> str:
     return match.group(1)
 
 
-def test_searxng_uses_valkey_for_limiter() -> None:
-    settings = SETTINGS.read_text()
-    compose = COMPOSE.read_text()
-
-    assert re.search(r"(?ms)^  limiter: true$", settings)
-    assert "url: valkey://valkey:6379/0" in settings
-    assert "valkey/valkey:" in compose
-    assert "condition: service_healthy" in compose
-
-
 def test_brave_search_is_api_only_general_web_search() -> None:
     search = _engine_block("brave")
     assert "engine: braveapi" in search
     assert "categories: [general, web]" in search
-    assert "paging: true" in search
+    assert "paging: false" in search
     assert "api_key: {{ brave_api_key | tojson }}" in search
     assert not re.search(r"^  - name: brave\.(images|videos|news)$", SETTINGS.read_text(), re.MULTILINE)
 

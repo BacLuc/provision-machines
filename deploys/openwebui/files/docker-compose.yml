@@ -14,9 +14,6 @@ services:
       - "WEBUI_AUTH=False"
   searxng:
     image: ghcr.io/searxng/searxng:2026.2.16-8e824017d
-    depends_on:
-      valkey:
-        condition: service_healthy
     ports:
       - "127.0.0.1:13308:8080"
     volumes:
@@ -25,19 +22,8 @@ services:
       - "./searngx/limiter.toml:/etc/searxng/limiter.toml"
     environment:
       SEARXNG_ENABLE_CORS: true
-  valkey:
-    image: valkey/valkey:8.1-alpine
-    restart: "unless-stopped"
-    volumes:
-      - "valkey-data:/data"
-    healthcheck:
-      test: ["CMD", "valkey-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
 
 volumes:
   "open-webui":
     external: true
   searxng-data:
-  valkey-data:
