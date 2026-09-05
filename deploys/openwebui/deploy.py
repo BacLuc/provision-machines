@@ -38,7 +38,7 @@ if host.data.openwebui["enabled"]:
         name="Render SearXNG settings",
         src=f"{dirname_of(__file__)}/files/searngx/settings.yml.j2",
         dest=f"{compose_project_dir}/searngx/settings.yml",
-        mode="644",
+        mode="600",
         brave_api_key=host.data.openwebui["BRAVE_API_KEY"],
     )
 

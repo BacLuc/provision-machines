@@ -50,6 +50,12 @@ def test_brave_image_support_and_secret_rendering() -> None:
     assert "brave_api_key" not in rendered
 
 
+def test_rendered_searxng_settings_are_private() -> None:
+    deploy = DEPLOY.read_text()
+    settings = deploy.split('name="Render SearXNG settings"', 1)[1].split("compose_file", 1)[0]
+    assert 'mode="600"' in settings
+
+
 def test_synced_searxng_config_restarts_service() -> None:
     deploy = DEPLOY.read_text()
     docker_restart = deploy.split('name="Restart docker', 1)[1].split("systemd.service", 1)[0]
