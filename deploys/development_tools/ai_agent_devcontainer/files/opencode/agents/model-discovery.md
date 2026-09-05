@@ -77,6 +77,8 @@ Prefer free models: run `opencode models` and treat every id matching `^opencode
 
 Before selecting, go through all configured providers and check that their URL is reachable and, where an API key is configured, that the key works: call the provider's v1/models endpoint and expect HTTP 200. Never print or store an API key.
 
+The nemotron model performs very bad and doesn't call subagents. Only use it for very very small tasks.
+
 Cache every check result: when running inside a GitHub Action, in the issue titled `model-discovery cache` in https://github.com/bacluc-agent/agent-todo - find it with `gh issue list -R bacluc-agent/agent-todo --state open --search 'in:title "model-discovery cache"'`, create it with `gh issue create` if missing, update it with `gh issue edit <number> --body-file`; otherwise cache in a file. Store one fenced ```json block mapping provider and model ids to `{"ok": true, "checked": "<ISO 8601 timestamp>"}`. Re-check anything older than 7 days or no longer listed by `opencode models`.
 
 Before returning, verify every model you return actually works: run `timeout 60 opencode run --model <provider/model> "Reply with exactly: OK"` and treat exit code 0 as working. If it fails, choose the next best candidate (free models first, at most 3 candidates per role) and cache the result of each verification the same way.
