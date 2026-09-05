@@ -1,6 +1,8 @@
 .coverage
 .idea
 .junie
+.mypy_cache
+.pytest_cache
 .venv
 /.ansible
 /group_data/local.py
