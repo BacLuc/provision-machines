@@ -208,7 +208,7 @@ lazygit = {
 ollama = {
     "enabled": False,
     # renovate: datasource=github-releases depName=ollama/ollama
-    "ollama_version": "0.32.5",
+    "ollama_version": "0.33.3",
     "model": "qwen2.5:3b",
 }
 
