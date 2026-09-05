@@ -19,7 +19,6 @@ If you are running inside a github-action, cache it in an issue.
 Check if `openai`, `vshn-us-ai`, `opencode-go` or `opencode-go` provider is available. If yes, check which models are available for these providers by calling the v1/models endpoint of them.
 Do not load the API key into the context, use jq to store the required api keys in an env variable and then use that.
 Use the credentials in ~/.config/opencode/untracked-config.jsonc to see which models are available.
-Ignore every `github-copilot/<model>` entry completely. Never use a `github-copilot/<model>` entry as a candidate or carrier.
 
 Then select the correct models for the different agents that are available.
 
