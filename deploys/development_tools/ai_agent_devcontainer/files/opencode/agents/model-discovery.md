@@ -71,6 +71,14 @@ For every context below the escalation logic is the same: **only climb to the $$
 
 Then find the available models in the providers and pick the correct ones.
 
+## Selection policy
+
+- Honor explicit model or provider overrides; do not replace them with this ranking.
+- Assess task complexity, importance, and risk using the declared `low`, `medium`, and `high` values. The required capability tier is `required_tier = max(complexity, importance, risk)`, with those values ordered low < medium < high. A candidate qualifies only when it declares a capability tier at least `required_tier`, declares cost metadata (`free` or a comparable paid price), and supports every required capability; filter out candidates failing any hard capability before comparing price or tier.
+- Among qualifying candidates, choose the lowest-cost model. Prefer free candidates; among equal-cost candidates, use the higher declared capability tier as the deterministic tie-break, then the model id alphabetically. For paid candidates, lower declared price wins. The available-model catalog must provide the capability tier and cost metadata needed for these comparisons; an undeclared value is not an assumption of suitability.
+- For each `PRIOR_ATTEMPT` quality failure, exclude the failed model and restrict escalation to qualifying candidates with a strictly higher declared capability tier. Try those candidates in descending capability order, preferring free candidates; after a free candidate quality-fails, exclude it and continue with the next stronger untried free candidate, then use the least-expensive untried paid candidate when no stronger free candidate remains. Stop when a candidate works or when no untried qualifying candidate remains. An `OK` probe verifies availability only and cannot establish task quality. Distinguish transient infrastructure failures (unreachable provider, authentication, timeout, rate limit, or endpoint failure) from quality failures (the model responds but does not meet the task requirement); cache them separately, and do not escalate capability for transient failures.
+- If no candidate qualifies or works, return the required `CARRIERS:` fallback.
+
 ## Prefer free models and verify before returning
 
 Prefer free models: run `opencode models` and treat every id matching `^opencode/.*-free$` (provider `opencode`, no API key required) as free. Pick the free model that best fits the task and prefer it over paid models. Only use a paid model when no free model can do the task.
