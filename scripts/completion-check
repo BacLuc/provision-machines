@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+status=0
+
+check() {
+  local name="$1"
+  shift
+  printf '==> %s\n' "$name"
+  if "$@"; then
+    printf 'PASS: %s\n' "$name"
+  else
+    printf 'FAIL: %s\n' "$name" >&2
+    status=1
+  fi
+}
+
+check 'dependencies (uv sync --frozen --all-extras)' uv sync --frozen --all-extras
+check 'tests (pytest)' uv run pytest
+check 'linting (ruff)' uv run ruff check .
+check 'types (mypy)' uv run mypy .
+# renovate: datasource=docker depName=ghcr.io/bacluc/prettier-image/prettier-image
+check 'formatting (prettier) + diff clean' sh -c 'docker run --rm -v "$PWD:/workdir" -w /workdir -u "$UID" ghcr.io/bacluc/prettier-image/prettier-image:5.1.0 && git diff --exit-code'
+
+exit "$status"
