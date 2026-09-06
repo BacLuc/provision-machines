@@ -41,6 +41,8 @@ Before any implementation work starts, delegate the git branch setup to the buil
 
 > If you are already on a branch vaguely describing the feature you are working on, STAY ON THE BRANCH.
 > If not, create a new working branch off the upstream `main` for this task. Set up remote tracking for a new branch on origin. See the Git Workflow section of your instructions.
+> Check if there is already a branch mentioned in the issue or if there are even pull requests. If yes, checkout that branch and continue from there. Push your changes back to that branch.
+> Make sure to read and apply the review comments on the PR.
 
 Only continue after you are working on the correct branch.
 
