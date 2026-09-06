@@ -14,13 +14,7 @@ Return one line exactly: `CARRIERS:` followed by comma-separated list of role: c
 You need to specify the model to use for each role. For each role there should only be one model specified.
 If the task is to only select one model, only return one model.
 
-First check if the available providers and models have already been checked. If not, check that first and cache the result in the file system.
-If you are running inside a github-action, cache it in an issue.
-Check if `openai`, `vshn-us-ai`, `opencode-go` or `opencode-go` provider is available. If yes, check which models are available for these providers by calling the v1/models endpoint of them.
-Do not load the API key into the context, use jq to store the required api keys in an env variable and then use that.
-Use the credentials in ~/.config/opencode/untracked-config.jsonc to see which models are available.
-
-Then select the correct models for the different agents that are available.
+The available models are already verified and provided in the prompt inside `<available-models>` tags. Select from those models only. Do not run `opencode models`, do not probe models, and do not check providers: availability is already verified.
 
 Use the following tables to decide:
 
@@ -79,11 +73,9 @@ Then find the available models in the providers and pick the correct ones.
 - For each `PRIOR_ATTEMPT` quality failure, exclude the failed model and restrict escalation to qualifying candidates with a strictly higher declared capability tier. Try those candidates in descending capability order, preferring free candidates; after a free candidate quality-fails, exclude it and continue with the next stronger untried free candidate, then use the least-expensive untried paid candidate when no stronger free candidate remains. Stop when a candidate works or when no untried qualifying candidate remains. An `OK` probe verifies availability only and cannot establish task quality. Distinguish transient infrastructure failures (unreachable provider, authentication, timeout, rate limit, or endpoint failure) from quality failures (the model responds but does not meet the task requirement); cache them separately, and do not escalate capability for transient failures.
 - If no candidate qualifies or works, return the required `CARRIERS:` fallback.
 
-## Prefer free models and verify before returning
+## Prefer free models
 
-Prefer free models: run `opencode models` and treat every id matching `^opencode/.*-free$` (provider `opencode`, no API key required) as free. Pick the free model that best fits the task and prefer it over paid models. Only use a paid model when no free model can do the task.
-
-Before selecting, go through all configured providers and check that their URL is reachable and, where an API key is configured, that the key works: call the provider's v1/models endpoint and expect HTTP 200. Never print or store an API key.
+Pick the free model that best fits the task and prefer it over paid models. Only use a paid model when no free model can do the task.
 
 The following models are very weak. Only use when nothing else is available:
 
