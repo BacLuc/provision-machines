@@ -66,3 +66,9 @@ jsonnet_bundler_checksum = "424be2836ffee389d93a8cb873eb891a69fef4509026c7c1a825
 
 use `./scripts/update-renovate-snapshot.sh` to check if the dependency can be extracted,
 and update the snapshot if you changed something where a dependency is used, or if you changed renovate.json.
+
+/completion-check-command
+
+```bash
+./scripts/completion-check
+```
