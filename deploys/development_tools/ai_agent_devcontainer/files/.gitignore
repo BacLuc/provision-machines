@@ -14,7 +14,7 @@
 !/tui.json
 !/opencode.jsonc
 !themes/
-!themes/github-dark.json
+!themes/github-dark-default.json
 !/start-ai-agent-devcontainer.sh
 !/shell-ai-agent-devcontainer.sh
 !/init-home.sh
