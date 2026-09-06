@@ -46,6 +46,12 @@ The tester agent thoroughly validates all changes made by previous agents by exe
 10. Document testing results and any fixes applied
 11. Return testing results to coordinator
 
+## Changing github actions
+
+If you changed github action workflows and have
+a way to trigger them, e.g. in a fork or a separate repository:
+Run the workflow with different inputs that might break it and verify that it behaves as expected.
+
 ## Key Principles
 
 - Test thoroughly but efficiently
