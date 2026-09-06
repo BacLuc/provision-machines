@@ -47,7 +47,7 @@ Only continue after you are working on the correct branch.
 If available, authenticate github cli `gh cli` with BACLUC_AGENT_GITHUB_TOKEN.
 
 If you are running in a github_action, e.g. BACLUC_AGENT_GITHUB_TOKEN is available,
-always track your progress in the issue. Post a link of the current action run in the issue as comment.
+always track your progress in the issue. Post a link of the current action run in the issue as comment and the model that is used.
 Then comment all your findings, progress and results as comments to the issue.
 Instruct the subagents to do that too.
 
