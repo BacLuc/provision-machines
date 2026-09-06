@@ -1,4 +1,5 @@
 import io
+import json
 
 from pyinfra import host
 from pyinfra.facts.files import Directory
@@ -27,11 +28,27 @@ if host.data.openwebui["enabled"]:
         mode="755",
     )
 
-    files.sync(
+    searxng_files = files.sync(
         name="Copy searngx directory",
         src=f"{dirname_of(__file__)}/files/searngx",
         dest=f"{compose_project_dir}/searngx",
         mode="755",
+        exclude="*/settings.yml",
+    )
+
+    with open(f"{dirname_of(__file__)}/files/searngx/settings.yml") as settings_template:
+        settings = settings_template.read().replace(
+            '"${BRAVE_API_KEY}"', json.dumps(host.data.openwebui["BRAVE_API_KEY"])
+        )
+
+    settings_file = files.put(
+        name="Deploy searxng settings.yml",
+        src=io.StringIO(settings),
+        dest=f"{compose_project_dir}/searngx/settings.yml",
+        user=user,
+        group=user,
+        mode="600",
+        _sudo=True,
     )
 
     compose_file = files.put(
@@ -43,16 +60,10 @@ if host.data.openwebui["enabled"]:
         mode="644",
     )
 
-    env_file = files.put(
-        name="Deploy .env file",
-        src=io.StringIO(
-            f"""BRAVE_API_KEY={host.data.openwebui["BRAVE_API_KEY"]}
-        """
-        ),
-        dest=f"{compose_project_dir}/.env",
-        user=user,
-        group=user,
-        mode="644",
+    files.file(
+        name="Remove stale .env file",
+        path=f"{compose_project_dir}/.env",
+        present=False,
     )
 
     systemd_file = files.put(
@@ -94,5 +105,5 @@ WantedBy=multi-user.target
         enabled=True,
         restarted=True,
         _sudo=True,
-        _if=lambda: systemd_file.changed or compose_file.changed,
+        _if=lambda: searxng_files.changed or settings_file.changed or systemd_file.changed or compose_file.changed,
     )

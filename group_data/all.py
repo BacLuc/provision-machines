@@ -305,6 +305,7 @@ php_development = {
 
 openwebui = {
     "enabled": True,
+    "BRAVE_API_KEY": "",
 }
 
 vagrant = {
