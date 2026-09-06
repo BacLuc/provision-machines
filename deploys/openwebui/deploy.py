@@ -34,6 +34,24 @@ if host.data.openwebui["enabled"]:
         mode="755",
     )
 
+    # Replace ${BRAVE_API_KEY} placeholder in settings.yml with the actual key value,
+    # since searxng does not expand environment variables in the api_key field at runtime.
+    settings_src = f"{dirname_of(__file__)}/files/searngx/settings.yml"
+    settings_dest = f"{compose_project_dir}/searngx/settings.yml"
+    with open(settings_src) as _f:
+        _settings_content = _f.read()
+    _settings_content = _settings_content.replace(
+        "${BRAVE_API_KEY}", host.data.openwebui["BRAVE_API_KEY"]
+    )
+    files.put(
+        name="Deploy processed settings.yml",
+        src=io.StringIO(_settings_content),
+        dest=settings_dest,
+        user=user,
+        group=user,
+        mode="644",
+    )
+
     compose_file = files.put(
         name="Deploy docker-compose.yml",
         src=f"{dirname_of(__file__)}/files/docker-compose.yml",
