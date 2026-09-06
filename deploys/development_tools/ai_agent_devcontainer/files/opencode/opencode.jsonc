@@ -70,7 +70,8 @@
       "npm": "@ai-sdk/anthropic",
       "name": "opencode-go-anthropic",
       "options": {
-        "baseURL": "https://opencode.ai/zen/go/v1/messages"
+        "baseURL": "https://opencode.ai/zen/go/v1/messages",
+        "apiKey": "{env:OPENCODE_GO_API_KEY}"
       },
       "models": {
         "minimax-m2.7": {
@@ -100,7 +101,8 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "opencode-go-openai",
       "options": {
-        "baseURL": "https://opencode.ai/zen/go/v1"
+        "baseURL": "https://opencode.ai/zen/go/v1",
+        "apiKey": "{env:OPENCODE_GO_API_KEY}"
       },
       "models": {
         "deepseek-v4-flash": {
@@ -217,7 +219,8 @@
       "npm": "@ai-sdk/anthropic",
       "name": "opencode-go-anthropic-2",
       "options": {
-        "baseURL": "https://opencode.ai/zen/go/v1/messages"
+        "baseURL": "https://opencode.ai/zen/go/v1/messages",
+        "apiKey": "{env:OPENCODE_GO_2_API_KEY}"
       },
       "models": {
         "minimax-m2.7": {
@@ -247,7 +250,8 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "opencode-go-openai-2",
       "options": {
-        "baseURL": "https://opencode.ai/zen/go/v1"
+        "baseURL": "https://opencode.ai/zen/go/v1",
+        "apiKey": "{env:OPENCODE_GO_2_API_KEY}"
       },
       "models": {
         "deepseek-v4-flash": {
