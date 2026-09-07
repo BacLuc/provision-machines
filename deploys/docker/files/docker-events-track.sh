@@ -43,9 +43,9 @@ delete_usage_metadata() {
 }
 
 if [ -n "${DOCKER_EVENTS_TRACKER_INPUT:-}" ]; then
-    event_source_cmd=(cat "$DOCKER_EVENTS_TRACKER_INPUT")
+  event_source_cmd=(cat "$DOCKER_EVENTS_TRACKER_INPUT")
 else
-    event_source_cmd=(docker events --format '{{json .}}')
+  event_source_cmd=(docker events --format '{{json .}}')
 fi
 "${event_source_cmd[@]}" 2>/dev/null | while read -r event; do
   [ -z "$event" ] && continue
