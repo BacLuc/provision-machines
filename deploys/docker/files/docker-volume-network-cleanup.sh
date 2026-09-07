@@ -52,7 +52,21 @@ if [ -d "$VOLUME_USAGE_DIR" ]; then
 
     [ -z "$vol_name" ] && continue
     echo "$vol_name" | grep -qE '^[0-9a-f]{64}$' && { echo -e "${YELLOW}[SKIP]${NC} $vol_name (anonymous volume)"; skipped_count=$((skipped_count + 1)); if [ "$DRY_RUN" != "true" ]; then rm -f "$metadata_file"; fi; continue; }
-    echo "$vol_name" | grep -qE '(/|kubelet|kubernetes\.io)' && { echo -e "${YELLOW}[SKIP]${NC} $vol_name (local-path/k8s volume)"; skipped_count=$((skipped_count + 1)); if [ "$DRY_RUN" != "true" ]; then rm -f "$metadata_file"; fi; continue; }
+    labels=$(docker volume inspect "$vol_name" --format '{{index .Labels "com.docker.compose.project"}}' 2>/dev/null || true)
+    if [ -n "$labels" ]; then
+        echo -e "${YELLOW}[SKIP]${NC} $vol_name (docker-compose volume: $labels)"
+        skipped_count=$((skipped_count + 1))
+        if [ "$DRY_RUN" != "true" ]; then rm -f "$metadata_file"; fi
+        continue
+    fi
+    vol_labels=$(docker volume inspect "$vol_name" --format '{{json .Labels}}' 2>/dev/null || true)
+    vol_options=$(docker volume inspect "$vol_name" --format '{{json .Options}}' 2>/dev/null || true)
+    if echo "$vol_labels $vol_options" | grep -qiE '(k8s\.io|kubernetes\.io|csi)'; then
+        echo -e "${YELLOW}[SKIP]${NC} $vol_name (externally-provisioned volume)"
+        skipped_count=$((skipped_count + 1))
+        if [ "$DRY_RUN" != "true" ]; then rm -f "$metadata_file"; fi
+        continue
+    fi
 
     if [ "$last_used" = "0" ]; then
       echo -e "${YELLOW}[KEEP]${NC} $vol_name — no timestamp in metadata"
