@@ -5,6 +5,7 @@ set -euo pipefail
 SIZE_THRESHOLD_MB="200"
 SIZE_THRESHOLD=$((SIZE_THRESHOLD_MB * 1024 * 1024))
 AGE_THRESHOLD_DAYS=60
+DRY_RUN=${DRY_RUN:-true}
 
 resolve_home() {
   local home_dir=""
@@ -117,8 +118,6 @@ while IFS= read -r image_info; do
     echo -e "${RED}[DELETE]${NC} $image_name (ID: $image_id)"
     echo "  Size: ${size_mb} MB ($size_bytes bytes)"
     echo "  Age: $days_old"
-
-    DRY_RUN=${DRY_RUN:-true}
 
     if [[ "$DRY_RUN" != "true" ]]; then
         if docker rmi "$image_id" > /dev/null 2>&1; then

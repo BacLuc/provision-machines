@@ -2,6 +2,8 @@
 
 set -e
 
+CLEANUP_USER="${CLEANUP_USER:-}"
+CLEANUP_HOME="${CLEANUP_HOME:-}"
 export CLEANUP_USER CLEANUP_HOME
 
 log() {
