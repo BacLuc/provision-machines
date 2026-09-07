@@ -1,6 +1,10 @@
-#/bin/sh
+#!/bin/sh
 
 set -e
+
+CLEANUP_USER="${CLEANUP_USER:-}"
+CLEANUP_HOME="${CLEANUP_HOME:-}"
+export CLEANUP_USER CLEANUP_HOME
 
 log() {
   systemd-cat -t update-script -p info echo "$*"
@@ -19,6 +23,6 @@ cleanup_scripts_dir=${SCRIPT_DIR}/cleanup_scripts.d
 for script in $(ls ${cleanup_scripts_dir}); do
   log "Running ${cleanup_scripts_dir}/${script}"
   if [ -x "${cleanup_scripts_dir}/${script}" ]; then
-    log $(${cleanup_scripts_dir}/${script} 2>&1)
+    log "$(${cleanup_scripts_dir}/${script} 2>&1)"
   fi
 done
