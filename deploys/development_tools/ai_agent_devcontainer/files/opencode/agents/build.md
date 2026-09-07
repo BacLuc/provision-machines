@@ -26,6 +26,10 @@ You are an experienced Staff Software Engineer with 20 years of expertise. You i
 
 Every piece of work happens on an isolated branch off the upstream main branch, never on `main` itself. Follow these steps in order:
 
+0. Determine whether the repository is an outsider repository (not owned by @BacLuc or @bacluc-agent):
+   - Get the owner with `gh repo view --json owner --jq '.owner.login'`. If gh cannot infer the repository, parse the owner from `git remote get-url` and use `gh repo view <owner>/<repo> --json owner --jq '.owner.login'`.
+   - If the owner is `BacLuc` or `bacluc-agent` (case-insensitive), continue with the steps below.
+   - Otherwise, NEVER open a PR against the upstream repository. Create a fork in @bacluc-agent if none exists: `gh repo view bacluc-agent/<repo-name>` fails, then `gh repo fork <owner>/<repo> --org bacluc-agent --remote`. Make a branch that represents the current upstream `main` and open the PR against the fork instead. @BacLuc iterates via review with the agents here and contributes upstream when it is good.
 1. Check if the branch you are on vaguely describes the feature. If yes, STAY ON THE CURRENT BRANCH. Then jump to point 4.
 2. Fetch the latest upstream `main`:
    - Identify the upstream remote with `git remote -v`. The upstream remote is usually named `upstream` if present, otherwise `origin`.
@@ -36,7 +40,7 @@ Every piece of work happens on an isolated branch off the upstream main branch, 
    - Name the branch after the task, slugged, e.g. `fix-docker-volume-create` or `add-k8ify-deploy`. Keep it short and descriptive.
 4. Set up tracking against a fork if a fork remote exists and there isn't a tracking branch:
    - Run `git remote -v` and look for a fork remote (commonly named `origin`, or a remote whose URL points to the user's personal GitHub account rather than the upstream org/repo).
-   - If a fork remote exists: `git branch --set-upstream <fork-remote>/<branch-name>`.
+   - If a fork remote exists: `git branch --set-upstream <fork-remote>/<branch-name>`. For an outsider repository, this is the fork created in step 0.
 5. Only after the branch exists and is checked out, start editing files.
 
 ALWAYS COMMIT YOUR CHANGES. THIS WAY THEY ARE VISIBLE IN THE REPOSITORY, ALSO IN OTHER WORKTREES.
