@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -19,6 +20,14 @@ _SCRIPT = os.path.join(
     "docker",
     "files",
     "docker-volume-network-cleanup.sh",
+)
+
+_TRACKER_SCRIPT = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "deploys",
+    "docker",
+    "files",
+    "docker-events-track.sh",
 )
 
 _STUB = """#!/bin/bash
@@ -98,10 +107,46 @@ case "$cmd" in
           [ -n "$filter" ] && echo "$filter"
         fi
         ;;
+      inspect)
+        name="$1"; shift
+        fmt=""
+        while [ $# -gt 0 ]; do
+          if [ "$1" = "--format" ]; then shift; fmt="$1"; fi
+          shift
+        done
+        safe_name=$(echo "$name" | tr '/' '-' | tr ':' '_' | tr '-' '_')
+        if echo "$fmt" | grep -q "com.docker.compose.project"; then
+          for v in $STUB_COMPOSE_VOLUMES; do
+            [ "$v" = "$name" ] && echo "compose-project"
+          done
+        elif echo "$fmt" | grep -q '{{json .Labels}}'; then
+          labels_var="STUB_VOLUME_LABELS_${safe_name}"
+          echo "${!labels_var:-{}}"
+        elif echo "$fmt" | grep -q '{{json .Options}}'; then
+          options_var="STUB_VOLUME_OPTIONS_${safe_name}"
+          echo "${!options_var:-{}}"
+        fi
+        ;;
       rm)
         echo "$1" >> "$STUB_LOG"
         ;;
     esac
+    ;;
+  inspect)
+    cid="$1"; shift
+    fmt=""
+    while [ $# -gt 0 ]; do
+      if [ "$1" = "--format" ]; then shift; fmt="$1"; fi
+      shift
+    done
+    safe_cid=$(echo "$cid" | tr '-' '_')
+    if echo "$fmt" | grep -q "Mounts"; then
+      vols_var="STUB_CONTAINER_VOLUMES_${safe_cid}"
+      echo "${!vols_var:-}"
+    elif echo "$fmt" | grep -q "NetworkSettings.Networks"; then
+      nets_var="STUB_CONTAINER_NETWORKS_${safe_cid}"
+      echo "${!nets_var:-}"
+    fi
     ;;
 esac
 """
@@ -109,6 +154,14 @@ esac
 _GETENT_STUB = """#!/bin/bash
 if [ "$1" = "passwd" ] && [ "$2" = "${GETENT_HOME_USER:-}" ]; then
   echo "${GETENT_HOME_USER}:x:1000:1000::${GETENT_HOME_DIR}:/bin/bash"
+fi
+"""
+
+_DATE_STUB = """#!/bin/bash
+if [ -n "${STUB_DATE_EPOCH:-}" ]; then
+  echo "$STUB_DATE_EPOCH"
+else
+  exec /usr/bin/date "$@"
 fi
 """
 
@@ -130,6 +183,8 @@ def _make_stub_dir(tmp_path: Path) -> Path:
     (stub_dir / "docker").chmod(0o755)
     (stub_dir / "getent").write_text(_GETENT_STUB)
     (stub_dir / "getent").chmod(0o755)
+    (stub_dir / "date").write_text(_DATE_STUB)
+    (stub_dir / "date").chmod(0o755)
     return stub_dir
 
 
@@ -146,6 +201,7 @@ def _run_cleanup(
         "STUB_REFERENCED_VOLUMES": "ref-vol",
         "STUB_REFERENCED_NETWORKS": "ref-net",
         "STUB_COMPOSE_NETWORKS": "",
+        "STUB_COMPOSE_VOLUMES": "",
         "STUB_EXISTING_VOLUMES": "",
         "STUB_EXISTING_NETWORKS": "",
         "STUB_LOG": os.path.join(tmp, "rm.log"),
@@ -161,6 +217,22 @@ def _run_cleanup(
 def _rm_log_text(tmp: Path) -> str:
     rm_log = tmp / "rm.log"
     return rm_log.read_text() if rm_log.exists() else ""
+
+
+def _run_tracker(
+    tmp_path: Path,
+    events_file: Path,
+    extra_env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    stub_dir = _make_stub_dir(tmp_path)
+    env = {
+        "HOME": str(tmp_path),
+        "PATH": f"{stub_dir}:{os.environ['PATH']}",
+        "DOCKER_EVENTS_TRACKER_INPUT": str(events_file),
+    }
+    if extra_env:
+        env.update(extra_env)
+    return subprocess.run(["bash", _TRACKER_SCRIPT], env=env, capture_output=True, text=True)
 
 
 def test_cleanup_deletes_only_tracked_idle_unreferenced(tmp_path: Path) -> None:
@@ -366,27 +438,55 @@ def test_cleanup_anonymous_volumes_are_skipped(tmp_path: Path) -> None:
 def test_cleanup_local_path_and_k8s_volumes_are_skipped(tmp_path: Path) -> None:
     now = int(time.time())
     stale = now - 61 * 86400
-    names = ["/var/lib/docker/volumes/app/_data", "kubelet", "kubernetes.io/pvc-123"]
-    for name in names:
+    volumes = [
+        ("pvc-123", {"STUB_VOLUME_LABELS_pvc_123": '{"kubernetes.io/created-for-pvc/name":"my-pvc"}'}),
+        ("csi-vol", {"STUB_VOLUME_OPTIONS_csi_vol": '{"csi.storage.k8s.io/pvc/name":"app"}'}),
+        ("k8s-vol", {"STUB_VOLUME_LABELS_k8s_vol": '{"something.k8s.io/managed":"true"}'}),
+    ]
+    for name, _ in volumes:
         _write_metadata(tmp_path, "volume", name, stale)
     stub_dir = _make_stub_dir(tmp_path)
     vol_dir = tmp_path / ".local/share/docker-volume-usage"
+    extra_env: dict[str, str] = {}
+    for _, env in volumes:
+        extra_env.update(env)
 
-    dry = _run_cleanup(str(tmp_path), "true", stub_dir)
+    dry = _run_cleanup(str(tmp_path), "true", stub_dir, extra_env)
     assert dry.returncode == 0, dry.stderr
-    for name in names:
-        safe = name.replace("/", "-").replace(":", "_")
-        assert (vol_dir / f"{safe}.json").exists()
+    for name, _ in volumes:
+        assert (vol_dir / f"{name}.json").exists()
 
-    result = _run_cleanup(str(tmp_path), "false", stub_dir)
+    result = _run_cleanup(str(tmp_path), "false", stub_dir, extra_env)
     assert result.returncode == 0, result.stderr
     stdout = _strip_ansi(result.stdout)
-    assert "local-path/k8s volume" in stdout
+    assert "externally-provisioned volume" in stdout
     assert not (tmp_path / "rm.log").exists()
-    for name in names:
-        safe = name.replace("/", "-").replace(":", "_")
-        assert not (vol_dir / f"{safe}.json").exists()
+    for name, _ in volumes:
+        assert not (vol_dir / f"{name}.json").exists()
         assert f"[SKIP] {name}" in stdout
+
+
+def test_cleanup_compose_volumes_are_skipped(tmp_path: Path) -> None:
+    now = int(time.time())
+    stale = now - 61 * 86400
+    vol_name = "compose-vol"
+    _write_metadata(tmp_path, "volume", vol_name, stale)
+    stub_dir = _make_stub_dir(tmp_path)
+    vol_dir = tmp_path / ".local/share/docker-volume-usage"
+    extra_env = {"STUB_COMPOSE_VOLUMES": vol_name}
+
+    dry = _run_cleanup(str(tmp_path), "true", stub_dir, extra_env)
+    assert dry.returncode == 0, dry.stderr
+    assert (vol_dir / f"{vol_name}.json").exists()
+    assert f"[SKIP] {vol_name}" in _strip_ansi(dry.stdout)
+
+    result = _run_cleanup(str(tmp_path), "false", stub_dir, extra_env)
+    assert result.returncode == 0, result.stderr
+    stdout = _strip_ansi(result.stdout)
+    assert not (vol_dir / f"{vol_name}.json").exists()
+    assert f"[SKIP] {vol_name}" in stdout
+    assert "docker-compose volume" in stdout
+    assert not (tmp_path / "rm.log").exists()
 
 
 def test_cleanup_compose_networks_are_skipped(tmp_path: Path) -> None:
@@ -532,3 +632,106 @@ def test_cleanup_tolerates_corrupt_metadata(tmp_path: Path) -> None:
     assert (vol_dir / "corrupt-vol.json").exists()
     assert (net_dir / "corrupt-net.json").exists()
     assert not (tmp_path / "rm.log").exists()
+
+
+def test_tracker_volume_create_writes_metadata(tmp_path: Path) -> None:
+    events_file = tmp_path / "events.jsonl"
+    events_file.write_text('{"Type":"volume","Action":"create","Actor":{"ID":"my-vol","Attributes":{}}}\n')
+    result = _run_tracker(tmp_path, events_file, {"STUB_DATE_EPOCH": "1234567890"})
+    assert result.returncode == 0, result.stderr
+
+    metadata = tmp_path / ".local/share/docker-volume-usage/my-vol.json"
+    assert metadata.exists()
+    data = json.loads(metadata.read_text())
+    assert data["name"] == "my-vol"
+    assert data["last_used"] == 1234567890
+
+
+def test_tracker_volume_mount_refreshes_last_used(tmp_path: Path) -> None:
+    metadata = tmp_path / ".local/share/docker-volume-usage/my-vol.json"
+    metadata.parent.mkdir(parents=True)
+    metadata.write_text('{"kind":"volume","name":"my-vol","last_used":1000}')
+    events_file = tmp_path / "events.jsonl"
+    events_file.write_text('{"Type":"volume","Action":"mount","Actor":{"ID":"my-vol","Attributes":{}}}\n')
+    result = _run_tracker(tmp_path, events_file, {"STUB_DATE_EPOCH": "1234567890"})
+    assert result.returncode == 0, result.stderr
+
+    data = json.loads(metadata.read_text())
+    assert data["last_used"] == 1234567890
+
+
+def test_tracker_container_start_refreshes_volumes_and_networks(tmp_path: Path) -> None:
+    events_file = tmp_path / "events.jsonl"
+    events_file.write_text(
+        '{"Type":"container","Action":"start","Actor":{"ID":"abc123","Attributes":{"image":"my-image"}}}\n'
+    )
+    result = _run_tracker(
+        tmp_path,
+        events_file,
+        {
+            "STUB_DATE_EPOCH": "1234567890",
+            "STUB_CONTAINER_VOLUMES_abc123": "vol-a vol-b",
+            "STUB_CONTAINER_NETWORKS_abc123": "net-a net-b",
+        },
+    )
+    assert result.returncode == 0, result.stderr
+
+    for name in ["vol-a", "vol-b"]:
+        metadata = tmp_path / f".local/share/docker-volume-usage/{name}.json"
+        assert metadata.exists(), name
+        data = json.loads(metadata.read_text())
+        assert data["name"] == name
+        assert data["last_used"] == 1234567890
+    for name in ["net-a", "net-b"]:
+        metadata = tmp_path / f".local/share/docker-network-usage/{name}.json"
+        assert metadata.exists(), name
+        data = json.loads(metadata.read_text())
+        assert data["name"] == name
+        assert data["last_used"] == 1234567890
+    image_metadata = tmp_path / ".local/share/docker-image-usage/my-image.json"
+    assert image_metadata.exists()
+    data = json.loads(image_metadata.read_text())
+    assert data["name"] == "my-image"
+    assert data["last_used"] == 1234567890
+
+
+def test_tracker_destroy_deletes_metadata(tmp_path: Path) -> None:
+    metadata = tmp_path / ".local/share/docker-volume-usage/my-vol.json"
+    metadata.parent.mkdir(parents=True)
+    metadata.write_text('{"kind":"volume","name":"my-vol","last_used":1000}')
+    events_file = tmp_path / "events.jsonl"
+    events_file.write_text('{"Type":"volume","Action":"destroy","Actor":{"ID":"my-vol","Attributes":{}}}\n')
+    result = _run_tracker(tmp_path, events_file)
+    assert result.returncode == 0, result.stderr
+
+    assert not metadata.exists()
+
+
+def test_tracker_older_event_does_not_overwrite_newer_last_used(tmp_path: Path) -> None:
+    metadata = tmp_path / ".local/share/docker-volume-usage/my-vol.json"
+    metadata.parent.mkdir(parents=True)
+    metadata.write_text('{"kind":"volume","name":"my-vol","last_used":2000}')
+    events_file = tmp_path / "events.jsonl"
+    events_file.write_text('{"Type":"volume","Action":"mount","Actor":{"ID":"my-vol","Attributes":{}}}\n')
+    result = _run_tracker(tmp_path, events_file, {"STUB_DATE_EPOCH": "1000"})
+    assert result.returncode == 0, result.stderr
+
+    data = json.loads(metadata.read_text())
+    assert data["last_used"] == 2000
+
+
+def test_tracker_image_pull_and_container_start_image_tracking(tmp_path: Path) -> None:
+    events_file = tmp_path / "events.jsonl"
+    events_file.write_text(
+        '{"Type":"image","Action":"pull","Actor":{"Attributes":{"name":"pulled-image"}}}\n'
+        '{"Type":"container","Action":"start","Actor":{"ID":"abc123","Attributes":{"image":"started-image"}}}\n'
+    )
+    result = _run_tracker(tmp_path, events_file, {"STUB_DATE_EPOCH": "1234567890"})
+    assert result.returncode == 0, result.stderr
+
+    pulled = tmp_path / ".local/share/docker-image-usage/pulled-image.json"
+    started = tmp_path / ".local/share/docker-image-usage/started-image.json"
+    assert pulled.exists()
+    assert started.exists()
+    assert json.loads(pulled.read_text())["last_used"] == 1234567890
+    assert json.loads(started.read_text())["last_used"] == 1234567890
