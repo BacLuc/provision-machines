@@ -366,7 +366,8 @@
     },
     "cortecs2": {
       "options": {
-        "baseURL": "https://api.cortecs.ai/v1"
+        "baseURL": "https://api.cortecs.ai/v1",
+        "apiKey": "{env:VSHN_US_AI_API_KEY}"
       },
       "models": {
         "kimi-k2.6": {
