@@ -16,6 +16,7 @@ VOLUME_USAGE_DIR="${HOME}/.local/share/docker-volume-usage"
 NETWORK_USAGE_DIR="${HOME}/.local/share/docker-network-usage"
 
 # Allow override for root-run cleanup scripts (cleanup-script.sh runs as root)
+CLEANUP_USER="${CLEANUP_USER:-}"
 if [ -n "${CLEANUP_USER:-}" ]; then
   HOME_BASE="/home/${CLEANUP_USER}"
   VOLUME_USAGE_DIR="${HOME_BASE}/.local/share/docker-volume-usage"

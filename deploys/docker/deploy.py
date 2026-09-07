@@ -209,3 +209,12 @@ if host.data.docker["enabled"]:
             _sudo=True,
             mode="755",
         )
+
+        files.line(
+            name="Set CLEANUP_USER in docker volume/network cleanup script",
+            path=f"{host.data.cleanup_scripts['dir']}/docker-volume-network-cleanup",
+            line="^CLEANUP_USER=",
+            replace=f'CLEANUP_USER="${{CLEANUP_USER:-{user}}}"',
+            present=True,
+            _sudo=True,
+        )

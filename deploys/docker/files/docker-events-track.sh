@@ -62,9 +62,18 @@ docker events --format '{{json .}}' 2>/dev/null | while read -r event; do
 
   case "$event_type" in
     "container.start")
+      cid=$(echo "$event" | jq -r '.Actor.ID' 2>/dev/null)
       image=$(echo "$event" | jq -r '.Actor.Attributes.image' 2>/dev/null)
       if [ -n "$image" ] && [ "$image" != "null" ]; then
         write_usage_metadata "image" "$image" "$METADATA_DIR"
+      fi
+      if [ -n "$cid" ] && [ "$cid" != "null" ]; then
+        for vol in $(docker inspect "$cid" --format '{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}} {{end}}{{end}}' 2>/dev/null); do
+          write_usage_metadata "volume" "$vol" "$VOLUME_USAGE_DIR"
+        done
+        for net in $(docker inspect "$cid" --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}' 2>/dev/null); do
+          write_usage_metadata "network" "$net" "$NETWORK_USAGE_DIR"
+        done
       fi
       ;;
     "image.pull")
