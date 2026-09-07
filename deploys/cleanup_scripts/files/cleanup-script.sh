@@ -23,6 +23,6 @@ cleanup_scripts_dir=${SCRIPT_DIR}/cleanup_scripts.d
 for script in $(ls ${cleanup_scripts_dir}); do
   log "Running ${cleanup_scripts_dir}/${script}"
   if [ -x "${cleanup_scripts_dir}/${script}" ]; then
-    log $(${cleanup_scripts_dir}/${script} 2>&1)
+    log "$(${cleanup_scripts_dir}/${script} 2>&1)"
   fi
 done
