@@ -16,7 +16,7 @@
       "opencode-auto-resume@1.1.13",
       {
         "chunkTimeoutMs": 300000,
-        "maxRetries": 10
+        "maxRetries": 3
       }
     ]
   ],
