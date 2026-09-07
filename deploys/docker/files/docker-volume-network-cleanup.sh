@@ -48,8 +48,8 @@ if [ -d "$VOLUME_USAGE_DIR" ]; then
     last_used=$(jq -r '.last_used // 0' "$metadata_file" 2>/dev/null)
 
     [ -z "$vol_name" ] && continue
-    echo "$vol_name" | grep -qE '^[0-9a-f]{64}$' && { echo -e "${YELLOW}[SKIP]${NC} $vol_name (anonymous volume)"; skipped_count=$((skipped_count + 1)); continue; }
-    echo "$vol_name" | grep -qE '(local-path|k8s)' && { echo -e "${YELLOW}[SKIP]${NC} $vol_name (local-path/k8s volume)"; skipped_count=$((skipped_count + 1)); continue; }
+    echo "$vol_name" | grep -qE '^[0-9a-f]{64}$' && { echo -e "${YELLOW}[SKIP]${NC} $vol_name (anonymous volume)"; skipped_count=$((skipped_count + 1)); if [ "$DRY_RUN" != "true" ]; then rm -f "$metadata_file"; fi; continue; }
+    echo "$vol_name" | grep -qE '(/|kubelet|kubernetes\.io)' && { echo -e "${YELLOW}[SKIP]${NC} $vol_name (local-path/k8s volume)"; skipped_count=$((skipped_count + 1)); if [ "$DRY_RUN" != "true" ]; then rm -f "$metadata_file"; fi; continue; }
 
     if [ "$last_used" = "0" ]; then
       echo -e "${YELLOW}[KEEP]${NC} $vol_name — no timestamp in metadata"
@@ -126,6 +126,9 @@ if [ -d "$NETWORK_USAGE_DIR" ]; then
     if [ -n "$labels" ]; then
       echo -e "${YELLOW}[SKIP]${NC} $net_name (docker-compose network: $labels)"
       skipped_count=$((skipped_count + 1))
+      if [ "$DRY_RUN" != "true" ]; then
+        rm -f "$metadata_file"
+      fi
       continue
     fi
 

@@ -83,7 +83,8 @@ def _write_metadata(base: Path, kind: str, name: str, last_used: int) -> None:
     else:
         metadata_dir = base / ".local/share/docker-network-usage"
     metadata_dir.mkdir(parents=True, exist_ok=True)
-    (metadata_dir / f"{name}.json").write_text(f'{{"kind": "{kind}", "name": "{name}", "last_used": {last_used}}}')
+    safe_name = name.replace("/", "-").replace(":", "_")
+    (metadata_dir / f"{safe_name}.json").write_text(f'{{"kind": "{kind}", "name": "{name}", "last_used": {last_used}}}')
 
 
 def _make_stub_dir(tmp_path: Path) -> Path:
@@ -296,3 +297,73 @@ def test_cleanup_resolves_home_from_home_fallback(tmp_path: Path) -> None:
 
     assert not (tmp_path / ".local/share/docker-volume-usage/stale-vol.json").exists()
     assert "stale-vol" in (tmp_path / "rm.log").read_text()
+
+
+def test_cleanup_anonymous_volumes_are_skipped(tmp_path: Path) -> None:
+    now = int(time.time())
+    stale = now - 61 * 86400
+    anon = "a" * 64
+    _write_metadata(tmp_path, "volume", anon, stale)
+    stub_dir = _make_stub_dir(tmp_path)
+
+    dry = _run_cleanup(str(tmp_path), "true", stub_dir)
+    assert dry.returncode == 0, dry.stderr
+    assert (tmp_path / ".local/share/docker-volume-usage" / f"{anon}.json").exists()
+    assert f"[SKIP] {anon}" in _strip_ansi(dry.stdout)
+
+    result = _run_cleanup(str(tmp_path), "false", stub_dir)
+    assert result.returncode == 0, result.stderr
+    stdout = _strip_ansi(result.stdout)
+    assert not (tmp_path / ".local/share/docker-volume-usage" / f"{anon}.json").exists()
+    assert f"[SKIP] {anon}" in stdout
+    assert "anonymous volume" in stdout
+    assert not (tmp_path / "rm.log").exists()
+
+
+def test_cleanup_local_path_and_k8s_volumes_are_skipped(tmp_path: Path) -> None:
+    now = int(time.time())
+    stale = now - 61 * 86400
+    names = ["/var/lib/docker/volumes/app/_data", "kubelet", "kubernetes.io/pvc-123"]
+    for name in names:
+        _write_metadata(tmp_path, "volume", name, stale)
+    stub_dir = _make_stub_dir(tmp_path)
+    vol_dir = tmp_path / ".local/share/docker-volume-usage"
+
+    dry = _run_cleanup(str(tmp_path), "true", stub_dir)
+    assert dry.returncode == 0, dry.stderr
+    for name in names:
+        safe = name.replace("/", "-").replace(":", "_")
+        assert (vol_dir / f"{safe}.json").exists()
+
+    result = _run_cleanup(str(tmp_path), "false", stub_dir)
+    assert result.returncode == 0, result.stderr
+    stdout = _strip_ansi(result.stdout)
+    assert "local-path/k8s volume" in stdout
+    assert not (tmp_path / "rm.log").exists()
+    for name in names:
+        safe = name.replace("/", "-").replace(":", "_")
+        assert not (vol_dir / f"{safe}.json").exists()
+        assert f"[SKIP] {name}" in stdout
+
+
+def test_cleanup_compose_networks_are_skipped(tmp_path: Path) -> None:
+    now = int(time.time())
+    stale = now - 61 * 86400
+    net_name = "compose-net"
+    _write_metadata(tmp_path, "network", net_name, stale)
+    stub_dir = _make_stub_dir(tmp_path)
+    net_dir = tmp_path / ".local/share/docker-network-usage"
+    extra_env = {"STUB_COMPOSE_NETWORKS": net_name}
+
+    dry = _run_cleanup(str(tmp_path), "true", stub_dir, extra_env)
+    assert dry.returncode == 0, dry.stderr
+    assert (net_dir / f"{net_name}.json").exists()
+    assert f"[SKIP] {net_name}" in _strip_ansi(dry.stdout)
+
+    result = _run_cleanup(str(tmp_path), "false", stub_dir, extra_env)
+    assert result.returncode == 0, result.stderr
+    stdout = _strip_ansi(result.stdout)
+    assert not (net_dir / f"{net_name}.json").exists()
+    assert f"[SKIP] {net_name}" in stdout
+    assert "docker-compose network" in stdout
+    assert not (tmp_path / "rm.log").exists()
