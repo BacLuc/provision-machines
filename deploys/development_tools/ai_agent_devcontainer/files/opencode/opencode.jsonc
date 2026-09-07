@@ -420,6 +420,10 @@
     "vshn-us-ai": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "VSHN US AI",
+      "options": {
+        "baseURL": "{env:VSHN_US_BASE_URL}",
+        "apiKey": "{env:VSHN_US_AI_API_KEY}"
+      },
       "models": {
         "-claude-haiku-v45": {
           "name": "Claude Haiku 4.5 (preset)"
