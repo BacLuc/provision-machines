@@ -515,3 +515,20 @@ def test_cleanup_non_numeric_age_threshold_falls_back_to_default(tmp_path: Path)
     assert not (tmp_path / ".local/share/docker-network-usage/stale-net.json").exists()
     rm_log = (tmp_path / "rm.log").read_text()
     assert "stale-vol" in rm_log and "stale-net" in rm_log
+
+
+def test_cleanup_tolerates_corrupt_metadata(tmp_path: Path) -> None:
+    vol_dir = tmp_path / ".local/share/docker-volume-usage"
+    vol_dir.mkdir(parents=True)
+    (vol_dir / "corrupt-vol.json").write_text("not json")
+    net_dir = tmp_path / ".local/share/docker-network-usage"
+    net_dir.mkdir(parents=True)
+    (net_dir / "corrupt-net.json").write_text("not json")
+    stub_dir = _make_stub_dir(tmp_path)
+
+    result = _run_cleanup(str(tmp_path), "false", stub_dir)
+    assert result.returncode == 0, result.stderr
+
+    assert (vol_dir / "corrupt-vol.json").exists()
+    assert (net_dir / "corrupt-net.json").exists()
+    assert not (tmp_path / "rm.log").exists()

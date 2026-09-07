@@ -13,9 +13,9 @@ resolve_home() {
   if [ -n "${CLEANUP_HOME:-}" ]; then
     home_dir="$CLEANUP_HOME"
   elif [ -n "${CLEANUP_USER:-}" ]; then
-    home_dir=$(getent passwd "$CLEANUP_USER" | cut -d: -f6)
+    home_dir=$(getent passwd "$CLEANUP_USER" 2>/dev/null | cut -d: -f6 || true)
   elif [ -n "${SUDO_USER:-}" ]; then
-    home_dir=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+    home_dir=$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6 || true)
   fi
   if [ -z "$home_dir" ]; then
     home_dir="${HOME}"
@@ -47,8 +47,8 @@ if [ -d "$VOLUME_USAGE_DIR" ]; then
   for metadata_file in "${VOLUME_USAGE_DIR}"/*.json; do
     [ -f "$metadata_file" ] || continue
 
-    vol_name=$(jq -r '.name // empty' "$metadata_file" 2>/dev/null)
-    last_used=$(jq -r '.last_used // 0' "$metadata_file" 2>/dev/null)
+    vol_name=$(jq -r '.name // empty' "$metadata_file" 2>/dev/null || true)
+    last_used=$(jq -r '.last_used // 0' "$metadata_file" 2>/dev/null || true)
 
     [ -z "$vol_name" ] && continue
     echo "$vol_name" | grep -qE '^[0-9a-f]{64}$' && { echo -e "${YELLOW}[SKIP]${NC} $vol_name (anonymous volume)"; skipped_count=$((skipped_count + 1)); if [ "$DRY_RUN" != "true" ]; then rm -f "$metadata_file"; fi; continue; }
@@ -121,8 +121,8 @@ if [ -d "$NETWORK_USAGE_DIR" ]; then
   for metadata_file in "${NETWORK_USAGE_DIR}"/*.json; do
     [ -f "$metadata_file" ] || continue
 
-    net_name=$(jq -r '.name // empty' "$metadata_file" 2>/dev/null)
-    last_used=$(jq -r '.last_used // 0' "$metadata_file" 2>/dev/null)
+    net_name=$(jq -r '.name // empty' "$metadata_file" 2>/dev/null || true)
+    last_used=$(jq -r '.last_used // 0' "$metadata_file" 2>/dev/null || true)
 
     [ -z "$net_name" ] && continue
 

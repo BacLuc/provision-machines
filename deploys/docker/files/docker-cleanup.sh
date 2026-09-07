@@ -12,9 +12,9 @@ resolve_home() {
   if [ -n "${CLEANUP_HOME:-}" ]; then
     home_dir="$CLEANUP_HOME"
   elif [ -n "${CLEANUP_USER:-}" ]; then
-    home_dir=$(getent passwd "$CLEANUP_USER" | cut -d: -f6)
+    home_dir=$(getent passwd "$CLEANUP_USER" 2>/dev/null | cut -d: -f6 || true)
   elif [ -n "${SUDO_USER:-}" ]; then
-    home_dir=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+    home_dir=$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6 || true)
   fi
   if [ -z "$home_dir" ]; then
     home_dir="${HOME}"
