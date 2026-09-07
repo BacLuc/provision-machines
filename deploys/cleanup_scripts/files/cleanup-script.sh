@@ -2,6 +2,8 @@
 
 set -e
 
+export CLEANUP_USER CLEANUP_HOME
+
 log() {
   systemd-cat -t update-script -p info echo "$*"
   echo "$*"

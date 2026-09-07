@@ -1,33 +1,24 @@
 #!/bin/bash
 
-# Docker Image, Volume, and Network Usage Tracker - Background Service
-# This script runs continuously and tracks docker image, volume, and network usage by monitoring events
-# It stores the last used timestamp for each item in a metadata file
-
 METADATA_DIR="${HOME}/.local/share/docker-image-usage"
 VOLUME_USAGE_DIR="${HOME}/.local/share/docker-volume-usage"
 NETWORK_USAGE_DIR="${HOME}/.local/share/docker-network-usage"
 
-# Create metadata directories if they don't exist
 mkdir -p "$METADATA_DIR" "$VOLUME_USAGE_DIR" "$NETWORK_USAGE_DIR"
 
-# Function to write usage metadata
 write_usage_metadata() {
   local kind="$1"
   local name="$2"
   local dir="$3"
   [ -z "$name" ] && return
 
-  # Get current timestamp
   local current_time
   current_time=$(date +%s)
 
-  # Sanitize name for use as filename
   local safe_name
   safe_name=$(echo "$name" | tr '/' '-' | tr ':' '_')
   local metadata_file="${dir}/${safe_name}.json"
 
-  # Only update if this is newer than what we have
   if [ -f "$metadata_file" ]; then
     local previous_last_used
     previous_last_used=$(jq -r '.last_used // 0' "$metadata_file" 2>/dev/null || echo "0")
@@ -39,7 +30,6 @@ write_usage_metadata() {
   echo "{\"${kind}\": \"$name\", \"name\": \"$name\", \"last_used\": $current_time}" > "$metadata_file"
 }
 
-# Function to delete usage metadata
 delete_usage_metadata() {
   local name="$1"
   local dir="$2"
@@ -52,12 +42,9 @@ delete_usage_metadata() {
   rm -f "$metadata_file"
 }
 
-# Track container start, image pull, volume, and network events continuously
-# Using docker events --format with json to get structured data
 docker events --format '{{json .}}' 2>/dev/null | while read -r event; do
   [ -z "$event" ] && continue
 
-  # Extract event type and action from the JSON
   event_type=$(echo "$event" | jq -r '.Type + "." + .Action' 2>/dev/null)
 
   case "$event_type" in

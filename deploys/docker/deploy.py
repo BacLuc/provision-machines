@@ -152,7 +152,7 @@ if host.data.docker["enabled"]:
         mode="755",
     )
 
-    files.put(
+    track_script = files.put(
         name="Copy docker events tracking script",
         src=f"{dirname_of(__file__)}/files/docker-events-track.sh",
         dest=f"/home/{user}/.local/bin/docker-events-track.sh",
@@ -169,7 +169,7 @@ if host.data.docker["enabled"]:
         mode="755",
     )
 
-    files.put(
+    track_service = files.put(
         name="Copy docker events tracking service file",
         src=f"{dirname_of(__file__)}/files/docker-events-track.service",
         dest=f"/home/{user}/.config/systemd/user/docker-events-track.service",
@@ -191,6 +191,7 @@ if host.data.docker["enabled"]:
         commands=[
             "systemctl --user restart docker-events-track 2>/dev/null || true",
         ],
+        _if=lambda: track_script.changed or track_service.changed,
     )
 
     if host.data.cleanup_scripts["dir"]:
@@ -211,8 +212,8 @@ if host.data.docker["enabled"]:
         )
 
         files.line(
-            name="Set CLEANUP_USER in docker volume/network cleanup script",
-            path=f"{host.data.cleanup_scripts['dir']}/docker-volume-network-cleanup",
+            name="Set CLEANUP_USER in cleanup script",
+            path="/usr/local/bin/cleanup-script",
             line="^CLEANUP_USER=",
             replace=f'CLEANUP_USER="${{CLEANUP_USER:-{user}}}"',
             present=True,
