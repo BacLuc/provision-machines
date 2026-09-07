@@ -1,5 +1,5 @@
 [Unit]
-Description=Docker Image Usage Tracker
+Description=Docker Resource Usage Tracker (images, volumes, networks)
 After=docker.service
 PartOf=docker.service
 

@@ -12,14 +12,12 @@ AGE_THRESHOLD_DAYS=${AGE_THRESHOLD_DAYS:-60}
 DRY_RUN=${DRY_RUN:-true}
 
 # Directories for metadata (written by docker-events-track.sh)
-IMAGE_USAGE_DIR="${HOME}/.local/share/docker-image-usage"
 VOLUME_USAGE_DIR="${HOME}/.local/share/docker-volume-usage"
 NETWORK_USAGE_DIR="${HOME}/.local/share/docker-network-usage"
 
 # Allow override for root-run cleanup scripts (cleanup-script.sh runs as root)
 if [ -n "${CLEANUP_USER:-}" ]; then
   HOME_BASE="/home/${CLEANUP_USER}"
-  IMAGE_USAGE_DIR="${HOME_BASE}/.local/share/docker-image-usage"
   VOLUME_USAGE_DIR="${HOME_BASE}/.local/share/docker-volume-usage"
   NETWORK_USAGE_DIR="${HOME_BASE}/.local/share/docker-network-usage"
 fi
@@ -33,6 +31,7 @@ NC='\033[0m'
 CURRENT_TIME=$(date +%s)
 
 deleted_count=0
+would_delete_count=0
 kept_count=0
 skipped_count=0
 
@@ -77,16 +76,19 @@ if [ -d "$VOLUME_USAGE_DIR" ]; then
     fi
 
     # Safe to delete
-    echo -e "${RED}[DELETE]${NC} $vol_name — idle ${age_days} days, no container references"
-    if [ "$DRY_RUN" != "true" ]; then
+    would_delete_count=$((would_delete_count + 1))
+    if [ "$DRY_RUN" = "true" ]; then
+      echo -e "${RED}[DELETE]${NC} $vol_name — idle ${age_days} days, no container references (dry run)"
+    else
+      echo -e "${RED}[DELETE]${NC} $vol_name — idle ${age_days} days, no container references"
       if docker volume rm "$vol_name" > /dev/null 2>&1; then
         echo -e "  ${GREEN}✓ Deleted${NC}"
         rm -f "$metadata_file"
+        deleted_count=$((deleted_count + 1))
       else
         echo -e "  ${YELLOW}⚠ Failed to delete (may be in use)${NC}"
       fi
     fi
-    deleted_count=$((deleted_count + 1))
   done
 else
   echo "No volume metadata directory found at ${VOLUME_USAGE_DIR}"
@@ -156,16 +158,19 @@ if [ -d "$NETWORK_USAGE_DIR" ]; then
     fi
 
     # Safe to delete
-    echo -e "${RED}[DELETE]${NC} $net_name — idle ${age_days} days, no container connections"
-    if [ "$DRY_RUN" != "true" ]; then
+    would_delete_count=$((would_delete_count + 1))
+    if [ "$DRY_RUN" = "true" ]; then
+      echo -e "${RED}[DELETE]${NC} $net_name — idle ${age_days} days, no container connections (dry run)"
+    else
+      echo -e "${RED}[DELETE]${NC} $net_name — idle ${age_days} days, no container connections"
       if docker network rm "$net_name" > /dev/null 2>&1; then
         echo -e "  ${GREEN}✓ Deleted${NC}"
         rm -f "$metadata_file"
+        deleted_count=$((deleted_count + 1))
       else
         echo -e "  ${YELLOW}⚠ Failed to delete (may be in use)${NC}"
       fi
     fi
-    deleted_count=$((deleted_count + 1))
   done
 else
   echo "No network metadata directory found at ${NETWORK_USAGE_DIR}"
@@ -173,4 +178,4 @@ fi
 
 echo ""
 echo -e "${GREEN}Docker volume/network cleanup complete!${NC}"
-echo "Summary: deleted=$deleted_count kept=$kept_count skipped=$skipped_count"
+echo "Summary: deleted=$deleted_count would_delete=$would_delete_count kept=$kept_count skipped=$skipped_count"
