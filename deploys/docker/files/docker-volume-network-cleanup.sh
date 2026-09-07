@@ -3,6 +3,9 @@
 set -euo pipefail
 
 AGE_THRESHOLD_DAYS=${AGE_THRESHOLD_DAYS:-60}
+case "$AGE_THRESHOLD_DAYS" in
+  ''|*[!0-9]*) AGE_THRESHOLD_DAYS=60 ;;
+esac
 DRY_RUN=${DRY_RUN:-true}
 
 resolve_home() {
@@ -56,6 +59,13 @@ if [ -d "$VOLUME_USAGE_DIR" ]; then
       kept_count=$((kept_count + 1))
       continue
     fi
+    case "$last_used" in
+      ''|*[!0-9]*)
+        echo -e "${YELLOW}[KEEP]${NC} $vol_name — non-numeric timestamp in metadata"
+        kept_count=$((kept_count + 1))
+        continue
+        ;;
+    esac
     age_seconds=$((CURRENT_TIME - last_used))
     age_days=$((age_seconds / 86400))
     if [ "$age_days" -lt "$AGE_THRESHOLD_DAYS" ]; then
@@ -68,6 +78,16 @@ if [ -d "$VOLUME_USAGE_DIR" ]; then
     if [ -n "$containers" ]; then
       echo -e "${YELLOW}[KEEP]${NC} $vol_name — referenced by containers: $containers"
       kept_count=$((kept_count + 1))
+      continue
+    fi
+
+    exists=$(docker volume ls -q --filter "name=^${vol_name}$" 2>/dev/null || true)
+    if [ -z "$exists" ]; then
+      echo -e "${YELLOW}[SKIP]${NC} $vol_name (no longer exists)"
+      skipped_count=$((skipped_count + 1))
+      if [ "$DRY_RUN" != "true" ]; then
+        rm -f "$metadata_file"
+      fi
       continue
     fi
 
@@ -137,6 +157,13 @@ if [ -d "$NETWORK_USAGE_DIR" ]; then
       kept_count=$((kept_count + 1))
       continue
     fi
+    case "$last_used" in
+      ''|*[!0-9]*)
+        echo -e "${YELLOW}[KEEP]${NC} $net_name — non-numeric timestamp in metadata"
+        kept_count=$((kept_count + 1))
+        continue
+        ;;
+    esac
     age_seconds=$((CURRENT_TIME - last_used))
     age_days=$((age_seconds / 86400))
     if [ "$age_days" -lt "$AGE_THRESHOLD_DAYS" ]; then
@@ -145,10 +172,20 @@ if [ -d "$NETWORK_USAGE_DIR" ]; then
       continue
     fi
 
-    containers=$(docker network inspect "$net_name" --format '{{range $k, $v := .Containers}}{{$v.Name}} {{end}}' 2>/dev/null || true)
+    containers=$(docker ps -a --filter "network=${net_name}" --format "{{.Names}}" 2>/dev/null || true)
     if [ -n "$containers" ]; then
-      echo -e "${YELLOW}[KEEP]${NC} $net_name — connected containers: $containers"
+      echo -e "${YELLOW}[KEEP]${NC} $net_name — referenced by containers: $containers"
       kept_count=$((kept_count + 1))
+      continue
+    fi
+
+    exists=$(docker network ls -q --filter "name=^${net_name}$" 2>/dev/null || true)
+    if [ -z "$exists" ]; then
+      echo -e "${YELLOW}[SKIP]${NC} $net_name (no longer exists)"
+      skipped_count=$((skipped_count + 1))
+      if [ "$DRY_RUN" != "true" ]; then
+        rm -f "$metadata_file"
+      fi
       continue
     fi
 

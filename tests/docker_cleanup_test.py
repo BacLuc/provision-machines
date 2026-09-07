@@ -26,13 +26,15 @@ cmd="$1"; shift
 case "$cmd" in
   ps)
     name=""
+    refs="$STUB_REFERENCED_VOLUMES"
     while [ $# -gt 0 ]; do
       case "$1" in
         volume=*) name="${1#volume=}" ;;
+        network=*) name="${1#network=}"; refs="$STUB_REFERENCED_NETWORKS" ;;
       esac
       shift
     done
-    for v in $STUB_REFERENCED_VOLUMES; do
+    for v in $refs; do
       [ "$v" = "$name" ] && echo "container-$name"
     done
     ;;
@@ -56,6 +58,22 @@ case "$cmd" in
           done
         fi
         ;;
+      ls)
+        filter=""
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            name=*) filter="${1#name=}"; filter="${filter#^}"; filter="${filter%$}" ;;
+          esac
+          shift
+        done
+        if [ -n "$STUB_EXISTING_NETWORKS" ]; then
+          for n in $STUB_EXISTING_NETWORKS; do
+            [ "$n" = "$filter" ] && echo "$n"
+          done
+        else
+          [ -n "$filter" ] && echo "$filter"
+        fi
+        ;;
       rm)
         echo "$1" >> "$STUB_LOG"
         ;;
@@ -63,9 +81,27 @@ case "$cmd" in
     ;;
   volume)
     sub="$1"; shift
-    if [ "$sub" = "rm" ]; then
-      echo "$1" >> "$STUB_LOG"
-    fi
+    case "$sub" in
+      ls)
+        filter=""
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            name=*) filter="${1#name=}"; filter="${filter#^}"; filter="${filter%$}" ;;
+          esac
+          shift
+        done
+        if [ -n "$STUB_EXISTING_VOLUMES" ]; then
+          for v in $STUB_EXISTING_VOLUMES; do
+            [ "$v" = "$filter" ] && echo "$v"
+          done
+        else
+          [ -n "$filter" ] && echo "$filter"
+        fi
+        ;;
+      rm)
+        echo "$1" >> "$STUB_LOG"
+        ;;
+    esac
     ;;
 esac
 """
@@ -110,6 +146,8 @@ def _run_cleanup(
         "STUB_REFERENCED_VOLUMES": "ref-vol",
         "STUB_REFERENCED_NETWORKS": "ref-net",
         "STUB_COMPOSE_NETWORKS": "",
+        "STUB_EXISTING_VOLUMES": "",
+        "STUB_EXISTING_NETWORKS": "",
         "STUB_LOG": os.path.join(tmp, "rm.log"),
         "CLEANUP_HOME": "",
         "CLEANUP_USER": "",
@@ -118,6 +156,11 @@ def _run_cleanup(
     if extra_env:
         env.update(extra_env)
     return subprocess.run(["bash", _SCRIPT], env=env, capture_output=True, text=True)
+
+
+def _rm_log_text(tmp: Path) -> str:
+    rm_log = tmp / "rm.log"
+    return rm_log.read_text() if rm_log.exists() else ""
 
 
 def test_cleanup_deletes_only_tracked_idle_unreferenced(tmp_path: Path) -> None:
@@ -367,3 +410,108 @@ def test_cleanup_compose_networks_are_skipped(tmp_path: Path) -> None:
     assert f"[SKIP] {net_name}" in stdout
     assert "docker-compose network" in stdout
     assert not (tmp_path / "rm.log").exists()
+
+
+def test_cleanup_keeps_network_attached_to_stopped_container(tmp_path: Path) -> None:
+    now = int(time.time())
+    stale = now - 61 * 86400
+    _write_metadata(tmp_path, "network", "ref-net", stale)
+    stub_dir = _make_stub_dir(tmp_path)
+
+    result = _run_cleanup(str(tmp_path), "false", stub_dir)
+    assert result.returncode == 0, result.stderr
+
+    net_dir = tmp_path / ".local/share/docker-network-usage"
+    assert (net_dir / "ref-net.json").exists()
+    assert "container-ref-net" in _strip_ansi(result.stdout)
+    assert not (tmp_path / "rm.log").exists()
+
+
+def test_cleanup_removes_metadata_for_vanished_volume(tmp_path: Path) -> None:
+    now = int(time.time())
+    stale = now - 61 * 86400
+    _write_metadata(tmp_path, "volume", "vanished-vol", stale)
+    stub_dir = _make_stub_dir(tmp_path)
+    extra_env = {"STUB_EXISTING_VOLUMES": "other-vol"}
+
+    result = _run_cleanup(str(tmp_path), "false", stub_dir, extra_env)
+    assert result.returncode == 0, result.stderr
+
+    vol_dir = tmp_path / ".local/share/docker-volume-usage"
+    assert not (vol_dir / "vanished-vol.json").exists()
+    stdout = _strip_ansi(result.stdout)
+    assert "[SKIP] vanished-vol" in stdout
+    assert "(no longer exists)" in stdout
+    assert "vanished-vol" not in _rm_log_text(tmp_path)
+
+
+def test_cleanup_removes_metadata_for_vanished_network(tmp_path: Path) -> None:
+    now = int(time.time())
+    stale = now - 61 * 86400
+    _write_metadata(tmp_path, "network", "vanished-net", stale)
+    stub_dir = _make_stub_dir(tmp_path)
+    extra_env = {"STUB_EXISTING_NETWORKS": "other-net"}
+
+    result = _run_cleanup(str(tmp_path), "false", stub_dir, extra_env)
+    assert result.returncode == 0, result.stderr
+
+    net_dir = tmp_path / ".local/share/docker-network-usage"
+    assert not (net_dir / "vanished-net.json").exists()
+    stdout = _strip_ansi(result.stdout)
+    assert "[SKIP] vanished-net" in stdout
+    assert "(no longer exists)" in stdout
+    assert "vanished-net" not in _rm_log_text(tmp_path)
+
+
+def test_cleanup_dry_run_keeps_metadata_for_vanished_resource(tmp_path: Path) -> None:
+    now = int(time.time())
+    stale = now - 61 * 86400
+    _write_metadata(tmp_path, "volume", "vanished-vol", stale)
+    _write_metadata(tmp_path, "network", "vanished-net", stale)
+    stub_dir = _make_stub_dir(tmp_path)
+    extra_env = {"STUB_EXISTING_VOLUMES": "other-vol", "STUB_EXISTING_NETWORKS": "other-net"}
+
+    result = _run_cleanup(str(tmp_path), "true", stub_dir, extra_env)
+    assert result.returncode == 0, result.stderr
+
+    assert (tmp_path / ".local/share/docker-volume-usage/vanished-vol.json").exists()
+    assert (tmp_path / ".local/share/docker-network-usage/vanished-net.json").exists()
+    assert "(no longer exists)" in _strip_ansi(result.stdout)
+    assert not (tmp_path / "rm.log").exists()
+
+
+def test_cleanup_non_numeric_last_used_is_kept(tmp_path: Path) -> None:
+    vol_dir = tmp_path / ".local/share/docker-volume-usage"
+    vol_dir.mkdir(parents=True)
+    (vol_dir / "bad-vol.json").write_text('{"kind": "volume", "name": "bad-vol", "last_used": "not-a-number"}')
+    net_dir = tmp_path / ".local/share/docker-network-usage"
+    net_dir.mkdir(parents=True)
+    (net_dir / "bad-net.json").write_text('{"kind": "network", "name": "bad-net", "last_used": "not-a-number"}')
+    stub_dir = _make_stub_dir(tmp_path)
+
+    result = _run_cleanup(str(tmp_path), "false", stub_dir)
+    assert result.returncode == 0, result.stderr
+
+    assert (vol_dir / "bad-vol.json").exists()
+    assert (net_dir / "bad-net.json").exists()
+    stdout = _strip_ansi(result.stdout)
+    assert "[KEEP] bad-vol" in stdout and "non-numeric timestamp" in stdout
+    assert "[KEEP] bad-net" in stdout and "non-numeric timestamp" in stdout
+    assert not (tmp_path / "rm.log").exists()
+
+
+def test_cleanup_non_numeric_age_threshold_falls_back_to_default(tmp_path: Path) -> None:
+    now = int(time.time())
+    stale = now - 61 * 86400
+    _write_metadata(tmp_path, "volume", "stale-vol", stale)
+    _write_metadata(tmp_path, "network", "stale-net", stale)
+    stub_dir = _make_stub_dir(tmp_path)
+    extra_env = {"AGE_THRESHOLD_DAYS": "abc"}
+
+    result = _run_cleanup(str(tmp_path), "false", stub_dir, extra_env)
+    assert result.returncode == 0, result.stderr
+
+    assert not (tmp_path / ".local/share/docker-volume-usage/stale-vol.json").exists()
+    assert not (tmp_path / ".local/share/docker-network-usage/stale-net.json").exists()
+    rm_log = (tmp_path / "rm.log").read_text()
+    assert "stale-vol" in rm_log and "stale-net" in rm_log
