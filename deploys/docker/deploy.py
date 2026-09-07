@@ -129,6 +129,22 @@ if host.data.docker["enabled"]:
     )
 
     files.directory(
+        name="Create docker volume metadata directory",
+        path=f"/home/{user}/.local/share/docker-volume-usage",
+        user=user,
+        group=user,
+        mode="755",
+    )
+
+    files.directory(
+        name="Create docker network metadata directory",
+        path=f"/home/{user}/.local/share/docker-network-usage",
+        user=user,
+        group=user,
+        mode="755",
+    )
+
+    files.directory(
         name="Create local bin directory",
         path=f"/home/{user}/.local/bin",
         user=user,
@@ -170,11 +186,26 @@ if host.data.docker["enabled"]:
         ],
     )
 
+    server.shell(
+        name="Restart docker events tracking to pick up volume/network tracking",
+        commands=[
+            "systemctl --user restart docker-events-track 2>/dev/null || true",
+        ],
+    )
+
     if host.data.cleanup_scripts["dir"]:
         files.put(
             name="Copy docker cleanup script",
             src=f"{dirname_of(__file__)}/files/docker-cleanup.sh",
             dest=f"{host.data.cleanup_scripts['dir']}/docker-cleanup",
+            _sudo=True,
+            mode="755",
+        )
+
+        files.put(
+            name="Copy docker volume and network cleanup script",
+            src=f"{dirname_of(__file__)}/files/docker-volume-network-cleanup.sh",
+            dest=f"{host.data.cleanup_scripts['dir']}/docker-volume-network-cleanup",
             _sudo=True,
             mode="755",
         )

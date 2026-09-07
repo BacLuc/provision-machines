@@ -1,28 +1,32 @@
 #!/bin/bash
 
-# Docker Image Usage Tracker - Background Service
-# This script runs continuously and tracks docker image usage by monitoring events
-# It stores the last used timestamp for each image in a metadata file
+# Docker Image, Volume, and Network Usage Tracker - Background Service
+# This script runs continuously and tracks docker image, volume, and network usage by monitoring events
+# It stores the last used timestamp for each item in a metadata file
 
 METADATA_DIR="${HOME}/.local/share/docker-image-usage"
+VOLUME_USAGE_DIR="${HOME}/.local/share/docker-volume-usage"
+NETWORK_USAGE_DIR="${HOME}/.local/share/docker-network-usage"
 
-# Create metadata directory if it doesn't exist
-mkdir -p "$METADATA_DIR"
+# Create metadata directories if they don't exist
+mkdir -p "$METADATA_DIR" "$VOLUME_USAGE_DIR" "$NETWORK_USAGE_DIR"
 
-# Function to update image usage
-update_image_usage() {
-  local image="$1"
-  [ -z "$image" ] && return
-  
+# Function to write usage metadata
+write_usage_metadata() {
+  local kind="$1"
+  local name="$2"
+  local dir="$3"
+  [ -z "$name" ] && return
+
   # Get current timestamp
   local current_time
   current_time=$(date +%s)
-  
-  # Sanitize image name for use as filename
-  local safe_image_name
-  safe_image_name=$(echo "$image" | tr '/' '-' | tr ':' '_')
-  local metadata_file="${METADATA_DIR}/${safe_image_name}.json"
-  
+
+  # Sanitize name for use as filename
+  local safe_name
+  safe_name=$(echo "$name" | tr '/' '-' | tr ':' '_')
+  local metadata_file="${dir}/${safe_name}.json"
+
   # Only update if this is newer than what we have
   if [ -f "$metadata_file" ]; then
     local previous_last_used
@@ -31,29 +35,66 @@ update_image_usage() {
       return
     fi
   fi
-  
-  echo "{\"image\": \"$image\", \"last_used\": $current_time}" > "$metadata_file"
+
+  echo "{\"${kind}\": \"$name\", \"name\": \"$name\", \"last_used\": $current_time}" > "$metadata_file"
 }
 
-# Track container start and image pull events continuously
+# Function to delete usage metadata
+delete_usage_metadata() {
+  local name="$1"
+  local dir="$2"
+  [ -z "$name" ] && return
+
+  local safe_name
+  safe_name=$(echo "$name" | tr '/' '-' | tr ':' '_')
+  local metadata_file="${dir}/${safe_name}.json"
+
+  rm -f "$metadata_file"
+}
+
+# Track container start, image pull, volume, and network events continuously
 # Using docker events --format with json to get structured data
 docker events --format '{{json .}}' 2>/dev/null | while read -r event; do
   [ -z "$event" ] && continue
-  
-  # Extract event type and image from the JSON
+
+  # Extract event type and action from the JSON
   event_type=$(echo "$event" | jq -r '.Type + "." + .Action' 2>/dev/null)
-  
+
   case "$event_type" in
     "container.start")
       image=$(echo "$event" | jq -r '.Actor.Attributes.image' 2>/dev/null)
       if [ -n "$image" ] && [ "$image" != "null" ]; then
-        update_image_usage "$image"
+        write_usage_metadata "image" "$image" "$METADATA_DIR"
       fi
       ;;
     "image.pull")
       image_name=$(echo "$event" | jq -r '.Actor.Attributes.name' 2>/dev/null)
       if [ -n "$image_name" ] && [ "$image_name" != "null" ]; then
-        update_image_usage "$image_name"
+        write_usage_metadata "image" "$image_name" "$METADATA_DIR"
+      fi
+      ;;
+    "volume.create"|"volume.mount"|"volume.unmount")
+      vol_name=$(echo "$event" | jq -r '.Actor.ID' 2>/dev/null)
+      if [ -n "$vol_name" ] && [ "$vol_name" != "null" ]; then
+        write_usage_metadata "volume" "$vol_name" "$VOLUME_USAGE_DIR"
+      fi
+      ;;
+    "volume.destroy")
+      vol_name=$(echo "$event" | jq -r '.Actor.ID' 2>/dev/null)
+      if [ -n "$vol_name" ] && [ "$vol_name" != "null" ]; then
+        delete_usage_metadata "$vol_name" "$VOLUME_USAGE_DIR"
+      fi
+      ;;
+    "network.create"|"network.connect"|"network.disconnect")
+      net_name=$(echo "$event" | jq -r '.Actor.Attributes.name' 2>/dev/null)
+      if [ -n "$net_name" ] && [ "$net_name" != "null" ]; then
+        write_usage_metadata "network" "$net_name" "$NETWORK_USAGE_DIR"
+      fi
+      ;;
+    "network.destroy")
+      net_name=$(echo "$event" | jq -r '.Actor.Attributes.name' 2>/dev/null)
+      if [ -n "$net_name" ] && [ "$net_name" != "null" ]; then
+        delete_usage_metadata "$net_name" "$NETWORK_USAGE_DIR"
       fi
       ;;
   esac
