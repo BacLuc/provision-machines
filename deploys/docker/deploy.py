@@ -129,6 +129,22 @@ if host.data.docker["enabled"]:
     )
 
     files.directory(
+        name="Create docker volume metadata directory",
+        path=f"/home/{user}/.local/share/docker-volume-usage",
+        user=user,
+        group=user,
+        mode="755",
+    )
+
+    files.directory(
+        name="Create docker network metadata directory",
+        path=f"/home/{user}/.local/share/docker-network-usage",
+        user=user,
+        group=user,
+        mode="755",
+    )
+
+    files.directory(
         name="Create local bin directory",
         path=f"/home/{user}/.local/bin",
         user=user,
@@ -136,7 +152,7 @@ if host.data.docker["enabled"]:
         mode="755",
     )
 
-    files.put(
+    track_script = files.put(
         name="Copy docker events tracking script",
         src=f"{dirname_of(__file__)}/files/docker-events-track.sh",
         dest=f"/home/{user}/.local/bin/docker-events-track.sh",
@@ -153,7 +169,7 @@ if host.data.docker["enabled"]:
         mode="755",
     )
 
-    files.put(
+    track_service = files.put(
         name="Copy docker events tracking service file",
         src=f"{dirname_of(__file__)}/files/docker-events-track.service",
         dest=f"/home/{user}/.config/systemd/user/docker-events-track.service",
@@ -170,6 +186,14 @@ if host.data.docker["enabled"]:
         ],
     )
 
+    server.shell(
+        name="Restart docker events tracking to pick up volume/network tracking",
+        commands=[
+            "systemctl --user restart docker-events-track 2>/dev/null || true",
+        ],
+        _if=lambda: track_script.changed or track_service.changed,
+    )
+
     if host.data.cleanup_scripts["dir"]:
         files.put(
             name="Copy docker cleanup script",
@@ -177,4 +201,21 @@ if host.data.docker["enabled"]:
             dest=f"{host.data.cleanup_scripts['dir']}/docker-cleanup",
             _sudo=True,
             mode="755",
+        )
+
+        files.put(
+            name="Copy docker volume and network cleanup script",
+            src=f"{dirname_of(__file__)}/files/docker-volume-network-cleanup.sh",
+            dest=f"{host.data.cleanup_scripts['dir']}/docker-volume-network-cleanup",
+            _sudo=True,
+            mode="755",
+        )
+
+        files.line(
+            name="Set CLEANUP_USER in cleanup script",
+            path="/usr/local/bin/cleanup-script",
+            line="^CLEANUP_USER=",
+            replace=f'CLEANUP_USER="${{CLEANUP_USER:-{user}}}"',
+            present=True,
+            _sudo=True,
         )

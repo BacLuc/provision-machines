@@ -1,5 +1,5 @@
 [Unit]
-Description=Docker Image Usage Tracker
+Description=Docker Resource Usage Tracker (images, volumes, networks)
 After=docker.service
 PartOf=docker.service
 
@@ -8,7 +8,6 @@ Type=simple
 ExecStart=%h/.local/bin/docker-events-track.sh
 Restart=on-failure
 RestartSec=10
-# Keep the service running
 KillMode=process
 
 [Install]
