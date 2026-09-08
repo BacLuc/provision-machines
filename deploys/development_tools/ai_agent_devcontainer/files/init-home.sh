@@ -12,6 +12,7 @@ HOME_DIR="${HOME:-/home/codespace}"
 BASH_HISTORY_FILE="$HOME_DIR/.bash_history"
 ZSH_HISTORY_FILE="$HOME_DIR/.zsh_history"
 SEED_DONE_FILE="$HOME_DIR/.ai-devcontainer-history-seeded"
+GITIGNORE_FILE="$HOME_DIR/.gitignore_global"
 
 SEED_COMMANDS=(
     "uv sync --all-extras"
@@ -39,5 +40,10 @@ if [ ! -f "$SEED_DONE_FILE" ]; then
     done
     touch "$SEED_DONE_FILE"
 fi
+
+# Seed global gitignore for .completion-check-command dotfiles.
+touch "$GITIGNORE_FILE"
+grep -qxF '.completion-check-command' "$GITIGNORE_FILE" || printf '%s\n' '.completion-check-command' >> "$GITIGNORE_FILE"
+git config --global core.excludesfile "$GITIGNORE_FILE"
 
 exit 0
