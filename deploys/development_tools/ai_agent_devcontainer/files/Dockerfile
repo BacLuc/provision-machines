@@ -37,7 +37,9 @@ RUN . $NVM_DIR/nvm.sh && \
       @openai/codex@${CODEX_VERSION} \
       t3@${T3_CODE_VERSION} \
     && \
-    curl -fsSL https://antigravity.google/cli/install.sh | bash
+    curl -fsSL https://antigravity.google/cli/install.sh | bash \
+    && \
+    curl -fsSL https://cli.kiro.dev/install | bash
 
 ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.jsonc
 
