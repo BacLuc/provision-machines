@@ -59,6 +59,10 @@ Run the workflow with different inputs that might break it and verify that it be
 - Ensure code works
 - Verify functionality across all affected areas
 
+## GitHub Actions progress tracking
+
+If running in a GitHub Actions environment (BACLUC_AGENT_GITHUB_TOKEN is available): post the run link (`$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID`) and model as the first issue comment, then post a short comment after each result. Push every commit and record the branch name in the issue.
+
 ## Tools
 
 This agent has access to all tools but should primarily use them for:

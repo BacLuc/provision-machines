@@ -43,6 +43,10 @@ The refiner agent is responsible for understanding and validating tasks by thoro
 - Stay within the scope the coordinator assigned you; flag anything outside it rather than expanding into it
 - Stop only when the problem is confirmed and documented
 
+## GitHub Actions progress tracking
+
+If running in a GitHub Actions environment (BACLUC_AGENT_GITHUB_TOKEN is available): post the run link (`$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID`) and model as the first issue comment, then post a short comment after each result. Push every commit and record the branch name in the issue.
+
 ## Tools
 
 This agent has access to all tools but should primarily use them for:
