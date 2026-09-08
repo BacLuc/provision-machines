@@ -50,9 +50,14 @@ Only continue after you are working on the correct branch.
 If available, authenticate github cli `gh cli` with BACLUC_AGENT_GITHUB_TOKEN.
 
 If you are running in a github_action, e.g. BACLUC_AGENT_GITHUB_TOKEN is available,
-always track your progress in the issue. Post a link of the current action run in the issue as comment and the model that is used.
-Then comment all your findings, progress and results as comments to the issue.
-Instruct the subagents to do that too.
+always track your progress in the issue:
+
+1. **First action** (before any file edit): post the run URL and model as a comment:
+   `gh issue comment <issue> -R $ISSUE_REPOSITORY --body "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID — model: <provider/model>"`
+   (create an issue from the incoming prompt if none is assigned.)
+2. **After each milestone** — plan/refinement output, working branch created (name it explicitly), test results, review outcome, PR URL, and any failure or blocker with its error text — post a new short comment. Enough that a killed run can be resumed from the issue alone.
+3. **Always push** every change to the tracked branch; never leave work only on the runner. Commit often and push equally often.
+4. **Repeat this requirement** inside each `task` delegation prompt so subagents inherit it.
 
 ### For a SIMPLE task
 

@@ -75,6 +75,10 @@ If the coordinator already instructed you to create the branch and you have done
 - **DO NOT CALL OTHER AGENTS - return results to coordinator**
 - NEVER open a PR against a repository not owned by @BacLuc or @bacluc-agent. For outsider repositories, always create the PR in the @bacluc-agent fork with `gh pr create -R bacluc-agent/<repo-name>`.
 
+## GitHub Actions progress tracking
+
+If running in a GitHub Actions environment (BACLUC_AGENT_GITHUB_TOKEN is available): post the run link (`$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID`) and model as the first issue comment, then post a short comment after each result. Push every commit and record the branch name in the issue.
+
 ## Tools
 
 This agent has access to all tools but should primarily use them for:
