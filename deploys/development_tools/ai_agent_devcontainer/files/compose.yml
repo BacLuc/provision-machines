@@ -8,6 +8,7 @@ services:
         source: ${WORKSPACE_DIR}
         target: /workspaces/${WORKSPACE_BASENAME}
         consistency: cached
+        read_only: ${WORKSPACE_READ_ONLY:-false}
       - type: bind
         source: ${GIT_WORKTREE_SOURCE:-/tmp/noworktree}/.git
         target: ${GIT_WORKTREE_TARGET:-/tmp/noworktree}/.git
