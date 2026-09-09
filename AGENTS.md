@@ -67,6 +67,18 @@ jsonnet_bundler_checksum = "424be2836ffee389d93a8cb873eb891a69fef4509026c7c1a825
 use `./scripts/update-renovate-snapshot.sh` to check if the dependency can be extracted,
 and update the snapshot if you changed something where a dependency is used, or if you changed renovate.json.
 
+## Per-subagent completion-check commands
+
+Each opencode session — including subagents — resolves its completion-check command
+from its own working directory.
+
+When a subagent works in a different directory (e.g., a child repository checked out
+by opencode), it will use the completion-check command from that directory's own
+configuration, not the parent session's command.
+
+Subagent depth is configured to 4 in `opencode.jsonc` to allow nested subagent
+dispatch for multi-repo workflows.
+
 /completion-check-command
 
 ```bash
