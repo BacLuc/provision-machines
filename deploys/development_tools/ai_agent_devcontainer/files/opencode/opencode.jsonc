@@ -11,14 +11,8 @@
     "opencode-gemini-auth@1.4.15",
     // renovate: datasource=npm depName=bacluc-opencode-completion-check-command
     "bacluc-opencode-completion-check-command@0.9.7",
-    [
-      // renovate: datasource=npm depName=opencode-auto-resume
-      "opencode-auto-resume@1.1.13",
-      {
-        "chunkTimeoutMs": 300000,
-        "maxRetries": 10
-      }
-    ]
+    // renovate: datasource=npm depName=opencode-auto-resume
+    "opencode-auto-resume@1.1.13"
   ],
   "default_agent": "coordinator",
   "agent": {
