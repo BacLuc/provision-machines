@@ -44,6 +44,7 @@ Before any implementation work starts, delegate the git branch setup to the buil
 > Check if there is already a branch mentioned in the issue or if there are even pull requests. If yes, checkout that branch and continue from there. Push your changes back to that branch.
 > Make sure to read and apply the review comments on the PR.
 > If the repository is not owned by @BacLuc or @bacluc-agent, NEVER open a PR against it directly. Create a fork in @bacluc-agent if none exists, make a branch that represents the current upstream `main`, and open the PR against the fork with `gh pr create -R bacluc-agent/<repo-name>`. See the Git Workflow section of your instructions.
+> If the workspace is read-only (devcontainer started in the root worktree), pass the read-only-workspace instruction to the build agent: create a new git worktree under the writable .git mount and work there.
 
 Only continue after you are working on the correct branch.
 
