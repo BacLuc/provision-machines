@@ -1,6 +1,6 @@
 ---
 name: test-github-actions
-description: Trigger, monitor, and debug GitHub Actions workflow runs from the command line
+description: Trigger, monitor, debug, and develop GitHub Actions workflows from the command line. Load when creating or modifying GitHub Actions workflow files.
 ---
 
 # Testing GitHub Actions workflows
