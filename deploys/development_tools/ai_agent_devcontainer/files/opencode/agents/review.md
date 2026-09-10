@@ -3,16 +3,7 @@ description: Reviews your changes
 mode: all
 temperature: 0.1
 permission:
-  read: allow
-  write: deny
-  edit: deny
-  bash:
-    "*": ask
-    "git diff": allow
-    "git log*": allow
-    "grep *": allow
-    "cat *": allow
-  webfetch: allow
+  "*": allow
 ---
 
 # Reviewer Agent
