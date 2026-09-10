@@ -37,6 +37,11 @@
         "apiKey": "apikey"
       }
     },
+    "openrouter": {
+      "options": {
+        "apiKey": "apikey"
+      }
+    },
     "vshn-us-ai": {
       "options": {
         "baseURL": "baseurl",
