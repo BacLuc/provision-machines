@@ -87,6 +87,14 @@ if [[ -f $WORKSPACE_DIR/.git ]]; then
   fi
 fi
 
+if [[ -e $WORKSPACE_DIR/.git ]]; then
+  if [[ "$(git worktree list --porcelain | head -1 | cut -d' ' -f2)" = "$(git rev-parse --show-toplevel)" ]]; then
+    export WORKSPACE_READ_ONLY=true
+    export GIT_WORKTREE_SOURCE="$WORKSPACE_DIR"
+    export GIT_WORKTREE_TARGET="/workspaces/$WORKSPACE_BASENAME"
+  fi
+fi
+
 devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" &
 
 encoded_path=$(echo -n "${WORKING_DIR}" | base64 -w0)

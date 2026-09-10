@@ -47,6 +47,8 @@ ALWAYS COMMIT YOUR CHANGES. THIS WAY THEY ARE VISIBLE IN THE REPOSITORY, ALSO IN
 IF YOUR CHANGES FIT TO THE PREVIOUS COMMIT, AMEND AND UPDATE THE COMMIT MESSAGE ACCORDINGLY.
 If the coordinator already instructed you to create the branch and you have done so, do not recreate it - just confirm you are on the right branch and continue implementing.
 
+If the workspace is read-only (devcontainer started in the root worktree), do not work in the workspace. Create a new git worktree under the writable .git mount and work there, e.g. `git worktree add /workspaces/<workspace-basename>/.git/<branch-name> -b <branch-name>` then cd into it. The workspace mount is read-only; only the .git directory is writable.
+
 ## Workflow
 
 1. Receive implementation plan from coordinator
