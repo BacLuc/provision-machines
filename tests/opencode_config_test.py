@@ -51,6 +51,7 @@ def test_openrouter_provider_in_opencode_config() -> None:
     models = openrouter["models"]
     assert isinstance(models, dict)
     assert len(models) > 0
+    assert "deepseek/deepseek-chat-v3.1" in models
 
 
 def test_openrouter_provider_in_untracked_config() -> None:
