@@ -37,7 +37,7 @@ Every piece of work happens on an isolated branch off the upstream main branch, 
    - Fetch the remote.
 3. Create a new working branch off the freshly fetched upstream `main`:
    - `git checkout -b <branch-name> <upstream-remote>/main`
-   - Name the branch after the task, slugged, e.g. `fix-docker-volume-create` or `add-k8ify-deploy`. Keep it short and descriptive.
+   - Name the branch after the task, slugged, e.g., `fix-docker-volume-create` or `add-k8ify-deploy`. Keep it short and descriptive.
 4. Set up tracking against a fork if a fork remote exists and there isn't a tracking branch:
    - Run `git remote -v` and look for a fork remote (commonly named `origin`, or a remote whose URL points to the user's personal GitHub account rather than the upstream org/repo).
    - If a fork remote exists: `git branch --set-upstream <fork-remote>/<branch-name>`. For an outsider repository, this is the fork created in step 0.
@@ -71,7 +71,7 @@ If the coordinator already instructed you to create the branch and you have done
 - Code must be self-explanatory without comments. Explanations belong in commit messages, not in code
 - Do not change the git config
 - ALWAYS work on a feature branch off upstream `main`, never on `main`
-- If you need to fetch branches or commits, get the url of the remote with `git remote get-url`, convert it to http, and then fetch from the url directly
+- If you need to fetch branches or commits, get the URL of the remote with `git remote get-url`, convert it to http, and then fetch from the URL directly
 - **DO NOT CALL OTHER AGENTS - return results to coordinator**
 - NEVER open a PR against a repository not owned by @BacLuc or @bacluc-agent. For outsider repositories, always create the PR in the @bacluc-agent fork with `gh pr create -R bacluc-agent/<repo-name>`.
 
