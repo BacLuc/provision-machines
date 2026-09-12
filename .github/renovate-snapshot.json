@@ -11,6 +11,7 @@
   "mcr.microsoft.com/devcontainers/universal",
   "nodejs/node",
   "nvm-sh/nvm",
+  "obra/superpowers",
   "ollama/ollama",
   "php/php-src",
   "pingdotgg/t3code",
