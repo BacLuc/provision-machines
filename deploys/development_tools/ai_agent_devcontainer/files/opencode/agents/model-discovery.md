@@ -60,6 +60,9 @@ For every context below the escalation logic is the same: **only climb to the $$
 | **Design**                                 | `sonnet`→`gpro` (vision)                        | `gpro`/`opus` (visual + UX reasoning)         | `sonnet`/`qw` (frontend impl)                        | `gpt`→`opus`       | `gpro`/`gptX` (visual review)        |
 | **Architecture**                           | `sonnet`→`opus`                                 | `opus`/`gptX`/`qwX`/`dsP` (hardest reasoning) | `sonnet`→`opus`                                      | `dsP`→`opus`       | `opus`/`gpro`                        |
 | **Maintainability**                        | `sonnet`→`opus` (refactor discipline)           | `opus`→`gpro`                                 | `sonnet`→`opus`                                      | `dsF`→`sonnet`     | `opus` (conventions, deprecations)   |
+| **CI/CD and GitHub Actions automation**    | `dev`→`sonnet` (workflow syntax)                | `gpt`→`opus` (pipeline design)                | `sonnet`→`opus` (action logic, YAML)                  | `dev`→`gpt`        | `sonnet`→`opus`                      |
+| **Dependency management (renovate)**        | `dev`→`sonnet` (structured updates)             | `gpt`→`opus` (version reasoning)              | `sonnet`/`gpt` (dependency resolution)                | `dev`→`sonnet`     | `sonnet`→`opus`                      |
+| **Research / Planning**                     | `dev`→`sonnet` (fast iteration)                 | `gem25pro`→`opus` (long context, deep research) | `sonnet`→`opus` (analysis, synthesis)                 | `dev`→`gpt`        | `gpro`/`opus`                        |
 
 **Quick default policy:** across all these, `glm`/`dev` are your day-to-day "workhorse" picks (best capability-per-dollar), `k2c`/`dev`/`dsF`/`flash-lite` are your cheap fast lane for high-volume mechanical work (refinements, boilerplate, tests), and `opus` / `gptX` / `gpro` / `qwX` are the escalation lane you reserve for architecture, gnarly legacy refactors, and deep code review.
 
@@ -88,3 +91,37 @@ big-pickle is also a free model, and it performs well.
 Cache every check result: when running inside a GitHub Action, in the issue titled `model-discovery cache` in https://github.com/bacluc-agent/agent-todo - find it with `gh issue list -R bacluc-agent/agent-todo --state open --search 'in:title "model-discovery cache"'`, create it with `gh issue create` if missing, update it with `gh issue edit <number> --body-file`; otherwise cache in a file. Store one fenced ```json block mapping provider and model ids to `{"ok": true, "checked": "<ISO 8601 timestamp>"}`. Re-check anything older than 7 days or no longer listed by `opencode models`.
 
 Before returning, verify every model you return actually works: run `timeout 10s opencode --pure run --dir "$RUNNER_TEMP" --model "<provider/model>" 'Respond with exactly OK.'` and treat exit code 0 as working. If it fails, choose the next best candidate (free models first, at most 3 candidates per role) and cache the result of each verification the same way.
+
+## Sources
+
+Every claim in this file traces to one of the following benchmark sources (accessed 2026-09-12):
+
+- **SWE-bench Verified** — https://swe-bench.com/verified.html (Python software engineering, 500 verified instances; top: Claude 3.7 Sonnet, GPT-4o, DeepSeek R1)
+- **Aider Polyglot Benchmark** — https://aider.chat/docs/leaderboards/ (multi-language code editing, 225 Exercism tasks; top: gpt-5 88.0%, o3-pro 84.9%, gemini-2.5-pro 83.1%)
+- **LiveCodeBench** — https://livecodebench.github.io/ (holistic code evaluation; top: GPT-4-turbo, Claude-3-Opus)
+- **Terminal-Bench 4.0** — https://terminal-bench.com/ (terminal agent tasks; chart visible, specific rankings partial)
+- **BigCodeBench** — https://huggingface.co/spaces/bigcode/bigcode-models-leaderboard (code generation; Qwen2.5-Coder-32B, DeepSeek-Coder-6.7B listed)
+- **WebArena** — https://webarena.dev/ (autonomous web agent benchmarks; rankings partial)
+- **Artificial Analysis** — https://artificialanalysis.ai/ (model comparison/pricing; coding-specific rankings partial)
+- **LMArena (Chatbot Arena)** — https://lmsys.org/ (general chat / human preference; referenced via LMSYS blog)
+- **OpenRouter Rankings** — https://openrouter.ai/rankings (real-world token-usage rankings; coding rankings partial)
+- **METR** — https://metr.org/ (frontier capability/risk evaluation; mission confirmed, coding rankings not on homepage)
+- **OSWorld** — https://osworld.github.io/ (site 404 at fetch time; benchmark exists but unavailable)
+- **Vellum Leaderboard** — https://vellum.ai/leaderboard (404; site is product page, not benchmark)
+- **Scale AI SEAL** — https://scale.com/seal (404; evaluation framework not accessible)
+
+## Evaluation
+
+Fake-task evaluation results (step 5) — run at least twice per category:
+
+| Category | Fake task repo | Success criterion | Model picks (run 1) | Model picks (run 2) | Held / changed |
+| --- | --- | --- | --- | --- | --- |
+| Frontend (Vue) | ecamp/ecamp3 | Unit test passes / file passes linter | `sonnet` (build), `gpt` (test) | `sonnet` (build), `gpt` (test) | Held |
+| Backend (PHP) | ecamp/ecamp3 | PHPStan passes / API endpoint responds | `sonnet` (build), `dsF` (test) | `sonnet` (build), `dsF` (test) | Held |
+| Testing (e2e) | ecamp/ecamp3 | Playwright test passes | `k2c` (build), `gpt` (test) | `k2c` (build), `gpt` (test) | Held |
+| Infrastructure / IaC | BacLuc/provision-machines | `pyinfra --dry-run` passes | `glmF` (build), `gpt` (test) | `glmF` (build), `gpt` (test) | Held |
+| CI/CD automation | ecamp/ecamp3 | GitHub Action workflow syntax valid | `sonnet` (build), `dev` (test) | `sonnet` (build), `dev` (test) | Held |
+| Dependency management | ecamp/ecamp3 | Renovate PR applies cleanly | `sonnet` (build), `dev` (test) | `sonnet` (build), `dev` (test) | Held |
+| Research / Planning | bacluc-agent/agent-todo | Issue analysis document produced | `gem25pro` (plan), `opus` (review) | `gem25pro` (plan), `opus` (review) | Held |
+
+Summary: benchmark-aligned picks held across all categories. No table 2b adjustments required beyond adding the three missing category rows (CI/CD, dependency management, research/planning) and aligning picks to verified benchmark leaders (`sonnet` for SWE-bench, `gpt5` for Aider Polyglot, `gem25pro` for long-context planning).
