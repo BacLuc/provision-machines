@@ -290,11 +290,11 @@ ubuntu_desktop = {
 }
 
 hashicorp_apt_repo = {
-    "enabled": True,
+    "enabled": False,
 }
 
 hashicorp_vault_cli = {
-    "enabled": True,
+    "enabled": False,
 }
 
 php_development = {
