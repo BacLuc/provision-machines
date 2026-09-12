@@ -41,10 +41,9 @@
       "customType": "regex",
       "managerFilePatterns": ["/\\.jsonc$/"],
       "matchStrings": [
-        "\/\/\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s*depName=(?<depName>[^\\s]+).*\\n\\s*\"[^\"]*(?:@|#)(?<currentValue>[v]?[0-9][\\w.-]*)"
+        "\/\/\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s*depName=(?<depName>[^\\s]+).*\\n\\s*\"[^\"]*(?:@|#)v?(?<currentValue>[0-9][\\w.-]*)"
       ],
-      "datasourceTemplate": "{{{datasource}}}",
-      "extractVersion": "^v?(?<version>.*)$"
+      "datasourceTemplate": "{{{datasource}}}"
     },
     {
       "customType": "regex",
