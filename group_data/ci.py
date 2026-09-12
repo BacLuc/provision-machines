@@ -118,7 +118,7 @@ openwebui = {
 }
 
 vagrant = {
-    "enabled": True,
+    "enabled": False,
 }
 
 ubuntu_cleanup = {
