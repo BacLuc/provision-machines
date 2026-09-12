@@ -17,7 +17,9 @@
         "chunkTimeoutMs": 300000,
         "maxRetries": 10
       }
-    ]
+    ],
+    // renovate: datasource=github-tags depName=obra/superpowers
+    "superpowers@git+https://github.com/obra/superpowers.git#v6.3.0"
   ],
   "default_agent": "coordinator",
   "agent": {
