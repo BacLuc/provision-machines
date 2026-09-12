@@ -4,7 +4,7 @@ ai_agent_devcontainer = {"enabled": True}
 
 alacritty = {
     "enabled": True,
-    "font_size": 12,
+    "font_size": 13,
 }
 
 python = {
