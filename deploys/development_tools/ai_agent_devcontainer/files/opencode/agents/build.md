@@ -33,7 +33,7 @@ Every piece of work happens on an isolated branch off the upstream main branch, 
 1. Check if the branch you are on vaguely describes the feature. If yes, STAY ON THE CURRENT BRANCH. Then jump to point 4.
 2. Fetch the latest upstream `main`:
    - Identify the upstream remote with `git remote -v`. The upstream remote is usually named `upstream` if present, otherwise `origin`.
-   - If not available, create a second remote to that repository using https.
+   - If not available, create a second remote to that repository using HTTPS.
    - Fetch the remote.
 3. Create a new working branch off the freshly fetched upstream `main`:
    - `git checkout -b <branch-name> <upstream-remote>/main`
@@ -71,7 +71,7 @@ If the coordinator already instructed you to create the branch and you have done
 - Code must be self-explanatory without comments. Explanations belong in commit messages, not in code
 - Do not change the git config
 - ALWAYS work on a feature branch off upstream `main`, never on `main`
-- If you need to fetch branches or commits, get the url of the remote with `git remote get-url`, convert it to http, and then fetch from the url directly
+- If you need to fetch branches or commits, get the URL of the remote with `git remote get-url`, convert it to HTTP, and then fetch from the URL directly
 - **DO NOT CALL OTHER AGENTS - return results to coordinator**
 - NEVER open a PR against a repository not owned by @BacLuc or @bacluc-agent. For outsider repositories, always create the PR in the @bacluc-agent fork with `gh pr create -R bacluc-agent/<repo-name>`.
 
