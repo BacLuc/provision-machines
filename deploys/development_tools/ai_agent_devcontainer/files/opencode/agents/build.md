@@ -2,6 +2,7 @@
 description: Builds your features
 mode: all
 temperature: 0.1
+model: opencode/muse-spark-1.2-contributor-free
 permission:
   "*": allow
 ---
