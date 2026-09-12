@@ -12,7 +12,9 @@
     // renovate: datasource=npm depName=bacluc-opencode-completion-check-command
     "bacluc-opencode-completion-check-command@0.9.7",
     // renovate: datasource=npm depName=opencode-auto-resume
-    "opencode-auto-resume@1.1.13"
+    "opencode-auto-resume@1.1.13",
+    // renovate: datasource=github-tags depName=obra/superpowers
+    "superpowers@git+https://github.com/obra/superpowers.git#v6.3.0"
   ],
   "default_agent": "coordinator",
   "agent": {
