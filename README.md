@@ -1,5 +1,7 @@
 # PyInfra project to provision development machines
 
+Branch from `origin/devel` for all changes.
+
 ## Setup uv
 
 ```shell
