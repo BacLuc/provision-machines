@@ -26,3 +26,11 @@ uv run scripts/run_pyinfra_local.py
 ```shell
 uv run scripts/lint.py
 ```
+
+## Completion check
+
+```shell
+./scripts/completion-check
+```
+
+This runs `uv sync --frozen --all-extras`, `pytest`, `ruff check`, `mypy`, and `prettier` with `git diff --exit-code`.
