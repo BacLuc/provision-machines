@@ -60,6 +60,10 @@ For every context below the escalation logic is the same: **only climb to the $$
 | **Design**                                 | `sonnet`→`gpro` (vision)                        | `gpro`/`opus` (visual + UX reasoning)         | `sonnet`/`qw` (frontend impl)                        | `gpt`→`opus`       | `gpro`/`gptX` (visual review)        |
 | **Architecture**                           | `sonnet`→`opus`                                 | `opus`/`gptX`/`qwX`/`dsP` (hardest reasoning) | `sonnet`→`opus`                                      | `dsP`→`opus`       | `opus`/`gpro`                        |
 | **Maintainability**                        | `sonnet`→`opus` (refactor discipline)           | `opus`→`gpro`                                 | `sonnet`→`opus`                                      | `dsF`→`sonnet`     | `opus` (conventions, deprecations)   |
+| **CI/CD + GitHub Actions**                 | `dsF`→`sonnet`                                  | `gpt`→`opus`                                  | `glmF`→`sonnet`                                      | `glmF`→`gpt`       | `sonnet`→`opus`                      |
+| **Dependency management (renovate)**       | `dev`→`glm`                                     | `glm`→`sonnet`                                | `dev`→`glm`                                          | `dev`→`glm`        | `glm`→`sonnet`                       |
+| **Research/planning**                      | `k2c`→`sonnet`                                  | `glm`/`kimi`→`opus`                           | `sonnet`→`opus`                                      | `dsF`→`sonnet`     | `glm`→`sonnet`→`opus`                |
+| **Security/permissions**                   | `glm`→`sonnet`                                  | `opus`/`gptX`                                 | `sonnet`→`opus`                                      | `dsF`→`sonnet`     | `opus` (highest rigor)               |
 
 **Quick default policy:** across all these, `glm`/`dev` are your day-to-day "workhorse" picks (best capability-per-dollar), `k2c`/`dev`/`dsF`/`flash-lite` are your cheap fast lane for high-volume mechanical work (refinements, boilerplate, tests), and `opus` / `gptX` / `gpro` / `qwX` are the escalation lane you reserve for architecture, gnarly legacy refactors, and deep code review.
 
@@ -88,3 +92,21 @@ big-pickle is also a free model, and it performs well.
 Cache every check result: when running inside a GitHub Action, in the issue titled `model-discovery cache` in https://github.com/bacluc-agent/agent-todo - find it with `gh issue list -R bacluc-agent/agent-todo --state open --search 'in:title "model-discovery cache"'`, create it with `gh issue create` if missing, update it with `gh issue edit <number> --body-file`; otherwise cache in a file. Store one fenced ```json block mapping provider and model ids to `{"ok": true, "checked": "<ISO 8601 timestamp>"}`. Re-check anything older than 7 days or no longer listed by `opencode models`.
 
 Before returning, verify every model you return actually works: run `timeout 10s opencode --pure run --dir "$RUNNER_TEMP" --model "<provider/model>" 'Respond with exactly OK.'` and treat exit code 0 as working. If it fails, choose the next best candidate (free models first, at most 3 candidates per role) and cache the result of each verification the same way.
+
+## Sources
+
+- SWE-bench Verified: https://swebench.com/verified.html (accessed 2026-09-13) — Claude 4.5 Opus ~75.3%, GPT-5.1 Codex Max ~72.1%.
+- Aider Polyglot Benchmark: https://aider.chat/docs/leaderboards/ (accessed 2026-09-13) — gpt-5 (high) 88.0% across 6 languages.
+- Terminal-Bench 4.0: https://terminal-bench.com/ (accessed 2026-09-13) — agent terminal tasks.
+- LiveCodeBench: https://livecodebench.github.io/leaderboard.html (accessed 2026-09-13) — holistic code evaluation.
+- Scale AI SEAL: https://scale.com/leaderboard (accessed 2026-09-13) — agent/task benchmarks (RLI, VTB, MultiNRC).
+- METR-Horizon v1.1: https://metr.org/ (accessed 2026-09-13) — Claude Opus 4.6 (0.788), Mythos Preview (0.852).
+- BigCodeBench / BigCode Evaluation Harness: https://github.com/bigcode-project/bigcode-evaluation-harness (accessed 2026-09-13).
+- WebDev Arena / WebArena: https://webarena.dev/ (accessed 2026-09-13).
+- OSWorld: https://github.com/xlang-ai/OSWorld (accessed 2026-09-13).
+- Artificial Analysis: https://artificialanalysis.ai/ (accessed 2026-09-13).
+- LMArena (Chatbot Arena): https://lmsys.org/ (accessed 2026-09-13) — general chat, not coding-specific.
+- OpenRouter Rankings: https://openrouter.ai/rankings (accessed 2026-09-13) — usage-based.
+- Vellum Leaderboard / Scale AI SEAL cross-reference: https://vellum.ai/ (accessed 2026-09-13).
+- ProgramBench: https://programbench.com/ (released May 2026).
+- CodeClash: https://codeclash.ai/ (Nov 2025).
