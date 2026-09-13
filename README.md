@@ -1,5 +1,7 @@
 # PyInfra project to provision development machines
 
+Last updated: 2026-09-13
+
 ## Setup uv
 
 ```shell
