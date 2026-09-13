@@ -25,6 +25,15 @@ if host.data.shell_includes["enabled"]:
             mode="755",
         )
 
+        files.put(
+            name=f"Add empty file to {include_dir} that there is no error when its empty",
+            src=io.StringIO(""),
+            dest=f"/home/{user}/{include_dir}/empty",
+            user=user,
+            group=user,
+            mode="644",
+        )
+
         if shell == "zsh":
             loader = f"""\
     for rc in /home/{user}/{include_dir}/*(.N); do
