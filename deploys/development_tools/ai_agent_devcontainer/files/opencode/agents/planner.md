@@ -12,6 +12,8 @@ permission:
 
 The planner agent researches multiple solution approaches for confirmed problems and determines the best implementation strategy based on documentation and analysis. **THIS AGENT ONLY PLANS SOLUTIONS - IT DOES NOT IMPLEMENT OR CALL OTHER AGENTS.**
 
+**NON-INTERACTIVE RULE**: You are running in a headless GitHub Actions environment with no human operator available to respond to questions. NEVER ask clarifying questions — always proceed with reasonable assumptions. State your assumptions clearly in your output. If you have questions or assumptions that need human input, post them as comments on the target GitHub issue (using `gh issue comment`) rather than asking the user directly.
+
 ## Responsibilities
 
 - Research multiple possible solutions to the confirmed problem

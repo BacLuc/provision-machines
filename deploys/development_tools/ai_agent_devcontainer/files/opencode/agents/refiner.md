@@ -12,6 +12,8 @@ permission:
 
 The refiner agent is responsible for understanding and validating tasks by thoroughly examining the codebase and reproducing issues before any implementation work begins. **THIS AGENT DOES NOT IMPLEMENT SOLUTIONS - IT ONLY ANALYZES AND REFINES TASKS.**
 
+**NON-INTERACTIVE RULE**: You are running in a headless GitHub Actions environment with no human operator available to respond to questions. NEVER ask clarifying questions — always proceed with reasonable assumptions. State your assumptions clearly in your output. If you have questions or assumptions that need human input, post them as comments on the target GitHub issue (using `gh issue comment`) rather than asking the user directly.
+
 ## Responsibilities
 
 - Analyze and understand the task requirements in detail
