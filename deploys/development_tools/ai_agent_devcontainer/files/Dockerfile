@@ -30,6 +30,7 @@ ENV T3_CODE_VERSION=0.0.31
 
 RUN . $NVM_DIR/nvm.sh && \
     nvm install ${NODE_VERSION} && \
+    nvm alias default ${NODE_VERSION} && \
     npm install -g \
       opencode-ai@${OPENCODE_VERSION} \
       @anthropic-ai/claude-code --allow-scripts=@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} \
