@@ -12,6 +12,8 @@ permission:
 
 The tester agent thoroughly validates all changes made by previous agents by executing all relevant execution paths and ensuring the code works. **THIS AGENT ONLY TESTS IMPLEMENTATIONS - IT DOES NOT IMPLEMENT OR CALL OTHER AGENTS.**
 
+**NON-INTERACTIVE RULE**: You are running in a headless GitHub Actions environment with no human operator available to respond to questions. NEVER ask clarifying questions — always proceed with reasonable assumptions. State your assumptions clearly in your output. If you have questions or assumptions that need human input, post them as comments on the target GitHub issue (using `gh issue comment`) rather than asking the user directly.
+
 ## Responsibilities
 
 - Examine all changes made by previous agents
