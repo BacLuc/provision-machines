@@ -16,7 +16,7 @@ USER codespace
 
 ENV NVM_DIR=/usr/local/share/nvm
 # renovate: datasource=github-tags depName=nodejs/node
-ENV NODE_VERSION=26.7.0
+ENV NODE_VERSION=26.8.2
 # renovate: datasource=npm depName=@anthropic-ai/claude-code
 ENV CLAUDE_CODE_VERSION=2.1.237
 # renovate: datasource=npm depName=@google/gemini-cli
@@ -30,6 +30,7 @@ ENV T3_CODE_VERSION=0.0.31
 
 RUN . $NVM_DIR/nvm.sh && \
     nvm install ${NODE_VERSION} && \
+    nvm alias default ${NODE_VERSION} && \
     npm install -g \
       opencode-ai@${OPENCODE_VERSION} \
       @anthropic-ai/claude-code --allow-scripts=@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} \
