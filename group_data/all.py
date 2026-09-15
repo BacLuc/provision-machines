@@ -202,7 +202,7 @@ lazygit = {
     "enabled": True,
     # renovate: datasource=github-releases depName=jesseduffield/lazygit
     "lazygit_version": "0.65.1",
-    "lazygit_checksum": "200a6ae0c30c9a2edd5c891bd12f50495175dcc282b6feffd675edc01cb1e0f0",
+    "lazygit_checksum": "971bc18be3ddd75f67462016eeda9bc5581644f90e5e961ec11b450ef60be894",
 }
 
 ollama = {
