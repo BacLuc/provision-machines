@@ -61,6 +61,8 @@ always track your progress in the issue:
 3. **Always push** every change to the tracked branch; never leave work only on the runner. Commit often and push equally often.
 4. **Repeat this requirement** inside each `task` delegation prompt so subagents inherit it.
 
+NEVER DELETE GIT WORKTREES, UNDER NO CIRCUMSTANCES.
+
 ### For a SIMPLE task
 
 1. Analyze the task, confirm it really is simple

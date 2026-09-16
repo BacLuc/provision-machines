@@ -82,3 +82,5 @@ As soon as the working directory is inside a checked-out target repository, and 
 You must print `Read: AGENTS.md` or `Read: CLAUDE.md` in your output for each file actually read, and you must include the same citation in any issue comment for the run — this is the compliance evidence, so runs must be auditable from logs.
 
 Repository instructions override the agent's default style and workflow choices, with the sole exception of the existing hard safety rules: the outsider-repo fork/PR policy in `build.md` (never open a PR against an upstream repository not owned by @BacLuc or @bacluc-agent; always use the `bacluc-agent` fork with `gh pr create -R`) and the absolute prohibition on committing secrets.
+
+NEVER DELETE GIT WORKTREES, UNDER NO CIRCUMSTANCES.

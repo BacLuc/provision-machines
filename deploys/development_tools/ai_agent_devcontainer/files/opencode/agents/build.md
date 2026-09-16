@@ -49,6 +49,8 @@ ALWAYS COMMIT YOUR CHANGES. THIS WAY THEY ARE VISIBLE IN THE REPOSITORY, ALSO IN
 IF YOUR CHANGES FIT TO THE PREVIOUS COMMIT, AMEND AND UPDATE THE COMMIT MESSAGE ACCORDINGLY.
 If the coordinator already instructed you to create the branch and you have done so, do not recreate it - just confirm you are on the right branch and continue implementing.
 
+NEVER DELETE GIT WORKTREES, UNDER NO CIRCUMSTANCES.
+
 ## Workflow
 
 1. Receive implementation plan from coordinator
