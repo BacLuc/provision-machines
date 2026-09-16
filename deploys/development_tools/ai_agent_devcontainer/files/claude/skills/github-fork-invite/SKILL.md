@@ -6,7 +6,7 @@ allowed-tools: Bash(gh:*)
 
 # GitHub Fork Invite
 
-After any `gh repo fork`, invite the user in `$GITHUB_FORK_INVITE_USER` as a collaborator with `push` permission on the new fork.
+After any `gh repo fork`, invite the user in `$GITHUB_FORK_INVITE_USER` as a collaborator with `push` permission on the new fork. Runners wire this env var from the `FORK_INVITE_USER` repository variable or secret.
 
 ## Skip when unconfigured
 
