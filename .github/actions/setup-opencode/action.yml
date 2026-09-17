@@ -1,0 +1,31 @@
+name: Setup OpenCode
+
+description: Configure OpenCode and Claude settings for the agent environment
+
+inputs:
+  config_path:
+    description: Path to opencode config files
+    default: files/opencode
+  claude_path:
+    description: Path to claude settings files
+    default: files/claude
+
+runs:
+  using: composite
+  steps:
+    - name: Copy Claude settings
+      shell: bash
+      run: |
+        if [[ -f "${{ inputs.claude_path }}/settings.json" ]]; then
+          mkdir -p "$HOME/.claude"
+          cp -a "${{ inputs.claude_path }}/settings.json" "$HOME/.claude/settings.json"
+          if command -v jq >/dev/null 2>&1; then
+            if jq -e '.hooks.Stop' "$HOME/.claude/settings.json" >/dev/null 2>&1; then
+              echo "Claude Stop hook validated."
+            else
+              echo "::warning::Claude settings present but .hooks.Stop not found."
+            fi
+          fi
+        else
+          echo "::warning::No Claude settings file found at ${{ inputs.claude_path }}/settings.json — continuing without it."
+        fi
