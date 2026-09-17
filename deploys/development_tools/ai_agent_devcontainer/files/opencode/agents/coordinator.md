@@ -54,7 +54,7 @@ If available, authenticate github cli `gh cli` with BACLUC_AGENT_GITHUB_TOKEN.
 If you are running in a github_action, e.g. BACLUC_AGENT_GITHUB_TOKEN is available,
 always track your progress in the issue with exactly ONE comment per agent per run:
 
-1. **First action** (before any file edit): post `Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID — model: <provider/model>` via `gh issue comment <issue> -R $ISSUE_REPOSITORY --body` and capture `comment_id=$(printf '%s' "$comment_url" | grep -oE '[0-9]+$')`.
+1. **First action** (before any file edit): post `Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID — model: <provider/model>` via `gh issue comment <issue> -R $ISSUE_REPOSITORY --body` and capture `comment_id=$(printf '%s' "$comment_url" | grep -oE '[0-9]+$')` (create an issue from the incoming prompt if none is assigned.).
 2. **After each milestone** (plan/refinement output, working branch created with explicit name, test results, review outcome, PR URL, failure/blocker with error text): `PATCH` the same comment `gh api -X PATCH "repos/$ISSUE_REPOSITORY/issues/comments/$comment_id" -f body="<full accumulated progress>"`.
 3. Before each update check `last_author=$(gh issue view <issue> -R $ISSUE_REPOSITORY --json comments --jq '.comments[-1].author.login')` — if not `bacluc-agent`, create a NEW comment responding to the human (quote/mention), capture its ID, and update that one thereafter.
 4. **Always push** every change to the tracked branch; never leave work only on the runner. Commit often and push equally often.
