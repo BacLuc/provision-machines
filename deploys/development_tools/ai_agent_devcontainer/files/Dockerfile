@@ -16,7 +16,7 @@ USER codespace
 
 ENV NVM_DIR=/usr/local/share/nvm
 # renovate: datasource=github-tags depName=nodejs/node
-ENV NODE_VERSION=26.9.0
+ENV NODE_VERSION=26.7.0
 # renovate: datasource=npm depName=@anthropic-ai/claude-code
 ENV CLAUDE_CODE_VERSION=2.1.237
 # renovate: datasource=npm depName=@google/gemini-cli
