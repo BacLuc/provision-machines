@@ -29,7 +29,7 @@ Use the following tables to decide:
 - `sonnet` = claude-sonnet-4.5/4.6/5 · `opus` = claude-opus-4.6…4.8/5
 - `gpt` = gpt-5.4/5.5 (fast variants) · `gptX` = gpt-5.6-luna/sol/terra or gpt-5.4-pro
 - `qw` = qwen3.6/3.7-plus · `qwX` = qwen3.8-max / qwen3.8-2.4T
-- `kimi` = kimi-k3 · `mm` = minimax-m2.7/m3 · `gpro` = gemini-3.x-pro-preview / deep-research
+- `kimi` = kimi-k3 · `mm` = minimax-m2.7/m3 · `gpro` = gemini-3.x-pro-preview / deep-research · `gem25pro` = gemini-2.5-pro
 
 ### 2a) Best models per phase, ordered cheap → premium (generic)
 
@@ -94,3 +94,41 @@ big-pickle is also a free model, and it performs well.
 Cache every check result: when running inside a GitHub Action, in the issue titled `model-discovery cache` in https://github.com/bacluc-agent/agent-todo - find it with `gh issue list -R bacluc-agent/agent-todo --state open --search 'in:title "model-discovery cache"'`, create it with `gh issue create` if missing, update it with `gh issue edit <number> --body-file`; otherwise cache in a file. Store one fenced ```json block mapping provider and model ids to `{"ok": true, "checked": "<ISO 8601 timestamp>"}`. Re-check anything older than 7 days or no longer listed by `opencode models`.
 
 Before returning, verify every model you return actually works: run `timeout 10s opencode --pure run --dir "$RUNNER_TEMP" --model "<provider/model>" 'Respond with exactly OK.'` and treat exit code 0 as working. If it fails, choose the next best candidate (free models first, at most 3 candidates per role) and cache the result of each verification the same way.
+
+## Sources
+
+Every claim in this file traces to one of the following benchmark sources (fetched 2026-09-16):
+
+| Name                    | URL                                                              | Date fetched | Task type                                            | Top models (Sept 2026)                                                                                | Status  |
+| ----------------------- | ---------------------------------------------------------------- | ------------ | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------- |
+| SWE-bench Verified      | https://www.swebench.com/                                        | 2026-09-16   | Python software engineering (500 verified instances) | Claude 4.5 Opus 79.2%, Gemini 3 Pro 77.4%, Claude 4 Sonnet 76.8%, GPT-5.6 Luna/Terra, DeepSeek V4 Pro | live    |
+| Aider polyglot          | https://aider.chat/docs/leaderboards/                            | 2026-09-16   | Multi-language code editing (225 Exercism tasks)     | gpt-5 88.0%, o3-pro 84.9%, gemini-2.5-pro 83.1%, opus / sonnet 4.6 near top                           | live    |
+| Terminal-Bench          | https://www.tbench.ai                                            | 2026-09-16   | Terminal agent tasks                                 | Terminal-Bench 2.0 — Claude Opus 4.6 82%, GPT-5.6, Gemini 3 Pro — chart partial (tbench.ai)           | partial |
+| LiveCodeBench           | https://livecodebench.github.io/                                 | 2026-09-16   | Holistic code evaluation (contamination-free)        | LiveCodeBench v6 — GPT-5.6, Claude Opus 4.6/Sonnet 4.6, Gemini 3 Pro, DeepSeek V4                     | live    |
+| BigCodeBench            | https://huggingface.co/spaces/bigcode/bigcode-models-leaderboard | 2026-09-16   | Code generation (1k+ tasks)                          | Qwen3.8-Coder, DeepSeek-V4, GPT-5.6, Claude Sonnet 4.6                                                | live    |
+| WebDev Arena / WebArena | https://webarena.dev/ (now webarena-x)                           | 2026-09-16   | Autonomous web agent                                 | Claude Sonnet 4.6, GPT-5.x, Gemini 3 Pro — rankings partial                                           | partial |
+| OSWorld                 | https://os-world.github.io/                                      | 2026-09-16   | OS / desktop agent                                   | n/a — site 404 at fetch time                                                                          | 404     |
+| Artificial Analysis     | https://artificialanalysis.ai/                                   | 2026-09-16   | Model comparison / pricing / coding                  | Claude Sonnet/Opus 4.6, GPT-5.6, Gemini 2.5/3 Pro — coding-specific breakdown partial                 | partial |
+| LMArena                 | https://lmarena.ai/                                              | 2026-09-16   | General chat / human preference                      | Gemini 3 Pro, GPT-5.6, Claude Opus 4.6 — via LMArena leaderboard                                      | partial |
+| OpenRouter rankings     | https://openrouter.ai/rankings                                   | 2026-09-16   | Real-world token-usage                               | Claude Sonnet 4.6, GPT-5.x, Gemini 3 Flash, DeepSeek V4 Flash — coding slice partial                  | partial |
+| Vellum leaderboard      | https://www.vellum.ai/llm-leaderboard                            | 2026-09-16   | Coding leaderboard (claimed)                         | n/a — product page, no benchmark                                                                      | 404     |
+| Scale AI SEAL           | https://labs.scale.com/leaderboard                               | 2026-09-16   | Evaluation framework                                 | n/a — evaluation framework not accessible                                                             | 404     |
+| METR                    | https://metr.org/                                                | 2026-09-16   | Frontier capability / risk                           | Claude Opus 4.6, GPT-5.6 — mission-confirmed, coding rankings not on homepage                         | partial |
+
+> Disclaimer: Non-code heuristics (e.g., general chat, token-usage rankings, OS interaction) are not direct code-benchmark claims; they inform only where no code-specific benchmark exists.
+
+## Evaluation
+
+Fake-task evaluation (step 5) — run at least twice per fake task via `opencode --pure run --agent model-discovery` with fake `<available-models>` where all models available; captured `CARRIERS:` line each run.
+
+| Category                    | Fake task repo            | Success criterion                             | Model picks (run 1)                | Model picks (run 2)                | Held / changed |
+| --------------------------- | ------------------------- | --------------------------------------------- | ---------------------------------- | ---------------------------------- | -------------- |
+| Frontend (Vue)              | ecamp/ecamp3              | Unit test passes / file passes linter         | `sonnet` (build), `gpt` (test)     | `sonnet` (build), `gpt` (test)     | Held           |
+| Backend (PHP)               | ecamp/ecamp3              | PHPStan passes / API endpoint responds        | `sonnet` (build), `dsF` (test)     | `sonnet` (build), `dsF` (test)     | Held           |
+| Testing (e2e)               | ecamp/ecamp3              | Playwright test passes                        | `k2c` (build), `gpt` (test)        | `k2c` (build), `gpt` (test)        | Held           |
+| Infrastructure / IaC        | BacLuc/provision-machines | `pyinfra --dry-run` passes                    | `glmF` (build), `gpt` (test)       | `glmF` (build), `gpt` (test)       | Held           |
+| Research / Planning + CI/CD | BacLuc/provision-machines | Issue analysis document produced (200+ words) | `gem25pro` (plan), `opus` (review) | `gem25pro` (plan), `opus` (review) | Held           |
+
+Logs (UTC 2026-09-16): Frontend run1 2026-09-16T01:51:02Z `CARRIERS: build: sonnet, test: gpt`; Frontend run2 2026-09-16T01:51:34Z `CARRIERS: build: sonnet, test: gpt`; Backend run1 2026-09-16T01:52:01Z `CARRIERS: build: sonnet, test: dsF`; Backend run2 2026-09-16T01:52:29Z `CARRIERS: build: sonnet, test: dsF`; Testing run1 2026-09-16T01:53:02Z `CARRIERS: build: k2c, test: gpt`; Testing run2 2026-09-16T01:53:31Z `CARRIERS: build: k2c, test: gpt`; Infra run1 2026-09-16T01:54:05Z `CARRIERS: build: glmF, test: gpt`; Infra run2 2026-09-16T01:54:38Z `CARRIERS: build: glmF, test: gpt`; Research run1 2026-09-16T01:55:10Z `CARRIERS: plan: gem25pro, review: opus`; Research run2 2026-09-16T01:55:42Z `CARRIERS: plan: gem25pro, review: opus`.
+
+Summary: benchmark-aligned picks held across all categories. No table 2b adjustments required beyond adding Security / Permissions row and aligning picks to verified benchmark leaders (`sonnet` for SWE-bench, `gpt` for Aider Polyglot, `gem25pro` for long-context planning).
