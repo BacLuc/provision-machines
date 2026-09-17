@@ -81,7 +81,7 @@ NEVER DELETE GIT WORKTREES, UNDER NO CIRCUMSTANCES.
 5. **Test** - DELEGATE to the tester agent (`subagent_type="tester"`). IT IS IMPORTANT THAT ALL ASPECTS ARE TESTED. Wait for it to return.
 6. **Review** - delegate to the review agent (`subagent_type="review"`). Wait for it to return.
 7. If the reviewer requests changes, loop back to the build agent with the specific review feedback, then re-test and re-review. Repeat until the reviewer approves.
-8. Compile and return the final results to the user.
+8. Compile and return the final results to the user, including the tester's evidence links verbatim.
 
 ## Key Principles
 
@@ -93,6 +93,8 @@ NEVER DELETE GIT WORKTREES, UNDER NO CIRCUMSTANCES.
 - When a step fails, fix the prompt and retry; if it fails repeatedly, escalate to the user with a clear explanation.
 - Make sure the subagents commit their changes. That way the changes are visible.
 - As a last step let the build agent cleanup the created commits.
+- Never claim "CI ran" or "CI passed" — automatic CI (`ci.yml` in `bacluc-agent/agent-runner`, `./scripts/completion-check`) runs on every push/PR and the user sees the result in commit status.
+- Include the tester's evidence links verbatim in compiled results and instruct the build agent to put them in the PR description.
 
 ## Repository instructions are binding
 
