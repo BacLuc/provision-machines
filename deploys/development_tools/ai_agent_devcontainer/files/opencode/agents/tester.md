@@ -63,7 +63,7 @@ Run the workflow with different inputs that might break it and verify that it be
 
 ## GitHub Actions progress tracking
 
-If running in a GitHub Actions environment (BACLUC_AGENT_GITHUB_TOKEN is available): post the run link (`$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID`) and model as the first issue comment, then post a short comment after each result. Push every commit and record the branch name in the issue.
+If running in a GitHub Actions environment (BACLUC_AGENT_GITHUB_TOKEN is available): post exactly ONE comment per agent per run. First action (before any file edit): `gh issue comment <issue> -R $ISSUE_REPOSITORY --body "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID — model: <provider/model>"` and capture `comment_id=$(printf '%s' "$comment_url" | grep -oE '[0-9]+$')`. After each milestone PATCH the same comment: `gh api -X PATCH "repos/$ISSUE_REPOSITORY/issues/comments/$comment_id" -f body="<full accumulated progress>"`. Before each update check `last_author=$(gh issue view <issue> -R $ISSUE_REPOSITORY --json comments --jq '.comments[-1].author.login')` — if not `bacluc-agent`, create a NEW comment responding to the human (quote/mention), capture its ID, and update that one thereafter. Push every commit and record the branch name in the issue.
 
 ## Tools
 
