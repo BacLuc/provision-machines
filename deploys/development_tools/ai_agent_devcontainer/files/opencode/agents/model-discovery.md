@@ -94,3 +94,27 @@ big-pickle is also a free model, and it performs well.
 Cache every check result: when running inside a GitHub Action, in the issue titled `model-discovery cache` in https://github.com/bacluc-agent/agent-todo - find it with `gh issue list -R bacluc-agent/agent-todo --state open --search 'in:title "model-discovery cache"'`, create it with `gh issue create` if missing, update it with `gh issue edit <number> --body-file`; otherwise cache in a file. Store one fenced ```json block mapping provider and model ids to `{"ok": true, "checked": "<ISO 8601 timestamp>"}`. Re-check anything older than 7 days or no longer listed by `opencode models`.
 
 Before returning, verify every model you return actually works: run `timeout 10s opencode --pure run --dir "$RUNNER_TEMP" --model "<provider/model>" 'Respond with exactly OK.'` and treat exit code 0 as working. If it fails, choose the next best candidate (free models first, at most 3 candidates per role) and cache the result of each verification the same way.
+
+## Sources
+
+Benchmark sources re-verified 2026-09-16 (all HTTP 200). Full per-source table in `model-discovery-research.md`:
+
+- SWE-bench Verified https://www.swebench.com/ — Python issue repair; tops: Claude Opus 5, Mythos/Fable 5, GPT-5.3 Codex, DeepSeek V4 Pro, MiniMax M3, Qwen3.7 Max, Kimi K2.6, GLM-5
+- Aider Polyglot https://aider.chat/docs/leaderboards/ — 225 Exercism edits; tops: gpt-5 high, o3-pro, gemini-2.5-pro; value: DeepSeek-V3.2-Exp, Kimi K2, Qwen3-235B
+- Terminal-Bench https://www.tbench.ai/ — terminal agents; tops: GPT-5.6 Sol, Kimi K3, Mythos 5, GPT-5.6 Terra/Luna, GLM-5.2
+- LiveCodeBench https://livecodebench.github.io/ — contest code gen, contamination-free
+- BigCodeBench https://huggingface.co/spaces/bigcode/bigcode-models-leaderboard — function-level code gen
+- WebArena https://webarena.dev/ — web agents, proxy only
+- OSWorld https://os-world.github.io/ — desktop agents, proxy only
+- Artificial Analysis https://artificialanalysis.ai/ — coding index; tops: Claude Fable 5.1, Opus 5, GPT-5.6 Sol, Kimi K3, GLM-5.3, Muse Spark 1.3
+- LMArena https://lmarena.ai/ — preference, not capability
+- OpenRouter https://openrouter.ai/rankings — adoption, not quality; tops: DeepSeek V4 Flash, GLM 5.3 Flash, GPT-5.6 Luna, MiMo-V2.5, MiniMax M3 free
+- Vellum https://www.vellum.ai/llm-leaderboard — curated leaderboard
+- Scale SEAL https://labs.scale.com/leaderboard — private evals, limited detail
+- METR https://metr.org/time-horizon/ — horizon, not rank
+
+No source covers PHP/Vue/Playwright/renovate/security directly — those rows stay proxy/judgment.
+
+## Evaluation
+
+Fake-task evaluation (F1 frontend Vue, F2 backend PHP, F3 Playwright, F4 pyinfra, F5 CI/CD), each run through selection twice with all families available, 2026-09-16: all 10 runs landed inside existing table-2b lanes, nothing contradicted, no 2b cell changed. Full prompts, runs, and category x model table in `model-discovery-research.md`.
