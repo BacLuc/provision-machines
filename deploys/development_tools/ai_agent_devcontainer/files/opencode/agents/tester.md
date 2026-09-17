@@ -54,6 +54,21 @@ If you changed github action workflows and have
 a way to trigger them, e.g. in a fork or a separate repository:
 Run the workflow with different inputs that might break it and verify that it behaves as expected.
 
+## Test evidence
+
+Automatic CI (`ci.yml` in `bacluc-agent/agent-runner`, which runs `./scripts/completion-check`) triggers on every push/PR and its result is visible in commit status. Never report it as own testing.
+
+Build evidence links with fallback to API when env vars are absent:
+
+```bash
+RUN_URL="${RUN_URL:-$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID}"
+JOB_ID="${JOB_ID:-$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs" --jq '.jobs[0].id // .jobs[0].databaseId')}"
+COORDINATOR_STEP="${COORDINATOR_STEP:-$(gh api "repos/$GITHUB_REPOSITORY/actions/jobs/$JOB_ID" --jq '.steps[] | select(.name=="Run coordinator") | .number')}"
+EVIDENCE_URL="$RUN_URL/job/$JOB_ID#step:$COORDINATOR_STEP"
+```
+
+Return with test results a bullet list of additional tests run (github workflow xy triggered with parameters xy on commit xy) each followed by its `EVIDENCE_URL` (append `:<line>` to the fragment when the run is already finished and the exact log line is known).
+
 ## Key Principles
 
 - Test thoroughly but efficiently

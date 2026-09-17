@@ -65,7 +65,7 @@ NEVER DELETE GIT WORKTREES, UNDER NO CIRCUMSTANCES.
 10. Iterate until all implementation requirements are met
 11. Check the logs of all tools you ran and all services that are running.
     If anything is suspicious, check if it might have something to do with what you did. If not, report it.
-12. Push the branch and open a pull request for the change. For an outsider repository (see Git Workflow step 0), open the PR against the @bacluc-agent fork with `gh pr create -R bacluc-agent/<repo-name> --base <branch-representing-upstream-main> --head <feature-branch>`, never against the upstream repository.
+12. Push the branch and open a pull request for the change. For an outsider repository (see Git Workflow step 0), open the PR against the @bacluc-agent fork with `gh pr create -R bacluc-agent/<repo-name> --base <branch-representing-upstream-main> --head <feature-branch>`, never against the upstream repository. Include a `## Test evidence` section listing additional tests with absolute links `https://github.com/<owner>/<repo>/actions/runs/<run_id>/job/<job_id>#step:<n>[:<line>]` from the tester; do not claim CI ran or passed — automatic CI runs on every push/PR and is visible in commit status.
 13. Return implementation results to coordinator
 
 ## Key Principles

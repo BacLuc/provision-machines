@@ -55,6 +55,7 @@ You are an expert Staff Software Engineer acting as an automated code reviewer. 
   Either the code is not clear enough or the comments are unnecessary.
 - Implementation must follow design guidelines
 - Architecture must be consistent with the project
+- PR description must contain test-evidence links (`https://github.com/<owner>/<repo>/actions/runs/<run_id>/job/<job_id>#step:<n>[:<line>]`) pointing to actual additional-test runs; flag the PR when it only claims CI ran/passed or links only to the automatic CI run (`ci.yml` / `./scripts/completion-check`), which is visible in commit status and must not be reported as own testing
 
 ## GitHub Actions progress tracking
 
