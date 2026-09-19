@@ -8,6 +8,8 @@ set -euo pipefail
 SCRIPT_DIR=$(realpath $(dirname $0))
 REPO_ROOT=$(dirname $SCRIPT_DIR)
 SNAPSHOT_FILE="$REPO_ROOT/.github/renovate-snapshot.json"
+# renovate: datasource=docker depName=renovate/renovate
+RENOVATE_VERSION="44.103.2"
 
 show_help() {
     echo "Usage: $0 [OPTION]"
@@ -25,7 +27,7 @@ check_snapshot() {
 
 generate_snapshot() {
     # Use DEBUG level to get packageFiles with docker dependencies
-    docker run --rm -e LOG_LEVEL=debug -e LOG_FORMAT=json -v "$REPO_ROOT:/workspace" -w /workspace renovate/renovate --platform=local 2>/tmp/renovate-err.log | jq -s \
+    docker run --rm -e LOG_LEVEL=debug -e LOG_FORMAT=json -v "$REPO_ROOT:/workspace" -w /workspace renovate/renovate:${RENOVATE_VERSION} --platform=local 2>/tmp/renovate-err.log | jq -s \
         '(map(select(.githubDeps)) | first | .githubDeps) as $githubDeps | [((map(select(.msg == "packageFiles with updates")) | first | .config.dockerfile[].deps[].depName) // null)] as $dockerDeps | ($githubDeps + $dockerDeps) | unique'
 }
 
