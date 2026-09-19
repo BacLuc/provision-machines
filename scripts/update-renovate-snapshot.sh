@@ -28,7 +28,7 @@ check_snapshot() {
 generate_snapshot() {
     # Use DEBUG level to get packageFiles with docker dependencies
     docker run --rm -e LOG_LEVEL=debug -e LOG_FORMAT=json -v "$REPO_ROOT:/workspace" -w /workspace renovate/renovate:${RENOVATE_VERSION} --platform=local 2>/tmp/renovate-err.log | jq -s \
-        '(map(select(.githubDeps)) | first | .githubDeps) as $githubDeps | [((map(select(.msg == "packageFiles with updates")) | first | .config.dockerfile[].deps[].depName) // null)] as $dockerDeps | ($githubDeps + $dockerDeps) | unique'
+        '(map(select(.githubDeps)) | first | .githubDeps) as $githubDeps | [map(select(.msg == "packageFiles with updates"))[]?.config.dockerfile[]?.deps[]?.depName] as $dockerDeps | ($githubDeps + $dockerDeps) | unique'
 }
 
 write_snapshot() {
