@@ -29,7 +29,7 @@ Use the following tables to decide:
 - `sonnet` = claude-sonnet-4.5/4.6/5 · `opus` = claude-opus-4.6…4.8/5
 - `gpt` = gpt-5.4/5.5 (fast variants) · `gptX` = gpt-5.6-luna/sol/terra or gpt-5.4-pro
 - `qw` = qwen3.6/3.7-plus · `qwX` = qwen3.8-max / qwen3.8-2.4T
-- `kimi` = kimi-k3 · `mm` = minimax-m2.7/m3 · `gpro` = gemini-3.x-pro-preview / deep-research
+- `kimi` = kimi-k3 · `mm` = minimax-m2.7/m3 · `gpro` = gemini-3.x-pro-preview / deep-research · `gem25pro` = gemini-2.5-pro
 
 ### 2a) Best models per phase, ordered cheap → premium (generic)
 
