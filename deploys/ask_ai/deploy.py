@@ -14,7 +14,7 @@ ALPINE_VERSION = "3.24.2"
 
 # renovate: datasource=github-releases depName=sigoden/aichat
 AICHAT_VERSION = "v0.30.0"
-AICHAT_CHECKSUM = "8378dfc295093efadc3ddddd17f2b49223f120a14ef3503159f375d68f287346"
+AICHAT_CHECKSUM = "6b0cc08c5ceb551dc52bfac2221752f82215be5908c70605d655e9b91ab1557c"
 
 _DOCKER_CALL = f"""\
 docker run --rm \\
