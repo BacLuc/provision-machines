@@ -165,7 +165,7 @@ git_lfs = {
     "enabled": True,
     # renovate: datasource=github-releases depName=git-lfs/git-lfs
     "git_lfs_version": "3.7.1",
-    "git_lfs_checksum": "6b92b05c4588b4a5373b2b4102dbb302757d8ec6671da67cf9e4f9ccb01cd349",
+    "git_lfs_checksum": "1c0b6ee5200ca708c5cebebb18fdeb0e1c98f1af5c1a9cba205a4c0ab5a5ec08",
 }
 
 gnome = {
@@ -202,7 +202,7 @@ lazygit = {
     "enabled": True,
     # renovate: datasource=github-releases depName=jesseduffield/lazygit
     "lazygit_version": "0.65.1",
-    "lazygit_checksum": "971bc18be3ddd75f67462016eeda9bc5581644f90e5e961ec11b450ef60be894",
+    "lazygit_checksum": "02beacbcda0fa342e50ae3480ba8147307353af3fb28e1d5f790e02329c201a6",
 }
 
 ollama = {
