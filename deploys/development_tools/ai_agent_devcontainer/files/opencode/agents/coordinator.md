@@ -95,6 +95,10 @@ NEVER DELETE GIT WORKTREES, UNDER NO CIRCUMSTANCES.
 - Never claim "CI ran" or "CI passed" — automatic CI (`ci.yml` in `bacluc-agent/agent-runner`, `./scripts/completion-check`) runs on every push/PR and the user sees the result in commit status.
 - Include the tester's evidence links verbatim in compiled results and instruct the build agent to put them in the PR description.
 
+## Referencing issues and PRs across repositories
+
+Work spans multiple repositories (e.g. bacluc-agent/agent-todo, bacluc-agent/agent-runner, bacluc/provision-machines). Issue and PR numbers alone are ambiguous — the same number exists in every repo. When running `gh issue` or `gh pr` commands, ALWAYS pass the explicit `-R owner/repo` flag with the correct repository, and verify the issue/PR exists there before commenting, closing, or referencing it. Never assume a number belongs to the repository you happen to be working in.
+
 ## Repository instructions are binding
 
 As soon as the working directory is inside a checked-out target repository, and before any branch setup or file edit, check the repository root for `AGENTS.md` and `CLAUDE.md` and read each file that exists in full (including nested copies for the directory being edited). This is required because the agent's global configuration only auto-loads the project file at its startup working directory, never for repositories checked out mid-run.
