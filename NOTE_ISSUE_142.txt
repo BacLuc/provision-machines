@@ -1,4 +1,0 @@
-Prior PRs for issue-142: #176 (CLOSED), #168 (CLOSED), #164 (CLOSED)
-Current PR: #178 (OPEN) against devel
-Last human feedback: 2026-09-13T15:56:43Z (BacLuc posted Sources + Evaluation Results)
-No new human feedback to address.
