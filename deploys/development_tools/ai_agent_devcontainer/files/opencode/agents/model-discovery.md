@@ -37,7 +37,7 @@ Use the following tables to decide:
 | --------------------------------------------------- | --------------------------------------------- | ---------------------------------- | --------------------------------------------- |
 | **Refinement** (fast iterative edits)               | `dev`, `k2c`, `dsF`, `glmF`, `lite`           | `sonnet`, `glm`, `qw`              | `opus`, `gptX`                                |
 | **Planning** (design, breakdown, long context)      | `glm`, `kimi`, `mm`, `qw` (big cheap context) | `sonnet`, `gpt`, `dsP`, `gpro`     | `opus`, `gptX`, `qwX`, `gpro` (deep-research) |
-| **Building** (real feature code, multi-file)        | `k2c`, `dev`, `dsF`, qwen-coder               | `sonnet`, `glm`, `qw`, `gpt`, `mm` | `opus`, `gptX`, `gpro`, `qwX`                 |
+| **Building** (real feature code, multi-file)        | `k2c`, `dev`, `dsF`                           | `sonnet`, `glm`, `qw`, `gpt`, `mm` | `opus`, `gptX`, `gpro`, `qwX`                 |
 | **Testing** (unit + e2e incl. Playwright)           | `k2c`, `dev`, `dsF`, `glmF`                   | `sonnet`, `gpt`, `glm`             | `opus`, `gptX`                                |
 | **Review** (code review, security, maintainability) | `glm`, `qw`, `kimi`, `gpt`                    | `sonnet`, `dsP`                    | `opus`, `gptX`, `gpro`                        |
 
@@ -67,7 +67,7 @@ For every context below the escalation logic is the same: **only climb to the $$
 | **Research/planning**                      | `k2c`→`sonnet`                                  | `glm`/`kimi`→`opus`                           | `sonnet`→`opus`                                      | `dsF`→`sonnet`     | `glm`→`sonnet`→`opus`                |
 | **Security/permissions**                   | `glm`→`sonnet`                                  | `opus`/`gptX`                                 | `sonnet`→`opus`                                      | `dsF`→`sonnet`     | `opus` (highest rigor)               |
 
-**Quick default policy:** across all these, `glm`/`dev` are your day-to-day "workhorse" picks (best capability-per-dollar), `k2c`/`dev`/`dsF`/`flash-lite` are your cheap fast lane for high-volume mechanical work (refinements, boilerplate, tests), and `opus` / `gptX` / `gpro` / `qwX` are the escalation lane you reserve for architecture, gnarly legacy refactors, and deep code review.
+**Quick default policy:** across all these, `glm`/`dev` are your day-to-day "workhorse" picks (best capability-per-dollar), `k2c`/`dev`/`dsF`/`lite` are your cheap fast lane for high-volume mechanical work (refinements, boilerplate, tests), and `opus` / `gptX` / `gpro` / `qwX` are the escalation lane you reserve for architecture, gnarly legacy refactors, and deep code review.
 
 Then find the available models in the providers and pick the correct ones.
 
@@ -92,5 +92,3 @@ The following models are very weak. Only use when nothing else is available:
 big-pickle is also a free model, and it performs well.
 
 Cache every check result: when running inside a GitHub Action, in the issue titled `model-discovery cache` in https://github.com/bacluc-agent/agent-todo - find it with `gh issue list -R bacluc-agent/agent-todo --state open --search 'in:title "model-discovery cache"'`, create it with `gh issue create` if missing, update it with `gh issue edit <number> --body-file`; otherwise cache in a file. Store one fenced ```json block mapping provider and model ids to `{"ok": true, "checked": "<ISO 8601 timestamp>"}`. Re-check anything older than 7 days or no longer listed by `opencode models`.
-
-Before returning, verify every model you return actually works: run `timeout 10s opencode --pure run --dir "$RUNNER_TEMP" --model "<provider/model>" 'Respond with exactly OK.'` and treat exit code 0 as working. If it fails, choose the next best candidate (free models first, at most 3 candidates per role) and cache the result of each verification the same way.
