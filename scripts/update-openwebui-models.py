@@ -10,7 +10,6 @@ import argparse
 import json
 import re
 import time
-from datetime import datetime, timezone
 from typing import Any, cast
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -163,7 +162,7 @@ def build_preset_specs(openwebui: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def to_sync_model(spec: dict[str, Any], owner: str, existing: dict[str, dict[str, Any]]) -> dict[str, Any]:
-    now = datetime.now(timezone.utc).isoformat()
+    now = int(time.time())
     prev = existing.get(spec["id"])
     capabilities = {
         "vision": False,
@@ -194,8 +193,24 @@ def to_sync_model(spec: dict[str, Any], owner: str, existing: dict[str, dict[str
         "meta": meta,
         "access_grants": [],
         "is_active": True,
-        "updated_at": prev.get("updated_at", now) if prev else now,
-        "created_at": prev.get("created_at", now) if prev else now,
+        "updated_at": int(prev["updated_at"]) if prev and "updated_at" in prev else now,
+        "created_at": int(prev["created_at"]) if prev and "created_at" in prev else now,
+    }
+
+
+def normalize_preserved(row: dict[str, Any]) -> dict[str, Any]:
+    now = int(time.time())
+    return {
+        "id": row["id"],
+        "user_id": row.get("user_id"),
+        "base_model_id": row.get("base_model_id"),
+        "name": row.get("name"),
+        "params": row.get("params", {}),
+        "meta": row.get("meta", {}),
+        "access_grants": row.get("access_grants", []),
+        "is_active": row.get("is_active", True),
+        "updated_at": int(row["updated_at"]) if "updated_at" in row else now,
+        "created_at": int(row["created_at"]) if "created_at" in row else now,
     }
 
 
@@ -291,15 +306,14 @@ def reconcile(
                 f"expected {spec['base_model_id']!r}"
             )
     models = [to_sync_model(spec, owner, by_id) for spec in specs]
-    preserved = [row for row in existing if row["id"] not in {s["id"] for s in specs}]
+    preserved = [normalize_preserved(row) for row in existing if row["id"] not in {s["id"] for s in specs}]
     payload = {"models": models + preserved}
     status, data = request_json("POST", f"{base_url}/api/v1/models/sync", token=token, payload=payload)
     if status in (404, 405, 501):
-        for model in models:
-            status, _ = request_json("POST", f"{base_url}/api/v1/models", token=token, payload=model)
-            if status not in (200, 201):
-                raise RuntimeError(f"import of {model['id']} failed (HTTP {status})")
-        print("sync endpoint unavailable; imported presets individually (non-exact)")
+        status, _ = request_json("POST", f"{base_url}/api/v1/models/import", token=token, payload={"models": models})
+        if status != 200:
+            raise RuntimeError(f"import failed (HTTP {status})")
+        print("sync endpoint unavailable; imported presets via /models/import (non-exact)")
     elif status != 200 or data == []:
         raise RuntimeError(f"sync failed (HTTP {status}); expected a model list, got {data!r}")
     status, data = request_json("GET", f"{base_url}/api/v1/models", token=token)

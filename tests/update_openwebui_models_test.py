@@ -329,6 +329,8 @@ def test_to_sync_model_full_envelope() -> None:
     assert model["params"]["system"] == spec["system"]
     assert model["access_grants"] == []
     assert model["is_active"] is True
+    assert isinstance(model["updated_at"], int)
+    assert isinstance(model["created_at"], int)
     assert "system" not in model["meta"]
     assert model["meta"]["capabilities"]["chat"] is True
     assert model["meta"]["capabilities"]["web_search"] is False
@@ -353,10 +355,18 @@ def test_to_sync_model_web_research_capabilities() -> None:
 
 def test_to_sync_model_preserves_existing_timestamps() -> None:
     spec = mod.build_preset_specs(OPENWEBUI)[0]
-    existing = {"chat": {"updated_at": "t1", "created_at": "t2"}}
+    existing = {"chat": {"updated_at": 111, "created_at": 222}}
     model = mod.to_sync_model(spec, "owner-id", existing)
-    assert model["updated_at"] == "t1"
-    assert model["created_at"] == "t2"
+    assert model["updated_at"] == 111
+    assert model["created_at"] == 222
+
+
+def test_to_sync_model_coerces_existing_timestamps_to_int() -> None:
+    spec = mod.build_preset_specs(OPENWEBUI)[0]
+    existing = {"chat": {"updated_at": "111", "created_at": "222"}}
+    model = mod.to_sync_model(spec, "owner-id", existing)
+    assert model["updated_at"] == 111
+    assert model["created_at"] == 222
 
 
 def test_read_env_file_parses(tmp_path: Path) -> None:
@@ -376,8 +386,19 @@ def test_read_env_file_error_does_not_expose_value(tmp_path: Path) -> None:
 def test_reconcile_exact_sync_body() -> None:
     specs = mod.build_preset_specs(OPENWEBUI)
     existing = [
-        {"id": "chat", "base_model_id": "router-chat", "updated_at": "t1", "created_at": "t2"},
-        {"id": "unrelated", "base_model_id": None, "updated_at": "t3", "created_at": "t4"},
+        {"id": "chat", "base_model_id": "router-chat", "updated_at": 1, "created_at": 2},
+        {
+            "id": "unrelated",
+            "user_id": "owner",
+            "base_model_id": None,
+            "name": "Unrelated",
+            "params": {},
+            "meta": {},
+            "access_grants": [],
+            "is_active": True,
+            "updated_at": 3,
+            "created_at": 4,
+        },
     ]
     captured: dict[str, Any] = {}
     get_count = 0
@@ -413,9 +434,80 @@ def test_reconcile_exact_sync_body() -> None:
     chat = body["models"][0]
     assert chat["base_model_id"] == "router-chat"
     assert chat["user_id"] == "owner"
-    assert chat["updated_at"] == "t1"
-    assert chat["created_at"] == "t2"
-    assert body["models"][8] == existing[1]
+    assert chat["updated_at"] == 1
+    assert chat["created_at"] == 2
+    preserved = body["models"][8]
+    assert set(preserved) == {
+        "id",
+        "user_id",
+        "base_model_id",
+        "name",
+        "params",
+        "meta",
+        "access_grants",
+        "is_active",
+        "updated_at",
+        "created_at",
+    }
+    assert preserved["id"] == "unrelated"
+    assert preserved["user_id"] == "owner"
+    assert preserved["updated_at"] == 3
+    assert preserved["created_at"] == 4
+
+
+def test_reconcile_preserved_rows_normalized_into_full_envelopes() -> None:
+    specs = mod.build_preset_specs(OPENWEBUI)
+    existing = [
+        {"id": "chat", "base_model_id": "router-chat", "updated_at": 1, "created_at": 2},
+        {"id": "custom", "base_model_id": "some-base", "name": "Custom", "updated_at": "5", "created_at": "6"},
+    ]
+    captured: dict[str, Any] = {}
+    get_count = 0
+
+    def fake_request_json(
+        method: str,
+        url: str,
+        token: str | None = None,
+        payload: dict[str, Any] | None = None,
+        retries: int = 5,
+    ) -> tuple[int, Any]:
+        nonlocal get_count
+        if method == "GET" and url.endswith("/api/v1/models"):
+            get_count += 1
+            if get_count == 1:
+                return 200, existing
+            return 200, captured["payload"]["models"]
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            assert payload is not None
+            captured["payload"] = payload
+            return 200, payload["models"]
+        raise AssertionError(f"unexpected call {method} {url}")
+
+    with mock.patch.object(mod, "request_json", side_effect=fake_request_json):
+        mod.reconcile("http://x", "token", "owner", specs)
+
+    preserved = [m for m in captured["payload"]["models"] if m["id"] == "custom"][0]
+    assert set(preserved) == {
+        "id",
+        "user_id",
+        "base_model_id",
+        "name",
+        "params",
+        "meta",
+        "access_grants",
+        "is_active",
+        "updated_at",
+        "created_at",
+    }
+    assert preserved["id"] == "custom"
+    assert preserved["base_model_id"] == "some-base"
+    assert preserved["name"] == "Custom"
+    assert preserved["params"] == {}
+    assert preserved["meta"] == {}
+    assert preserved["access_grants"] == []
+    assert preserved["is_active"] is True
+    assert preserved["updated_at"] == 5
+    assert preserved["created_at"] == 6
 
 
 def test_reconcile_id_collision_fails_before_sync() -> None:
@@ -462,6 +554,7 @@ def test_reconcile_200_empty_is_failure() -> None:
 def test_reconcile_import_fallback_on_404() -> None:
     specs = mod.build_preset_specs(OPENWEBUI)
     calls: list[tuple[str, str]] = []
+    import_payloads: list[dict[str, Any]] = []
 
     def fake_request_json(
         method: str,
@@ -477,15 +570,44 @@ def test_reconcile_import_fallback_on_404() -> None:
             return 200, [{"id": s["id"], "base_model_id": s["base_model_id"]} for s in specs]
         if method == "POST" and url.endswith("/api/v1/models/sync"):
             return 404, {"detail": "not found"}
-        if method == "POST" and url.endswith("/api/v1/models"):
+        if method == "POST" and url.endswith("/api/v1/models/import"):
+            assert payload is not None
+            import_payloads.append(payload)
             return 200, True
         raise AssertionError(f"unexpected call {method} {url}")
 
     with mock.patch.object(mod, "request_json", side_effect=fake_request_json):
         mod.reconcile("http://x", "token", "owner", specs)
 
-    import_calls = [c for c in calls if c[0] == "POST" and c[1].endswith("/api/v1/models")]
-    assert len(import_calls) == 8
+    import_calls = [c for c in calls if c[0] == "POST" and c[1].endswith("/api/v1/models/import")]
+    assert len(import_calls) == 1
+    assert set(import_payloads[0]) == {"models"}
+    assert [m["id"] for m in import_payloads[0]["models"]] == OPENWEBUI["default_models"]
+    assert all(isinstance(m["updated_at"], int) for m in import_payloads[0]["models"])
+    assert all(isinstance(m["created_at"], int) for m in import_payloads[0]["models"])
+
+
+def test_reconcile_import_fallback_raises_on_error() -> None:
+    specs = mod.build_preset_specs(OPENWEBUI)
+
+    def fake_request_json(
+        method: str,
+        url: str,
+        token: str | None = None,
+        payload: dict[str, Any] | None = None,
+        retries: int = 5,
+    ) -> tuple[int, Any]:
+        if method == "GET" and url.endswith("/api/v1/models"):
+            return 200, []
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            return 405, {"detail": "method not allowed"}
+        if method == "POST" and url.endswith("/api/v1/models/import"):
+            return 500, {"detail": "boom"}
+        raise AssertionError(f"unexpected call {method} {url}")
+
+    with mock.patch.object(mod, "request_json", side_effect=fake_request_json):
+        with pytest.raises(RuntimeError, match="import failed"):
+            mod.reconcile("http://x", "token", "owner", specs)
 
 
 def test_reconcile_422_is_terminal() -> None:
@@ -512,8 +634,8 @@ def test_reconcile_422_is_terminal() -> None:
 def test_reconcile_idempotent() -> None:
     specs = mod.build_preset_specs(OPENWEBUI)
     existing = [
-        {"id": "chat", "base_model_id": "router-chat", "updated_at": "t1", "created_at": "t2"},
-        {"id": "unrelated", "base_model_id": None, "updated_at": "t3", "created_at": "t4"},
+        {"id": "chat", "base_model_id": "router-chat", "updated_at": 1, "created_at": 2},
+        {"id": "unrelated", "base_model_id": None, "updated_at": 3, "created_at": 4},
     ]
     payloads: list[dict[str, Any]] = []
 
