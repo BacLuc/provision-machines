@@ -102,11 +102,19 @@ def build_preset_payloads(config: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def build_sync_payload(exported: list[dict[str, Any]], preset_payloads: list[dict[str, Any]]) -> dict[str, Any]:
-    preset_ids = {preset["id"] for preset in preset_payloads}
+    presets_by_id = {preset["id"]: preset for preset in preset_payloads}
+    preserved: list[dict[str, Any]] = []
     for row in exported:
-        if row["id"] in preset_ids:
-            sys.exit(f"exported model collides with preset id: {row['id']}")
-    return {"models": preset_payloads + exported}
+        preset = presets_by_id.get(row["id"])
+        if preset is not None:
+            if (
+                row.get("base_model_id") != preset["base_model_id"]
+                or row.get("params", {}).get("system") != preset["params"]["system"]
+            ):
+                sys.exit(f"exported model collides with preset id: {row['id']}")
+        else:
+            preserved.append(row)
+    return {"models": preset_payloads + preserved}
 
 
 def request_json(

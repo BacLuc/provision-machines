@@ -228,6 +228,26 @@ def test_request_json_sets_json_content_type() -> None:
     assert captured["headers"]["Content-type"] == "application/json"
 
 
+def test_sync_payload_rerun_with_existing_presets() -> None:
+    preset_payloads = mod.build_preset_payloads(CONFIG)
+    exported = [dict(p) for p in preset_payloads] + [
+        {
+            "id": "custom-model",
+            "name": "Custom",
+            "base_model_id": "zen/other",
+            "params": {"system": "x"},
+            "tools": [],
+            "meta": {},
+            "access_grants": [],
+            "is_active": True,
+        }
+    ]
+    payload = mod.build_sync_payload(exported, preset_payloads)
+    models = payload["models"]
+    assert [m["id"] for m in models[:8]] == CONFIG["default_models"]
+    assert [m["id"] for m in models[8:]] == ["custom-model"]
+
+
 def test_collision_fails_before_mutation() -> None:
     exported = [
         {
