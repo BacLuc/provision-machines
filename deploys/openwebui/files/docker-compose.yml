@@ -16,8 +16,6 @@ services:
       - "OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}"
       - "OPENAI_API_KEYS=${OPENAI_API_KEYS}"
       - "DEFAULT_MODELS=${DEFAULT_MODELS}"
-      - "ENABLE_MODEL_FILTER=${ENABLE_MODEL_FILTER}"
-      - "MODEL_FILTER_LIST=${MODEL_FILTER_LIST}"
       - "DATABASE_ENABLE_SESSION_SHARING=true"
   litellm:
     image: "ghcr.io/berriai/litellm:${LITELLM_VERSION}"

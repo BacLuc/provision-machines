@@ -73,8 +73,6 @@ def test_extra_env() -> None:
         "OPENAI_API_BASE_URL": "${OPENAI_COMPATIBLE_BASE_URL}",
         "OPENAI_API_KEYS": "${LITELLM_MASTER_KEY}",
         "DEFAULT_MODELS": ",".join(_PRESET_IDS),
-        "ENABLE_MODEL_FILTER": "true",
-        "MODEL_FILTER_LIST": ",".join(_PRESET_IDS),
     }
 
 
