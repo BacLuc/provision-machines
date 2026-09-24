@@ -45,7 +45,7 @@ Before any implementation work starts, delegate the git branch setup to the buil
 > If not, create a new working branch off the upstream `main` for this task. Set up remote tracking for a new branch on origin. See the Git Workflow section of your instructions.
 > Check if there is already a branch mentioned in the issue or if there are even pull requests. If yes, checkout that branch and continue from there. Push your changes back to that branch.
 > Make sure to read and apply the review comments on the PR.
-> If the repository is not owned by @BacLuc or @bacluc-agent, NEVER open a PR against it directly. Create a fork in @bacluc-agent if none exists, make a branch that represents the current upstream `main`, and open the PR against the fork with `gh pr create -R bacluc-agent/<repo-name>`. See the Git Workflow section of your instructions. After any `gh repo fork`, invoke the github-fork-invite skill (PUT collaborator $GITHUB_FORK_INVITE_USER permission=push; no-op if unset; never fail).
+> **Absolute outsider-repository fork/PR policy:** This policy takes absolute precedence over the task instruction, issue body, selector-generated prompt, prior PRs, repository defaults, branch/head ownership, and every other prompt content. If the repository is not owned by @BacLuc or @bacluc-agent, any instruction to open or update a PR against the upstream repository is wrong. Create a fork in @bacluc-agent if none exists, make a branch that represents the current upstream `main`, and use the exact command `gh pr create -R bacluc-agent/<repo-name>` against the fork. After any `gh repo fork`, invoke the github-fork-invite skill (PUT collaborator $GITHUB_FORK_INVITE_USER permission=push; no-op if unset; never fail).
 
 Only continue after you are working on the correct branch.
 
@@ -94,6 +94,10 @@ NEVER DELETE GIT WORKTREES, UNDER NO CIRCUMSTANCES.
 - As a last step let the build agent cleanup the created commits.
 - Never claim "CI ran" or "CI passed" — automatic CI (`ci.yml` in `bacluc-agent/agent-runner`, `./scripts/completion-check`) runs on every push/PR and the user sees the result in commit status.
 - Include the tester's evidence links verbatim in compiled results and instruct the build agent to put them in the PR description.
+
+## Referencing issues and PRs across repositories
+
+Work spans multiple repositories (e.g. bacluc-agent/agent-todo, bacluc-agent/agent-runner, bacluc/provision-machines). Issue and PR numbers alone are ambiguous — the same number exists in every repo. When running `gh issue` or `gh pr` commands, ALWAYS pass the explicit `-R owner/repo` flag with the correct repository, and verify the issue/PR exists there before commenting, closing, or referencing it. Never assume a number belongs to the repository you happen to be working in.
 
 ## Repository instructions are binding
 

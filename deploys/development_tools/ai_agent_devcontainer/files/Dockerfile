@@ -1,5 +1,5 @@
 # renovate: datasource=docker depName=mcr.microsoft.com/devcontainers/universal
-FROM mcr.microsoft.com/devcontainers/universal:6.1.1-noble@sha256:cb1ccdf5e3c10b4134ffe8f2c03e8481e7c41058d27a70192fa54146a8c327c2
+FROM mcr.microsoft.com/devcontainers/universal:6.1.7-noble@sha256:584e41561451c910dcd96221634be07545803aed9cd437a60288f06ddeaf5880
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
@@ -18,13 +18,13 @@ ENV NVM_DIR=/usr/local/share/nvm
 # renovate: datasource=github-tags depName=nodejs/node
 ENV NODE_VERSION=26.7.0
 # renovate: datasource=npm depName=@anthropic-ai/claude-code
-ENV CLAUDE_CODE_VERSION=2.1.237
+ENV CLAUDE_CODE_VERSION=2.1.281
 # renovate: datasource=npm depName=@google/gemini-cli
 ENV GEMINI_CLI_VERSION=0.56.0
 # renovate: datasource=npm depName=@openai/codex
-ENV CODEX_VERSION=0.148.0
+ENV CODEX_VERSION=0.156.1
 # renovate: datasource=npm depName=opencode-ai
-ENV OPENCODE_VERSION=1.18.19
+ENV OPENCODE_VERSION=1.18.32
 # renovate: datasource=npm depName=t3
 ENV T3_CODE_VERSION=0.0.31
 
