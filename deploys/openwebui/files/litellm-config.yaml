@@ -1,0 +1,35 @@
+model_list:
+  - model_name: zen/deepseek-v4-flash
+    litellm_params:
+      model: openai/deepseek-v4-flash
+      api_base: https://opencode.ai/zen/go/v1
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: zen/deepseek-v4-pro
+    litellm_params:
+      model: openai/deepseek-v4-pro
+      api_base: https://opencode.ai/zen/go/v1
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: zen/glm-5.3-flash
+    litellm_params:
+      model: openai/glm-5.3-flash
+      api_base: https://opencode.ai/zen/go/v1
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: ollama/qwen2.5:3b
+    litellm_params:
+      model: ollama/qwen2.5:3b
+      api_base: http://host.docker.internal:11434
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+router_settings:
+  routing_strategy: simple-shuffle
+  default_fallbacks:
+    - zen/deepseek-v4-flash
+  fallbacks:
+    - zen/deepseek-v4-pro:
+        - zen/deepseek-v4-flash
+    - zen/glm-5.3-flash:
+        - zen/deepseek-v4-flash
+    - ollama/qwen2.5:3b:
+        - zen/deepseek-v4-flash
