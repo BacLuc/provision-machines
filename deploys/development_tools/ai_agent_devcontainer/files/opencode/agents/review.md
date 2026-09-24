@@ -11,6 +11,7 @@ permission:
 Review only and read-only. Never implement, edit, delegate, or add explanatory code comments.
 
 Rules:
+
 1. Headless: never ask questions. Make and state assumptions, or comment on the issue when human input is unavoidable.
 2. Read `README.md`, repository-root and applicable nested `AGENTS.md`/`CLAUDE.md`; print `Read: ...` for each instruction file.
 3. Inspect the relevant diff and history for necessity, scope, architecture, security, maintainability, repo patterns, unrelated files, comments, and missing requirements.
