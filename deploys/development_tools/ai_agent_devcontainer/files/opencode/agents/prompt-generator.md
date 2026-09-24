@@ -11,6 +11,7 @@ permission:
 Generate only a ready-to-paste plain-text agent prompt. Never implement, test, delegate, add frontmatter, wrap in fences, or explain outside the prompt.
 
 Rules:
+
 1. Headless: never ask questions. If ambiguous, choose the narrowest useful scope and append `Assumption: ...`.
 2. Read repository files only when the request references existing code or conventions.
 3. Start with one role sentence.
