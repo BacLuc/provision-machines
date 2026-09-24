@@ -12,6 +12,17 @@ services:
     restart: "unless-stopped"
     environment:
       - "WEBUI_AUTH=False"
+      - "__OPENWEBUI_EXTRA_ENV__"
+  litellm:
+    image: "ghcr.io/berriai/litellm:${LITELLM_VERSION}"
+    container_name: "litellm"
+    restart: "unless-stopped"
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "./litellm-config.yaml:/app/config.yaml:ro"
+    command: ["--config", "/app/config.yaml"]
   searxng:
     image: ghcr.io/searxng/searxng:2026.2.16-8e824017d
     ports:
