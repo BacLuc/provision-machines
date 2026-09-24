@@ -213,12 +213,12 @@ def test_reconcile_sync_payload(monkeypatch: pytest.MonkeyPatch) -> None:
         calls.append((method, url, payload))
         if url.endswith("/api/v1/models/export"):
             return exported
-        if url.endswith("/api/v1/users/user"):
-            return {"id": "admin-1"}
+        if url.endswith("/api/v1/users/"):
+            return {"users": [{"id": "admin-1", "role": "admin"}]}
         if url.endswith("/api/v1/models/sync"):
             assert payload is not None
             exported = payload["models"]
-            return [{"id": "chat"}]
+            return payload["models"]
         return None
 
     monkeypatch.setattr(mod, "request_json", fake_request_json)
@@ -241,8 +241,8 @@ def test_reconcile_empty_sync_response_is_failure(monkeypatch: pytest.MonkeyPatc
     def fake_request_json(method: str, url: str, token: str, payload: dict[str, Any] | None = None) -> Any:
         if url.endswith("/api/v1/models/export"):
             return []
-        if url.endswith("/api/v1/users/user"):
-            return {"id": "admin-1"}
+        if url.endswith("/api/v1/users/"):
+            return {"users": [{"id": "admin-1", "role": "admin"}]}
         if url.endswith("/api/v1/models/sync"):
             return []
         return None
@@ -261,8 +261,8 @@ def test_reconcile_import_fallback_on_404(monkeypatch: pytest.MonkeyPatch) -> No
         nonlocal exported
         if url.endswith("/api/v1/models/export"):
             return exported
-        if url.endswith("/api/v1/users/user"):
-            return {"id": "admin-1"}
+        if url.endswith("/api/v1/users/"):
+            return {"users": [{"id": "admin-1", "role": "admin"}]}
         if url.endswith("/api/v1/models/sync"):
             raise HTTPError(url, 404, "Not Found", _HEADERS, None)
         if url.endswith("/api/v1/models/import"):
@@ -292,8 +292,8 @@ def test_reconcile_import_fallback_only_on_404_405_501(monkeypatch: pytest.Monke
         ) -> Any:
             if url.endswith("/api/v1/models/export"):
                 return []
-            if url.endswith("/api/v1/users/user"):
-                return {"id": "admin-1"}
+            if url.endswith("/api/v1/users/"):
+                return {"users": [{"id": "admin-1", "role": "admin"}]}
             if url.endswith("/api/v1/models/sync"):
                 raise HTTPError(url, code, "Error", _HEADERS, None)
             if url.endswith("/api/v1/models/import"):
@@ -328,13 +328,13 @@ def test_reconcile_idempotent(monkeypatch: pytest.MonkeyPatch) -> None:
         nonlocal exported, synced
         if url.endswith("/api/v1/models/export"):
             return exported
-        if url.endswith("/api/v1/users/user"):
-            return {"id": "admin-1"}
+        if url.endswith("/api/v1/users/"):
+            return {"users": [{"id": "admin-1", "role": "admin"}]}
         if url.endswith("/api/v1/models/sync"):
             assert payload is not None
             synced = payload
             exported = payload["models"]
-            return [{"id": "chat"}]
+            return payload["models"]
         return None
 
     monkeypatch.setattr(mod, "request_json", fake_request_json)
@@ -350,20 +350,20 @@ def test_authenticate_admin_key(monkeypatch: pytest.MonkeyPatch) -> None:
 
     def fake_request_json(method: str, url: str, token: str, payload: dict[str, Any] | None = None) -> Any:
         calls.append((method, url, token))
-        if url.endswith("/api/v1/users/user"):
-            return {"id": "admin-1"}
+        if url.endswith("/api/v1/users/"):
+            return {"users": [{"id": "admin-1", "role": "admin"}]}
         return None
 
     monkeypatch.setattr(mod, "request_json", fake_request_json)
     args = argparse.Namespace(base_url="http://x", admin_api_key="admin-key", models=[], dry_run=False)
     assert mod.authenticate(args, {}) == "admin-key"
-    assert calls == [("GET", "http://x/api/v1/users/user", "admin-key")]
+    assert calls == [("GET", "http://x/api/v1/users/", "admin-key")]
 
 
 def test_authenticate_env_key(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_request_json(method: str, url: str, token: str, payload: dict[str, Any] | None = None) -> Any:
-        if url.endswith("/api/v1/users/user"):
-            return {"id": "admin-1"}
+        if url.endswith("/api/v1/users/"):
+            return {"users": [{"id": "admin-1", "role": "admin"}]}
         return None
 
     monkeypatch.setattr(mod, "request_json", fake_request_json)
@@ -384,6 +384,24 @@ def test_authenticate_signin_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
     args = argparse.Namespace(base_url="http://x", admin_api_key="", models=[], dry_run=False)
     assert mod.authenticate(args, {}) == "jwt-token"
     assert calls[0] == ("POST", "http://x/api/v1/auths/signin", "", {"email": "", "password": ""})
+
+
+def test_authenticate_falls_back_to_signin_on_bearer_401(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[str, str, str, dict[str, Any] | None]] = []
+
+    def fake_request_json(method: str, url: str, token: str, payload: dict[str, Any] | None = None) -> Any:
+        calls.append((method, url, token, payload))
+        if url.endswith("/api/v1/users/"):
+            raise HTTPError(url, 401, "Unauthorized", _HEADERS, None)
+        return {"token": "jwt-token"}
+
+    monkeypatch.setattr(mod, "request_json", fake_request_json)
+    args = argparse.Namespace(base_url="http://x", admin_api_key="admin-key", models=[], dry_run=False)
+    assert mod.authenticate(args, {}) == "jwt-token"
+    assert calls == [
+        ("GET", "http://x/api/v1/users/", "admin-key", None),
+        ("POST", "http://x/api/v1/auths/signin", "", {"email": "", "password": ""}),
+    ]
 
 
 def test_authenticate_both_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -464,6 +482,22 @@ def test_wait_ready_polls_until_200(monkeypatch: pytest.MonkeyPatch) -> None:
         attempts["n"] += 1
         if attempts["n"] < 3:
             raise URLError("not ready")
+        return _FakeResponse(b"ok", status=200)
+
+    monkeypatch.setattr(mod, "urlopen", fake_urlopen)
+    mod.wait_ready("http://x", timeout=300)
+    assert attempts["n"] == 3
+
+
+def test_wait_ready_retries_on_connection_reset(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_time = _FakeTime()
+    monkeypatch.setattr(mod, "time", fake_time)
+    attempts = {"n": 0}
+
+    def fake_urlopen(url: str, timeout: int = 30) -> _FakeResponse:
+        attempts["n"] += 1
+        if attempts["n"] < 3:
+            raise ConnectionResetError("Connection reset by peer")
         return _FakeResponse(b"ok", status=200)
 
     monkeypatch.setattr(mod, "urlopen", fake_urlopen)

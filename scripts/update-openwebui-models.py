@@ -330,26 +330,33 @@ def wait_ready(base_url: str, timeout: int = 300) -> None:
             with urlopen(f"{base_url}/api/ready", timeout=5) as resp:
                 if resp.status == 200:
                     return
-        except (HTTPError, URLError):
+        except OSError:
             pass
         time.sleep(5)
     raise RuntimeError(f"OpenWebUI not ready after {timeout}s")
 
 
-def _user_id(user: Any) -> str:
-    if not isinstance(user, dict):
+def _admin_user_id(base_url: str, token: str) -> str:
+    response = request_json("GET", f"{base_url}/api/v1/users/", token)
+    if not isinstance(response, dict) or not isinstance(response.get("users"), list):
         raise RuntimeError("could not determine admin user id")
-    user_id = user.get("id")
-    if not isinstance(user_id, str):
-        raise RuntimeError("could not determine admin user id")
-    return user_id
+    for user in response["users"]:
+        if not isinstance(user, dict) or user.get("role") != "admin":
+            continue
+        user_id = user.get("id")
+        if isinstance(user_id, str):
+            return user_id
+    raise RuntimeError("could not determine admin user id")
 
 
 def authenticate(args: argparse.Namespace, env: dict[str, str]) -> str:
     admin_key = str(args.admin_api_key) or env.get("OPENWEBUI_ADMIN_API_KEY", "")
     if admin_key:
-        request_json("GET", f"{args.base_url}/api/v1/users/user", admin_key)
-        return admin_key
+        try:
+            _admin_user_id(args.base_url, admin_key)
+            return admin_key
+        except (HTTPError, URLError):
+            pass
     try:
         response = request_json("POST", f"{args.base_url}/api/v1/auths/signin", "", {"email": "", "password": ""})
     except (HTTPError, URLError) as e:
@@ -371,7 +378,7 @@ def reconcile(args: argparse.Namespace, token: str) -> None:
         if isinstance(row, dict) and isinstance(row.get("id"), str):
             existing[row["id"]] = row
     now = int(time.time())
-    admin_user_id = _user_id(request_json("GET", f"{args.base_url}/api/v1/users/user", token))
+    admin_user_id = _admin_user_id(args.base_url, token)
     specs = build_preset_specs(args.models)
     managed_ids: set[str] = set()
     payload: list[dict[str, Any]] = []
@@ -395,13 +402,10 @@ def reconcile(args: argparse.Namespace, token: str) -> None:
             raise
         for row in payload:
             request_json("POST", f"{args.base_url}/api/v1/models/import", token, {"models": [row]})
-    else:
-        if not isinstance(response, list) or not response:
-            raise RuntimeError("sync returned an empty result; models were not reconciled")
-    re_exported = request_json("GET", f"{args.base_url}/api/v1/models/export", token)
-    if not isinstance(re_exported, list):
-        raise RuntimeError("unexpected re-export response")
-    present = {row.get("id") for row in re_exported if isinstance(row, dict)}
+        return
+    if not isinstance(response, list) or not response:
+        raise RuntimeError("sync returned an empty result; models were not reconciled")
+    present = {row.get("id") for row in response if isinstance(row, dict)}
     missing = managed_ids - present
     if missing:
         raise RuntimeError(f"sync did not create models: {sorted(missing)}")

@@ -86,6 +86,17 @@ def test_litellm_each_router_has_order_1_and_2() -> None:
         assert sorted(orders) == ["order: 1", "order: 2"], router_id
 
 
+def test_litellm_zen_entries_have_openai_provider() -> None:
+    for entry in _litellm_entries():
+        params = entry.split("litellm_params:")[1]
+        order = next(line.strip() for line in params.splitlines() if line.strip().startswith("order:"))
+        if order == "order: 1":
+            provider = next(
+                line.strip() for line in params.splitlines() if line.strip().startswith("custom_llm_provider:")
+            )
+            assert provider == "custom_llm_provider: openai", entry
+
+
 def test_litellm_router_settings() -> None:
     text = _LITELLM_CONFIG.read_text()
     assert "routing_strategy: simple-shuffle" in text
@@ -127,3 +138,38 @@ def test_compose_searxng_unchanged() -> None:
     block = _service_block(_COMPOSE.read_text(), "searxng")
     assert "ghcr.io/searxng/searxng:2026.2.16-8e824017d" in block
     assert "127.0.0.1:13308:8080" in block
+
+
+def _rendered_env_keys() -> set[str]:
+    openwebui = _load_openwebui()
+    keys = {
+        "BRAVE_API_KEY",
+        "OPENCODE_GO_API_KEY",
+        "LITELLM_MASTER_KEY",
+        "OPENWEBUI_ADMIN_API_KEY",
+        "OLLAMA_API_KEY",
+        "ZEN_API_BASE",
+        "OLLAMA_API_BASE",
+        "OLLAMA_MODEL",
+        "LITELLM_VERSION",
+    }
+    for preset in openwebui["default_models"]:
+        keys.add(f"ZEN_{preset.upper()}_MODEL")
+    keys.update(openwebui["extra_env"].keys())
+    return keys
+
+
+def test_compose_env_vars_covered_by_rendered_env() -> None:
+    compose_vars = set(re.findall(r"\$\{([A-Z_]+)\}", _COMPOSE.read_text()))
+    assert compose_vars <= _rendered_env_keys()
+
+
+def test_litellm_config_env_refs_covered_by_rendered_env() -> None:
+    refs = set(re.findall(r"os\.environ/([A-Z_]+)", _LITELLM_CONFIG.read_text()))
+    assert refs <= _rendered_env_keys()
+
+
+def test_deploy_args_file_contract_keys() -> None:
+    deploy_source = (_REPO_ROOT / "deploys" / "openwebui" / "deploy.py").read_text()
+    for key in ('"base_url"', '"admin_api_key"', '"config_path"', '"models"', '"preset_id"', '"router_model_id"'):
+        assert key in deploy_source
