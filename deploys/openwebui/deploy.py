@@ -79,19 +79,16 @@ if host.data.openwebui["enabled"]:
         mode="644",
     )
 
+    env_lines = [
+        f"LITELLM_VERSION={litellm_version}",
+        f"OPENCODE_GO_API_KEY={host.data.openwebui['OPENCODE_GO_API_KEY']}",
+        f"OPENCODE_GO_2_API_KEY={host.data.openwebui['OPENCODE_GO_2_API_KEY']}",
+    ]
+    if host.data.openwebui["LITELLM_MASTER_KEY"]:
+        env_lines.append(f"LITELLM_MASTER_KEY={host.data.openwebui['LITELLM_MASTER_KEY']}")
     env_file = files.put(
         name="Deploy .env",
-        src=io.StringIO(
-            "\n".join(
-                [
-                    f"LITELLM_VERSION={litellm_version}",
-                    f"LITELLM_MASTER_KEY={host.data.openwebui['LITELLM_MASTER_KEY']}",
-                    f"OPENCODE_GO_API_KEY={host.data.openwebui['OPENCODE_GO_API_KEY']}",
-                    f"OPENCODE_GO_2_API_KEY={host.data.openwebui['OPENCODE_GO_2_API_KEY']}",
-                    "",
-                ]
-            )
-        ),
+        src=io.StringIO("\n".join(env_lines + [""])),
         dest=f"{compose_project_dir}/.env",
         user=user,
         group=user,
