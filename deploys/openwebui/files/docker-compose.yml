@@ -12,6 +12,37 @@ services:
     restart: "unless-stopped"
     environment:
       - "WEBUI_AUTH=False"
+      - "ENABLE_OPENAI_API=${ENABLE_OPENAI_API}"
+      - "OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}"
+      - "OPENAI_API_KEYS=${OPENAI_API_KEYS}"
+      - "DEFAULT_MODELS=${DEFAULT_MODELS}"
+      - "ENABLE_MODEL_FILTER=${ENABLE_MODEL_FILTER}"
+      - "MODEL_FILTER_LIST=${MODEL_FILTER_LIST}"
+      - "DATABASE_ENABLE_SESSION_SHARING=true"
+  litellm:
+    image: "ghcr.io/berriai/litellm:${LITELLM_VERSION}"
+    container_name: "litellm"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "./litellm-config.yaml:/app/config.yaml:ro"
+    command: ["--config", "/app/config.yaml"]
+    restart: "unless-stopped"
+    environment:
+      - "LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}"
+      - "OPENCODE_GO_API_KEY=${OPENCODE_GO_API_KEY}"
+      - "OLLAMA_API_KEY=${OLLAMA_API_KEY}"
+      - "OLLAMA_API_BASE=${OLLAMA_API_BASE}"
+      - "ZEN_API_BASE=${ZEN_API_BASE}"
+      - "ZEN_CHAT_MODEL=${ZEN_CHAT_MODEL}"
+      - "ZEN_CHAT_THINKING_MODEL=${ZEN_CHAT_THINKING_MODEL}"
+      - "ZEN_WEB_RESEARCH_MODEL=${ZEN_WEB_RESEARCH_MODEL}"
+      - "ZEN_TRANSLATE_DE_MODEL=${ZEN_TRANSLATE_DE_MODEL}"
+      - "ZEN_TRANSLATE_EN_MODEL=${ZEN_TRANSLATE_EN_MODEL}"
+      - "ZEN_FIX_GRAMMAR_EN_MODEL=${ZEN_FIX_GRAMMAR_EN_MODEL}"
+      - "ZEN_FIX_GRAMMAR_DE_MODEL=${ZEN_FIX_GRAMMAR_DE_MODEL}"
+      - "ZEN_LINUX_CLI_MODEL=${ZEN_LINUX_CLI_MODEL}"
+      - "OLLAMA_MODEL=${OLLAMA_MODEL}"
   searxng:
     image: ghcr.io/searxng/searxng:2026.2.16-8e824017d
     ports:
