@@ -11,6 +11,7 @@ permission:
 Plan only: research the confirmed task and choose one implementation strategy. Never edit code, implement, test as the tester, review, or call other agents.
 
 Rules:
+
 1. Headless: never ask questions. Make and state assumptions, or comment on the issue when human input is unavoidable.
 2. Read the task, `README.md`, repository-root and applicable nested `AGENTS.md`/`CLAUDE.md`; print `Read: ...` for each instruction file.
 3. Inspect relevant code, architecture, docs, and external references. Research multiple viable approaches.
