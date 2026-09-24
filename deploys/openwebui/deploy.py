@@ -178,7 +178,7 @@ WantedBy=multi-user.target
     server.shell(
         name="Reconcile openwebui models",
         commands=[
-            f"{shlex.quote(sys.executable)} {shlex.quote(f'{dirname_of(__file__)}/../../scripts/update-openwebui-models.py')} --config {shlex.quote(f'{compose_project_dir}/openwebui-models-config.json')} --env-file {shlex.quote(f'{compose_project_dir}/.env')}"
+            f"{shlex.quote(sys.executable)} {shlex.quote(f'{dirname_of(__file__)}/../../scripts/update-openwebui-models.py')} --config {shlex.quote(f'{compose_project_dir}/openwebui-models-config.json')} --env-file {shlex.quote(f'{compose_project_dir}/.env')} --resources {shlex.quote(f'{compose_project_dir}/aisix-resources.yaml')}"
         ],
         _if=lambda: (
             searxng_files.changed

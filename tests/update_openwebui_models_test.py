@@ -1,6 +1,7 @@
 import importlib.util
 import os
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -183,3 +184,59 @@ def test_read_env_file_does_not_print_secrets(tmp_path: Path, capsys: pytest.Cap
     env_file.write_text("OPENCODE_API_KEY=sk-super-secret\n")
     mod.read_env_file(str(env_file))
     assert capsys.readouterr().out == ""
+
+
+def test_reconcile_preserves_non_managed_models(monkeypatch: pytest.MonkeyPatch) -> None:
+    now = 1790288638
+    non_managed = {
+        "id": "user-custom-model",
+        "user_id": "admin",
+        "base_model_id": "ollama-chat",
+        "name": "My Custom Model",
+        "params": {},
+        "meta": {},
+        "access_grants": [],
+        "is_active": True,
+        "updated_at": now,
+        "created_at": now,
+    }
+    export_rows = [non_managed] + [
+        {
+            "id": pid,
+            "user_id": "admin",
+            "base_model_id": "stale",
+            "name": "stale",
+            "params": {},
+            "meta": {},
+            "access_grants": [],
+            "is_active": True,
+            "updated_at": 1,
+            "created_at": 1,
+        }
+        for pid in DEFAULT_MODELS
+    ]
+    calls: list[tuple[str, str, dict[str, Any] | None]] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append((method, url, payload))
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            return 200, export_rows
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            return 200, export_rows
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    sync_payload = calls[1][2]
+    assert sync_payload is not None
+    synced = sync_payload["models"]
+    assert non_managed in synced
+    assert len(synced) == len(DEFAULT_MODELS) + 1
+    preset_ids = [m["id"] for m in synced if m["id"] in DEFAULT_MODELS]
+    assert preset_ids == DEFAULT_MODELS
+    for model in synced:
+        if model["id"] in DEFAULT_MODELS:
+            assert model["base_model_id"] == MODEL_MAP[model["id"]]
+            assert model["name"] == EXPECTED_NAMES[model["id"]]

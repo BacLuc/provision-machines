@@ -393,7 +393,9 @@ def reconcile(
     now = int(time.time())
     specs = build_preset_specs(model_map, default_models)
     models = [to_sync_model(spec, user_id, now) for spec in specs]
-    payload = {"models": models}
+    managed_ids = set(default_models)
+    preserved = [row for row in export_rows if row.get("id") not in managed_ids]
+    payload = {"models": preserved + models}
     if dry_run:
         print(json.dumps(payload, indent=2))
         return
