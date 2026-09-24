@@ -1,0 +1,161 @@
+_format_version: "1"
+api_keys:
+  - display_name: openwebui
+    key_env: OPENWEBUI_CALLER_KEY
+    allowed_models:
+      - router-chat
+      - router-chat_thinking
+      - router-web_research
+      - router-translate_de
+      - router-translate_en
+      - router-fix_grammar_en
+      - router-fix_grammar_de
+      - router-linux_cli
+provider_keys:
+  - display_name: zen
+    provider: openai
+    adapter: openai
+    api_base: ${ZEN_API_BASE}
+    api_key: ${OPENCODE_GO_API_KEY}
+  - display_name: ollama
+    provider: openai
+    adapter: openai
+    api_base: ${OLLAMA_API_BASE}
+    api_key: ${OLLAMA_API_KEY}
+models:
+  - display_name: zen-chat
+    provider: openai
+    model_name: ${ZEN_CHAT_MODEL}
+    provider_key: zen
+  - display_name: zen-chat_thinking
+    provider: openai
+    model_name: ${ZEN_CHAT_THINKING_MODEL}
+    provider_key: zen
+  - display_name: zen-web_research
+    provider: openai
+    model_name: ${ZEN_WEB_RESEARCH_MODEL}
+    provider_key: zen
+  - display_name: zen-translate
+    provider: openai
+    model_name: ${ZEN_TRANSLATE_MODEL}
+    provider_key: zen
+  - display_name: zen-grammar
+    provider: openai
+    model_name: ${ZEN_GRAMMAR_MODEL}
+    provider_key: zen
+  - display_name: zen-linux_cli
+    provider: openai
+    model_name: ${ZEN_LINUX_CLI_MODEL}
+    provider_key: zen
+  - display_name: ollama-chat
+    provider: openai
+    model_name: ${OLLAMA_CHAT_MODEL}
+    provider_key: ollama
+  - display_name: ollama-chat_thinking
+    provider: openai
+    model_name: ${OLLAMA_CHAT_THINKING_MODEL}
+    provider_key: ollama
+  - display_name: ollama-web_research
+    provider: openai
+    model_name: ${OLLAMA_WEB_RESEARCH_MODEL}
+    provider_key: ollama
+  - display_name: ollama-translate
+    provider: openai
+    model_name: ${OLLAMA_TRANSLATE_MODEL}
+    provider_key: ollama
+  - display_name: ollama-grammar
+    provider: openai
+    model_name: ${OLLAMA_GRAMMAR_MODEL}
+    provider_key: ollama
+  - display_name: ollama-linux_cli
+    provider: openai
+    model_name: ${OLLAMA_LINUX_CLI_MODEL}
+    provider_key: ollama
+  - display_name: router-chat
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-chat
+          priority: 100
+        - model: ollama-chat
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+  - display_name: router-chat_thinking
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-chat_thinking
+          priority: 100
+        - model: ollama-chat_thinking
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+  - display_name: router-web_research
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-web_research
+          priority: 100
+        - model: ollama-web_research
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+  - display_name: router-translate_de
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-translate
+          priority: 100
+        - model: ollama-translate
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+  - display_name: router-translate_en
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-translate
+          priority: 100
+        - model: ollama-translate
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+  - display_name: router-fix_grammar_en
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-grammar
+          priority: 100
+        - model: ollama-grammar
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+  - display_name: router-fix_grammar_de
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-grammar
+          priority: 100
+        - model: ollama-grammar
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+  - display_name: router-linux_cli
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-linux_cli
+          priority: 100
+        - model: ollama-linux_cli
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
