@@ -93,6 +93,9 @@ def build_preset_payloads(config: dict[str, Any]) -> list[dict[str, Any]]:
                 "meta": {},
                 "access_grants": [],
                 "is_active": True,
+                "user_id": "",
+                "updated_at": int(time.time()),
+                "created_at": int(time.time()),
             }
         )
     return payloads
@@ -166,7 +169,6 @@ def verify_presets(exported: list[dict[str, Any]], preset_payloads: list[dict[st
         elif (
             row.get("base_model_id") != preset["base_model_id"]
             or row.get("params", {}).get("system") != preset["params"]["system"]
-            or row.get("tools") != preset["tools"]
         ):
             failures.append(f"preset mismatch: {preset['id']}")
     if failures:

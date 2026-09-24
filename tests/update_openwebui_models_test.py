@@ -41,7 +41,19 @@ CONFIG: dict[str, Any] = {
     },
 }
 
-_PRESET_KEYS = {"id", "name", "base_model_id", "params", "tools", "meta", "access_grants", "is_active"}
+_PRESET_KEYS = {
+    "id",
+    "name",
+    "base_model_id",
+    "params",
+    "tools",
+    "meta",
+    "access_grants",
+    "is_active",
+    "user_id",
+    "updated_at",
+    "created_at",
+}
 
 
 def _fake_response(status: int, body: Any) -> mock.MagicMock:
@@ -89,6 +101,9 @@ def test_preset_payloads_normalized() -> None:
         assert payload["params"]["system"]
         assert payload["access_grants"] == []
         assert payload["is_active"] is True
+        assert payload["user_id"] == ""
+        assert isinstance(payload["updated_at"], int)
+        assert isinstance(payload["created_at"], int)
         assert set(payload.keys()) == _PRESET_KEYS
         if payload["id"] == "web_research":
             assert payload["tools"] == ["web_search"]
