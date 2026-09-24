@@ -325,6 +325,11 @@ def reconcile(
         print("sync endpoint unavailable; imported presets via /models/import (non-exact)")
     elif status != 200:
         raise RuntimeError(f"sync failed (HTTP {status})")
+    elif data == []:
+        raise RuntimeError(
+            "sync returned an empty model list; this indicates an internal OpenWebUI error "
+            "such as a database lock, check the open-webui logs"
+        )
     status, data = request_json("GET", f"{base_url}/api/v1/models", token=token)
     if status != 200:
         raise RuntimeError(f"re-export failed (HTTP {status})")

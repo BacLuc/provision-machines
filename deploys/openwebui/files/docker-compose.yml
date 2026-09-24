@@ -19,6 +19,7 @@ services:
       - "DEFAULT_MODELS=${DEFAULT_MODELS}"
       - "ENABLE_MODEL_FILTER=${ENABLE_MODEL_FILTER}"
       - "MODEL_FILTER_LIST=${MODEL_FILTER_LIST}"
+      - "DATABASE_ENABLE_SESSION_SHARING=true"
   aisix:
     image: "ghcr.io/api7/aisix:__AISIX_VERSION__"
     container_name: "aisix"

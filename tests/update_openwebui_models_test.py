@@ -621,9 +621,8 @@ def test_reconcile_id_collision_fails_before_sync() -> None:
             mod.reconcile("http://x", "token", "owner", specs)
 
 
-def test_reconcile_sync_200_empty_is_success() -> None:
+def test_reconcile_sync_200_empty_is_failure() -> None:
     specs = mod.build_preset_specs(OPENWEBUI)
-    get_count = 0
 
     def fake_request_json(
         method: str,
@@ -632,18 +631,15 @@ def test_reconcile_sync_200_empty_is_success() -> None:
         payload: dict[str, Any] | None = None,
         retries: int = 5,
     ) -> tuple[int, Any]:
-        nonlocal get_count
         if method == "GET" and url.endswith("/api/v1/models"):
-            get_count += 1
-            if get_count == 1:
-                return 200, []
-            return 200, [{"id": s["id"], "info": {"base_model_id": s["base_model_id"]}} for s in specs]
+            return 200, []
         if method == "POST" and url.endswith("/api/v1/models/sync"):
             return 200, []
         raise AssertionError(f"unexpected call {method} {url}")
 
     with mock.patch.object(mod, "request_json", side_effect=fake_request_json):
-        mod.reconcile("http://x", "token", "owner", specs)
+        with pytest.raises(RuntimeError, match="empty model list"):
+            mod.reconcile("http://x", "token", "owner", specs)
 
 
 def test_reconcile_sync_non_200_is_failure() -> None:
