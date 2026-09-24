@@ -10,7 +10,7 @@ user = get_user_name()
 ask_ai = host.data.ask_ai
 
 # renovate: datasource=docker depName=alpine
-ALPINE_VERSION = "3.24.1"
+ALPINE_VERSION = "3.24.2"
 
 # renovate: datasource=github-releases depName=sigoden/aichat
 AICHAT_VERSION = "v0.30.0"
