@@ -300,6 +300,23 @@ def test_reconcile_empty_sync_response_is_failure(monkeypatch: pytest.MonkeyPatc
         mod.reconcile(args, "token")
 
 
+def test_reconcile_sync_response_missing_preset_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_request_json(method: str, url: str, token: str, payload: dict[str, Any] | None = None) -> Any:
+        if url.endswith("/api/v1/models/export"):
+            return []
+        if url.endswith("/api/v1/users/"):
+            return {"users": [{"id": "admin-1", "role": "admin"}]}
+        if url.endswith("/api/v1/models/sync"):
+            assert payload is not None
+            return [row for row in payload["models"] if row["id"] != "chat"]
+        return None
+
+    monkeypatch.setattr(mod, "request_json", fake_request_json)
+    args = argparse.Namespace(base_url="http://x", admin_api_key="", models=_MODELS, dry_run=False)
+    with pytest.raises(RuntimeError, match="did not create models"):
+        mod.reconcile(args, "token")
+
+
 def test_reconcile_import_fallback_on_404(monkeypatch: pytest.MonkeyPatch) -> None:
     import_calls: list[dict[str, Any]] = []
     exported: list[dict[str, Any]] = []
