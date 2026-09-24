@@ -12,6 +12,28 @@ services:
     restart: "unless-stopped"
     environment:
       - "WEBUI_AUTH=False"
+      - "DATABASE_ENABLE_SESSION_SHARING=True"
+      - "OPENWEBUI_ADMIN_API_KEY=${OPENWEBUI_ADMIN_API_KEY}"
+      - "ENABLE_OPENAI_API=${ENABLE_OPENAI_API}"
+      - "OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}"
+      - "OPENAI_API_KEYS=${OPENAI_API_KEYS}"
+      - "DEFAULT_MODELS=${DEFAULT_MODELS}"
+      - "ENABLE_MODEL_FILTER=${ENABLE_MODEL_FILTER}"
+      - "MODEL_FILTER_LIST=${MODEL_FILTER_LIST}"
+  litellm:
+    image: "ghcr.io/berriai/litellm:__LITELLM_VERSION__"
+    container_name: "litellm"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "./litellm-config.yaml:/app/config.yaml:ro"
+    restart: "unless-stopped"
+    environment:
+      - "LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}"
+      - "OPENCODE_GO_API_KEY=${OPENCODE_GO_API_KEY}"
+      - "ZEN_API_BASE=${ZEN_API_BASE}"
+      - "OLLAMA_API_BASE=${OLLAMA_API_BASE}"
+    command: ["--config", "/app/config.yaml"]
   searxng:
     image: ghcr.io/searxng/searxng:2026.2.16-8e824017d
     ports:

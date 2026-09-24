@@ -115,6 +115,10 @@ hashicorp_vault_cli = {
 
 openwebui = {
     "enabled": False,
+    "BRAVE_API_KEY": "",
+    "LITELLM_MASTER_KEY": "",
+    "OPENCODE_GO_API_KEY": "",
+    "OPENWEBUI_ADMIN_API_KEY": "",
 }
 
 vagrant = {

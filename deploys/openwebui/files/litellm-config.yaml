@@ -1,0 +1,63 @@
+model_list:
+  - model_name: router-chat
+    litellm_params:
+      model: openai/__ZEN_CHAT_MODEL__
+      api_base: os.environ/ZEN_API_BASE
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: router-chat-thinking
+    litellm_params:
+      model: openai/__ZEN_CHAT_THINKING_MODEL__
+      api_base: os.environ/ZEN_API_BASE
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: router-web-research
+    litellm_params:
+      model: openai/__ZEN_WEB_RESEARCH_MODEL__
+      api_base: os.environ/ZEN_API_BASE
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: router-translate-de
+    litellm_params:
+      model: openai/__ZEN_TRANSLATE_DE_MODEL__
+      api_base: os.environ/ZEN_API_BASE
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: router-translate-en
+    litellm_params:
+      model: openai/__ZEN_TRANSLATE_EN_MODEL__
+      api_base: os.environ/ZEN_API_BASE
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: router-fix-grammar-en
+    litellm_params:
+      model: openai/__ZEN_FIX_GRAMMAR_EN_MODEL__
+      api_base: os.environ/ZEN_API_BASE
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: router-fix-grammar-de
+    litellm_params:
+      model: openai/__ZEN_FIX_GRAMMAR_DE_MODEL__
+      api_base: os.environ/ZEN_API_BASE
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: router-linux-cli
+    litellm_params:
+      model: openai/__ZEN_LINUX_CLI_MODEL__
+      api_base: os.environ/ZEN_API_BASE
+      api_key: os.environ/OPENCODE_GO_API_KEY
+  - model_name: router-ollama
+    litellm_params:
+      model: ollama_chat/__OLLAMA_MODEL__
+      api_base: os.environ/OLLAMA_API_BASE
+router_settings:
+  routing_strategy: simple-shuffle
+  num_retries: 2
+  timeout: 30
+  fallbacks:
+    - router-chat: [router-ollama]
+    - router-chat-thinking: [router-ollama]
+    - router-web-research: [router-ollama]
+    - router-translate-de: [router-ollama]
+    - router-translate-en: [router-ollama]
+    - router-fix-grammar-en: [router-ollama]
+    - router-fix-grammar-de: [router-ollama]
+    - router-linux-cli: [router-ollama]
+litellm_settings:
+  allowed_fails: 3
+  cooldown_time: 30
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
