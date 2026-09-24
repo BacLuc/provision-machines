@@ -306,6 +306,45 @@ php_development = {
 openwebui = {
     "enabled": True,
     "BRAVE_API_KEY": "",
+    "router_backend": "aisix",
+    "router_config_path": "aisix-resources.yaml",
+    "openai_compatible_base_url": "http://aisix:3000/v1",
+    "default_models": [
+        "chat",
+        "chat_thinking",
+        "web_research",
+        "translate_de",
+        "translate_en",
+        "fix_grammar_en",
+        "fix_grammar_de",
+        "linux_cli",
+    ],
+    "model_map": {
+        "chat": "router-chat",
+        "chat_thinking": "router-chat-thinking",
+        "web_research": "router-web-research",
+        "translate_de": "router-translate-de",
+        "translate_en": "router-translate-en",
+        "fix_grammar_en": "router-fix-grammar-en",
+        "fix_grammar_de": "router-fix-grammar-de",
+        "linux_cli": "router-linux-cli",
+    },
+    "extra_env": {
+        "ENABLE_OPENAI_API": "true",
+        "OPENAI_API_BASE_URL": "http://aisix:3000/v1",
+        "OPENAI_API_KEYS": "",
+        "DEFAULT_MODELS": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
+        "ENABLE_MODEL_FILTER": "true",
+        "MODEL_FILTER_LIST": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
+    },
+    # Set in local.py — written into the openwebui .env (mode 600)
+    "opencode_api_key": "",
+    "ollama_api_key": "",
+    "openwebui_caller_key": "",
+    "opencode_base_url": "https://opencode.ai/zen/go/v1",
+    "ollama_base_url": "http://host.docker.internal:11434/v1",
+    "zen_model_chat": "deepseek-v4-flash",
+    "ollama_model_chat": "qwen2.5:3b",
 }
 
 vagrant = {

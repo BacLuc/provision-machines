@@ -12,6 +12,29 @@ services:
     restart: "unless-stopped"
     environment:
       - "WEBUI_AUTH=False"
+      - "ENABLE_OPENAI_API=${ENABLE_OPENAI_API}"
+      - "OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}"
+      - "OPENAI_API_KEYS=${OPENAI_API_KEYS}"
+      - "DEFAULT_MODELS=${DEFAULT_MODELS}"
+      - "ENABLE_MODEL_FILTER=${ENABLE_MODEL_FILTER}"
+      - "MODEL_FILTER_LIST=${MODEL_FILTER_LIST}"
+  aisix:
+    image: "ghcr.io/api7/aisix:${AISIX_VERSION}"
+    container_name: "aisix"
+    restart: "unless-stopped"
+    volumes:
+      - "./aisix-config.yaml:/etc/aisix/config.yaml:ro"
+      - "./aisix-resources.yaml:/etc/aisix/resources.yaml:ro"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - "OPENCODE_API_KEY=${OPENCODE_API_KEY}"
+      - "OLLAMA_API_KEY=${OLLAMA_API_KEY}"
+      - "OPENWEBUI_CALLER_KEY=${OPENWEBUI_CALLER_KEY}"
+      - "OPENCODE_BASE_URL=${OPENCODE_BASE_URL}"
+      - "OLLAMA_BASE_URL=${OLLAMA_BASE_URL}"
+      - "ZEN_MODEL_CHAT=${ZEN_MODEL_CHAT}"
+      - "OLLAMA_MODEL_CHAT=${OLLAMA_MODEL_CHAT}"
   searxng:
     image: ghcr.io/searxng/searxng:2026.2.16-8e824017d
     ports:
