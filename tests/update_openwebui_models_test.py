@@ -57,6 +57,8 @@ def _yaml_model_names(path: str) -> set[str]:
     with open(path) as f:
         for line in f:
             stripped = line.strip()
+            if stripped.startswith("- "):
+                stripped = stripped[2:]
             if stripped.startswith("model_name:"):
                 model_names.add(stripped.split(":", 1)[1].strip())
     return model_names
