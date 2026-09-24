@@ -195,6 +195,24 @@ def test_connection_reset_is_retryable() -> None:
     assert headers == {}
 
 
+def test_request_json_sets_json_content_type() -> None:
+    captured: dict[str, Any] = {}
+
+    def fake(request: Any, timeout: int = 30) -> mock.MagicMock:
+        captured["headers"] = dict(request.headers)
+        return _fake_response(200, {"ok": True})
+
+    with mock.patch.object(mod, "urlopen", side_effect=fake):
+        status, body = mod.request_json(
+            "http://127.0.0.1:13307/api/v1/auths/signin",
+            method="POST",
+            body={"email": "", "password": ""},
+        )
+    assert status == 200
+    assert body == {"ok": True}
+    assert captured["headers"]["Content-type"] == "application/json"
+
+
 def test_collision_fails_before_mutation() -> None:
     exported = [
         {

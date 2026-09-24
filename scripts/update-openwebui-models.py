@@ -114,7 +114,10 @@ def request_json(
     timeout: int = 30,
 ) -> tuple[int, Any]:
     data = json.dumps(body).encode() if body is not None else None
-    req = Request(url, data=data, headers=headers or {}, method=method)
+    request_headers = dict(headers or {})
+    if body is not None:
+        request_headers["Content-Type"] = "application/json"
+    req = Request(url, data=data, headers=request_headers, method=method)
     try:
         with urlopen(req, timeout=timeout) as resp:
             raw = resp.read()
