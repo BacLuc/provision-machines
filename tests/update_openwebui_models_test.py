@@ -234,7 +234,54 @@ def test_reconcile_sync_payload(monkeypatch: pytest.MonkeyPatch) -> None:
         expected.append(router)
     expected.append("unrelated")
     assert ids == expected
-    assert body["models"][-1] == unrelated
+    preserved = body["models"][-1]
+    assert preserved["id"] == "unrelated"
+    assert preserved["user_id"] == "u1"
+    assert preserved["base_model_id"] is None
+    assert preserved["name"] == "Unrelated"
+    assert preserved["params"] == {}
+    assert preserved["meta"] == {}
+    assert preserved["access_grants"] == []
+    assert preserved["is_active"] is True
+    assert preserved["updated_at"] == 1
+    assert preserved["created_at"] == 1
+
+
+def test_normalize_preserved_info_envelope() -> None:
+    row = {
+        "id": "other",
+        "info": {
+            "base_model_id": "openai/gpt-4o",
+            "params": {"system": "s"},
+            "meta": {"capabilities": {"web_search": False}},
+            "updated_at": 1767225600,
+            "created_at": 1767225600,
+        },
+    }
+    normalized = mod.normalize_preserved(row, "admin-1")
+    assert normalized["id"] == "other"
+    assert normalized["user_id"] == "admin-1"
+    assert normalized["base_model_id"] == "openai/gpt-4o"
+    assert normalized["name"] == ""
+    assert normalized["params"] == {"system": "s"}
+    assert normalized["meta"] == {"capabilities": {"web_search": False}}
+    assert normalized["access_grants"] == []
+    assert normalized["is_active"] is True
+    assert normalized["updated_at"] == 1767225600
+    assert normalized["created_at"] == 1767225600
+
+
+def test_normalize_preserved_missing_fields_defaults() -> None:
+    normalized = mod.normalize_preserved({"id": "other"}, "admin-1")
+    assert normalized["user_id"] == "admin-1"
+    assert normalized["base_model_id"] is None
+    assert normalized["name"] == ""
+    assert normalized["params"] == {}
+    assert normalized["meta"] == {}
+    assert normalized["access_grants"] == []
+    assert normalized["is_active"] is True
+    assert isinstance(normalized["updated_at"], int)
+    assert isinstance(normalized["created_at"], int)
 
 
 def test_reconcile_empty_sync_response_is_failure(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -296,6 +296,25 @@ def to_sync_model(
     return {"preset": preset_row, "base": base_row}
 
 
+def normalize_preserved(row: dict[str, Any], owner: str) -> dict[str, Any]:
+    info = row.get("info")
+    if not isinstance(info, dict):
+        info = {}
+    now = int(time.time())
+    return {
+        "id": row["id"],
+        "user_id": row.get("user_id") or owner,
+        "base_model_id": row.get("base_model_id") or info.get("base_model_id"),
+        "name": row.get("name") or "",
+        "params": info.get("params") or row.get("params") or {},
+        "meta": info.get("meta") or row.get("meta") or {},
+        "access_grants": row.get("access_grants") or [],
+        "is_active": bool(row.get("is_active", True)),
+        "updated_at": int(row.get("updated_at") or info.get("updated_at") or now),
+        "created_at": int(row.get("created_at") or info.get("created_at") or now),
+    }
+
+
 def request_json(method: str, url: str, token: str, payload: dict[str, Any] | None = None) -> Any:
     headers = {"Accept": "application/json"}
     if token:
@@ -390,7 +409,7 @@ def reconcile(args: argparse.Namespace, token: str) -> None:
         managed_ids.add(spec["router_model_id"])
     for row in exported:
         if isinstance(row, dict) and row.get("id") not in managed_ids:
-            payload.append(row)
+            payload.append(normalize_preserved(row, admin_user_id))
     body = {"models": payload}
     if args.dry_run:
         print(json.dumps(body, indent=2))
