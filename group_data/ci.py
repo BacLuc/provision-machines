@@ -142,7 +142,7 @@ openwebui = {
     "extra_env": {
         "ENABLE_OPENAI_API": "true",
         "OPENAI_API_BASE_URL": "http://litellm:4000/v1",
-        "OPENAI_API_KEYS": "sk-litellm-local",
+        "OPENAI_API_KEYS": "",
         "DATABASE_ENABLE_SESSION_SHARING": "true",
         "ENABLE_WEB_SEARCH": "true",
         "SEARXNG_QUERY_URL": "http://searxng:8080",

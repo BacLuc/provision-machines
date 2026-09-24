@@ -56,6 +56,7 @@ if host.data.openwebui["enabled"]:
 
     extra_env = dict(host.data.openwebui["extra_env"])
     extra_env["DEFAULT_MODELS"] = ",".join(host.data.openwebui["default_models"])
+    extra_env["OPENAI_API_KEYS"] = host.data.openwebui["LITELLM_MASTER_KEY"]
     env_block = "\n".join(f'      - "{k}={v}"' for k, v in extra_env.items())
     with open(f"{dirname_of(__file__)}/files/docker-compose.yml") as compose_template:
         compose_content = compose_template.read().replace('      - "__OPENWEBUI_EXTRA_ENV__"', env_block)
