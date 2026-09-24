@@ -500,6 +500,7 @@ def test_reconcile_preserved_rows_normalized_into_full_envelopes() -> None:
         "created_at",
     }
     assert preserved["id"] == "custom"
+    assert preserved["user_id"] == "owner"
     assert preserved["base_model_id"] == "some-base"
     assert preserved["name"] == "Custom"
     assert preserved["params"] == {}
@@ -508,6 +509,96 @@ def test_reconcile_preserved_rows_normalized_into_full_envelopes() -> None:
     assert preserved["is_active"] is True
     assert preserved["updated_at"] == 5
     assert preserved["created_at"] == 6
+
+
+def test_reconcile_preserved_rows_normalized_from_info_envelope() -> None:
+    specs = mod.build_preset_specs(OPENWEBUI)
+    existing = [
+        {"id": "chat", "base_model_id": "router-chat", "updated_at": 1, "created_at": 2},
+        {
+            "id": "custom",
+            "name": "Custom",
+            "info": {
+                "id": "custom",
+                "user_id": "other-owner",
+                "base_model_id": "some-base",
+                "name": "Custom",
+                "params": {"system": "x"},
+                "meta": {"capabilities": {"chat": True}},
+                "access_grants": ["grant-1"],
+                "is_active": False,
+                "updated_at": "7",
+                "created_at": "8",
+            },
+        },
+    ]
+    captured: dict[str, Any] = {}
+    get_count = 0
+
+    def fake_request_json(
+        method: str,
+        url: str,
+        token: str | None = None,
+        payload: dict[str, Any] | None = None,
+        retries: int = 5,
+    ) -> tuple[int, Any]:
+        nonlocal get_count
+        if method == "GET" and url.endswith("/api/v1/models"):
+            get_count += 1
+            if get_count == 1:
+                return 200, existing
+            return 200, captured["payload"]["models"]
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            assert payload is not None
+            captured["payload"] = payload
+            return 200, payload["models"]
+        raise AssertionError(f"unexpected call {method} {url}")
+
+    with mock.patch.object(mod, "request_json", side_effect=fake_request_json):
+        mod.reconcile("http://x", "token", "owner", specs)
+
+    preserved = [m for m in captured["payload"]["models"] if m["id"] == "custom"][0]
+    assert preserved["user_id"] == "other-owner"
+    assert preserved["base_model_id"] == "some-base"
+    assert preserved["name"] == "Custom"
+    assert preserved["params"] == {"system": "x"}
+    assert preserved["meta"] == {"capabilities": {"chat": True}}
+    assert preserved["access_grants"] == ["grant-1"]
+    assert preserved["is_active"] is False
+    assert preserved["updated_at"] == 7
+    assert preserved["created_at"] == 8
+
+
+def test_reconcile_verifies_base_model_id_from_info() -> None:
+    specs = mod.build_preset_specs(OPENWEBUI)
+    existing = [
+        {"id": "chat", "base_model_id": "router-chat", "updated_at": 1, "created_at": 2},
+        {"id": "unrelated", "base_model_id": None, "updated_at": 3, "created_at": 4},
+    ]
+    get_count = 0
+
+    def fake_request_json(
+        method: str,
+        url: str,
+        token: str | None = None,
+        payload: dict[str, Any] | None = None,
+        retries: int = 5,
+    ) -> tuple[int, Any]:
+        nonlocal get_count
+        if method == "GET" and url.endswith("/api/v1/models"):
+            get_count += 1
+            if get_count == 1:
+                return 200, existing
+            return 200, [
+                {"id": s["id"], "name": s["name"], "info": {"base_model_id": s["base_model_id"]}} for s in specs
+            ]
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            assert payload is not None
+            return 200, payload["models"]
+        raise AssertionError(f"unexpected call {method} {url}")
+
+    with mock.patch.object(mod, "request_json", side_effect=fake_request_json):
+        mod.reconcile("http://x", "token", "owner", specs)
 
 
 def test_reconcile_id_collision_fails_before_sync() -> None:
@@ -530,7 +621,32 @@ def test_reconcile_id_collision_fails_before_sync() -> None:
             mod.reconcile("http://x", "token", "owner", specs)
 
 
-def test_reconcile_200_empty_is_failure() -> None:
+def test_reconcile_sync_200_empty_is_success() -> None:
+    specs = mod.build_preset_specs(OPENWEBUI)
+    get_count = 0
+
+    def fake_request_json(
+        method: str,
+        url: str,
+        token: str | None = None,
+        payload: dict[str, Any] | None = None,
+        retries: int = 5,
+    ) -> tuple[int, Any]:
+        nonlocal get_count
+        if method == "GET" and url.endswith("/api/v1/models"):
+            get_count += 1
+            if get_count == 1:
+                return 200, []
+            return 200, [{"id": s["id"], "info": {"base_model_id": s["base_model_id"]}} for s in specs]
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            return 200, []
+        raise AssertionError(f"unexpected call {method} {url}")
+
+    with mock.patch.object(mod, "request_json", side_effect=fake_request_json):
+        mod.reconcile("http://x", "token", "owner", specs)
+
+
+def test_reconcile_sync_non_200_is_failure() -> None:
     specs = mod.build_preset_specs(OPENWEBUI)
 
     def fake_request_json(
@@ -543,7 +659,7 @@ def test_reconcile_200_empty_is_failure() -> None:
         if method == "GET" and url.endswith("/api/v1/models"):
             return 200, []
         if method == "POST" and url.endswith("/api/v1/models/sync"):
-            return 200, []
+            return 500, {"detail": "boom"}
         raise AssertionError(f"unexpected call {method} {url}")
 
     with mock.patch.object(mod, "request_json", side_effect=fake_request_json):

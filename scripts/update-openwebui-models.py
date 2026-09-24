@@ -198,19 +198,28 @@ def to_sync_model(spec: dict[str, Any], owner: str, existing: dict[str, dict[str
     }
 
 
-def normalize_preserved(row: dict[str, Any]) -> dict[str, Any]:
+def _base_model_id(row: dict[str, Any]) -> Any:
+    info = row.get("info")
+    if isinstance(info, dict) and "base_model_id" in info:
+        return info["base_model_id"]
+    return row.get("base_model_id")
+
+
+def normalize_preserved(row: dict[str, Any], owner: str) -> dict[str, Any]:
     now = int(time.time())
+    info = row.get("info")
+    source = info if isinstance(info, dict) else row
     return {
-        "id": row["id"],
-        "user_id": row.get("user_id"),
-        "base_model_id": row.get("base_model_id"),
-        "name": row.get("name"),
-        "params": row.get("params", {}),
-        "meta": row.get("meta", {}),
-        "access_grants": row.get("access_grants", []),
-        "is_active": row.get("is_active", True),
-        "updated_at": int(row["updated_at"]) if "updated_at" in row else now,
-        "created_at": int(row["created_at"]) if "created_at" in row else now,
+        "id": source.get("id") or row["id"],
+        "user_id": source.get("user_id") or owner,
+        "base_model_id": source.get("base_model_id"),
+        "name": source.get("name") or row.get("name"),
+        "params": source.get("params", {}),
+        "meta": source.get("meta", {}),
+        "access_grants": source.get("access_grants", []),
+        "is_active": source.get("is_active", True),
+        "updated_at": int(source["updated_at"]) if "updated_at" in source else now,
+        "created_at": int(source["created_at"]) if "created_at" in source else now,
     }
 
 
@@ -300,13 +309,13 @@ def reconcile(
     by_id = {row["id"]: row for row in existing}
     for spec in specs:
         prev = by_id.get(spec["id"])
-        if prev is not None and prev.get("base_model_id") != spec["base_model_id"]:
+        if prev is not None and _base_model_id(prev) != spec["base_model_id"]:
             raise RuntimeError(
-                f"model {spec['id']} exists with base_model_id {prev.get('base_model_id')!r}, "
+                f"model {spec['id']} exists with base_model_id {_base_model_id(prev)!r}, "
                 f"expected {spec['base_model_id']!r}"
             )
     models = [to_sync_model(spec, owner, by_id) for spec in specs]
-    preserved = [normalize_preserved(row) for row in existing if row["id"] not in {s["id"] for s in specs}]
+    preserved = [normalize_preserved(row, owner) for row in existing if row["id"] not in {s["id"] for s in specs}]
     payload = {"models": models + preserved}
     status, data = request_json("POST", f"{base_url}/api/v1/models/sync", token=token, payload=payload)
     if status in (404, 405, 501):
@@ -314,8 +323,8 @@ def reconcile(
         if status != 200:
             raise RuntimeError(f"import failed (HTTP {status})")
         print("sync endpoint unavailable; imported presets via /models/import (non-exact)")
-    elif status != 200 or data == []:
-        raise RuntimeError(f"sync failed (HTTP {status}); expected a model list, got {data!r}")
+    elif status != 200:
+        raise RuntimeError(f"sync failed (HTTP {status})")
     status, data = request_json("GET", f"{base_url}/api/v1/models", token=token)
     if status != 200:
         raise RuntimeError(f"re-export failed (HTTP {status})")
@@ -323,7 +332,7 @@ def reconcile(
     by_id = {row["id"]: row for row in exported}
     for spec in specs:
         row = by_id.get(spec["id"])
-        if row is None or row.get("base_model_id") != spec["base_model_id"]:
+        if row is None or _base_model_id(row) != spec["base_model_id"]:
             raise RuntimeError(f"preset {spec['id']} missing or wrong base_model_id after sync")
     return exported
 
