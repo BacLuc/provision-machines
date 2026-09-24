@@ -143,8 +143,6 @@ openwebui = {
         "OPENAI_API_BASE_URL": "http://aisix:3000/v1",
         "OPENAI_API_KEYS": "",
         "DEFAULT_MODELS": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
-        "ENABLE_MODEL_FILTER": "true",
-        "MODEL_FILTER_LIST": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
     },
     "opencode_api_key": "",
     "ollama_api_key": "",

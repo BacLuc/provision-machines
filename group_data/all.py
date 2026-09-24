@@ -335,8 +335,6 @@ openwebui = {
         # Set in local.py — OPENAI_API_KEYS
         "OPENAI_API_KEYS": "",
         "DEFAULT_MODELS": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
-        "ENABLE_MODEL_FILTER": "true",
-        "MODEL_FILTER_LIST": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
     },
     # Set in local.py — written into the openwebui .env (mode 600)
     "opencode_api_key": "",
