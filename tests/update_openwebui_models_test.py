@@ -141,6 +141,43 @@ def test_to_sync_model_non_web_research_flags() -> None:
     assert "function_calling" not in preset["params"]
 
 
+def test_normalize_preserved_info_envelope() -> None:
+    row = {
+        "id": "other",
+        "info": {
+            "base_model_id": "openai/gpt-4o",
+            "params": {"system": "s"},
+            "meta": {"capabilities": {"web_search": False}},
+            "updated_at": 1767225600,
+            "created_at": 1767225600,
+        },
+    }
+    normalized = mod.normalize_preserved(row, "admin-1")
+    assert normalized["id"] == "other"
+    assert normalized["user_id"] == "admin-1"
+    assert normalized["base_model_id"] == "openai/gpt-4o"
+    assert normalized["name"] == ""
+    assert normalized["params"] == {"system": "s"}
+    assert normalized["meta"] == {"capabilities": {"web_search": False}}
+    assert normalized["access_grants"] == []
+    assert normalized["is_active"] is True
+    assert normalized["updated_at"] == 1767225600
+    assert normalized["created_at"] == 1767225600
+
+
+def test_normalize_preserved_missing_fields_defaults() -> None:
+    normalized = mod.normalize_preserved({"id": "other"}, "admin-1")
+    assert normalized["user_id"] == "admin-1"
+    assert normalized["base_model_id"] is None
+    assert normalized["name"] == ""
+    assert normalized["params"] == {}
+    assert normalized["meta"] == {}
+    assert normalized["access_grants"] == []
+    assert normalized["is_active"] is True
+    assert isinstance(normalized["updated_at"], int)
+    assert isinstance(normalized["created_at"], int)
+
+
 def test_parse_litellm_model_names_from_config() -> None:
     text = (_REPO_ROOT / "deploys" / "openwebui" / "files" / "litellm-config.yaml").read_text()
     names = mod.parse_litellm_model_names(text)
@@ -234,10 +271,42 @@ def test_reconcile_sync_payload(monkeypatch: pytest.MonkeyPatch) -> None:
         expected.append(router)
     expected.append("unrelated")
     assert ids == expected
-    assert body["models"][-1] == unrelated
+    preserved = body["models"][-1]
+    assert preserved["id"] == "unrelated"
+    assert preserved["user_id"] == "u1"
+    assert preserved["base_model_id"] is None
+    assert preserved["name"] == "Unrelated"
+    assert preserved["params"] == {}
+    assert preserved["meta"] == {}
+    assert preserved["access_grants"] == []
+    assert preserved["is_active"] is True
+    assert preserved["updated_at"] == 1
+    assert preserved["created_at"] == 1
 
 
-def test_reconcile_empty_sync_response_is_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_reconcile_empty_sync_response_succeeds_when_reexport_has_models(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    exported: list[dict[str, Any]] = []
+
+    def fake_request_json(method: str, url: str, token: str, payload: dict[str, Any] | None = None) -> Any:
+        nonlocal exported
+        if url.endswith("/api/v1/models/export"):
+            return exported
+        if url.endswith("/api/v1/users/"):
+            return {"users": [{"id": "admin-1", "role": "admin"}]}
+        if url.endswith("/api/v1/models/sync"):
+            assert payload is not None
+            exported = payload["models"]
+            return []
+        return None
+
+    monkeypatch.setattr(mod, "request_json", fake_request_json)
+    args = argparse.Namespace(base_url="http://x", admin_api_key="", models=_MODELS, dry_run=False)
+    mod.reconcile(args, "token")
+
+
+def test_reconcile_empty_sync_response_raises_when_preset_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_request_json(method: str, url: str, token: str, payload: dict[str, Any] | None = None) -> Any:
         if url.endswith("/api/v1/models/export"):
             return []
@@ -249,7 +318,7 @@ def test_reconcile_empty_sync_response_is_failure(monkeypatch: pytest.MonkeyPatc
 
     monkeypatch.setattr(mod, "request_json", fake_request_json)
     args = argparse.Namespace(base_url="http://x", admin_api_key="", models=_MODELS, dry_run=False)
-    with pytest.raises(RuntimeError, match="empty result"):
+    with pytest.raises(RuntimeError, match="did not create models"):
         mod.reconcile(args, "token")
 
 

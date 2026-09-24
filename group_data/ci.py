@@ -151,6 +151,8 @@ openwebui = {
         "OPENAI_API_BASE_URL": "${OPENAI_COMPATIBLE_BASE_URL}",
         "OPENAI_API_KEYS": "${LITELLM_MASTER_KEY}",
         "DEFAULT_MODELS": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
+        "ENABLE_MODEL_FILTER": "true",
+        "MODEL_FILTER_LIST": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
     },
     "zen": {
         "base_url": "https://opencode.ai/zen/go/v1",
