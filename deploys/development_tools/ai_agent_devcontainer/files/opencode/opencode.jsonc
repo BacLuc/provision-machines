@@ -7,7 +7,7 @@
   },
   "plugin": [
     // renovate: datasource=npm depName=@dietrichgebert/ponytail
-    "@dietrichgebert/ponytail@4.9.0",
+    "@dietrichgebert/ponytail@4.10.0",
     // renovate: datasource=npm depName=opencode-gemini-auth
     "opencode-gemini-auth@1.4.15",
     // renovate: datasource=npm depName=bacluc-opencode-completion-check-command
