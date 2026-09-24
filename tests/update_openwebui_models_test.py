@@ -181,6 +181,20 @@ def test_auth_fallback_order() -> None:
     assert headers == {"Authorization": "Bearer sk-test"}
 
 
+def test_connection_reset_is_retryable() -> None:
+    calls = []
+
+    def fake(request: Any, timeout: int = 30) -> mock.MagicMock:
+        calls.append(request)
+        if len(calls) == 1:
+            raise ConnectionResetError("connection reset by peer")
+        return _fake_response(200, [])
+
+    with mock.patch.object(mod, "urlopen", side_effect=fake), mock.patch.object(mod.time, "sleep"):
+        headers = mod.authenticate("http://127.0.0.1:13307", {})
+    assert headers == {}
+
+
 def test_collision_fails_before_mutation() -> None:
     exported = [
         {

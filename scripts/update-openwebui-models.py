@@ -4,7 +4,7 @@ import json
 import sys
 import time
 from typing import Any
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 DEFAULT_URL = "http://127.0.0.1:13307"
@@ -121,7 +121,7 @@ def request_json(
             return resp.status, json.loads(raw) if raw else None
     except HTTPError as e:
         return e.code, None
-    except URLError:
+    except OSError:
         return 0, None
 
 
