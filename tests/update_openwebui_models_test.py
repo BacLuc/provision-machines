@@ -44,8 +44,8 @@ CONFIG: dict[str, Any] = {
 _PRESET_KEYS = {"id", "name", "base_model_id", "params", "tools", "meta", "access_grants", "is_active"}
 
 
-def _fake_response(status: int, body: Any) -> mock.Mock:
-    resp = mock.Mock()
+def _fake_response(status: int, body: Any) -> mock.MagicMock:
+    resp = mock.MagicMock()
     resp.status = status
     resp.read.return_value = json.dumps(body).encode()
     resp.__enter__.return_value = resp
@@ -157,7 +157,7 @@ def test_auth_fallback_order() -> None:
     def fake_signin_ok(request: Any, timeout: int = 30) -> mock.Mock:
         url = request.full_url
         if url.endswith("/api/v1/models/export"):
-            raise HTTPError(url, 401, "Unauthorized", {}, None)
+            raise HTTPError(url, 401, "Unauthorized", mock.Mock(), None)
         if url.endswith("/api/v1/auths/signin"):
             return _fake_response(200, {"token": "jwt-token"})
         raise AssertionError(f"unexpected url: {url}")
@@ -169,9 +169,9 @@ def test_auth_fallback_order() -> None:
     def fake_signin_fails(request: Any, timeout: int = 30) -> mock.Mock:
         url = request.full_url
         if url.endswith("/api/v1/models/export"):
-            raise HTTPError(url, 401, "Unauthorized", {}, None)
+            raise HTTPError(url, 401, "Unauthorized", mock.Mock(), None)
         if url.endswith("/api/v1/auths/signin"):
-            raise HTTPError(url, 401, "Unauthorized", {}, None)
+            raise HTTPError(url, 401, "Unauthorized", mock.Mock(), None)
         raise AssertionError(f"unexpected url: {url}")
 
     with mock.patch.object(mod, "urlopen", side_effect=fake_signin_fails):
