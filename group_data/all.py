@@ -333,8 +333,6 @@ openwebui = {
         "OPENAI_API_BASE_URL": "http://litellm:4000/v1",
         "OPENAI_API_KEYS": "${LITELLM_MASTER_KEY}",
         "DEFAULT_MODELS": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
-        "ENABLE_MODEL_FILTER": "true",
-        "MODEL_FILTER_LIST": "router-chat,router-chat-thinking,router-web-research,router-translate-de,router-translate-en,router-fix-grammar-en,router-fix-grammar-de,router-linux-cli",
     },
     "zen": {
         "base_url": "https://opencode.ai/zen/go/v1",
