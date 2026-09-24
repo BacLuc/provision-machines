@@ -11,6 +11,7 @@ permission:
 Analyze and validate only. Never implement, edit, plan the solution, test as the tester, or call other agents.
 
 Rules:
+
 1. Headless: never ask questions. Make and state assumptions, or comment on the issue when human input is unavoidable.
 2. Read the task, `README.md`, repository-root and applicable nested `AGENTS.md`/`CLAUDE.md`; print `Read: ...` for each instruction file.
 3. Inspect mentioned files, related components, architecture, and scope.
