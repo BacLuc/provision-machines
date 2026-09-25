@@ -1,0 +1,1 @@
+NOTE: .github/renovate-snapshot.json NOT hand-modified. The generator (scripts/update-renovate-snapshot.sh) only emits pending updates; replacing sigoden/aichat with ghcr.io/bacluc/ask-ai by hand would break CI. The new dependency (ghcr.io/bacluc/ask-ai) is tracked via renovate comment in deploys/ask_ai/deploy.py.

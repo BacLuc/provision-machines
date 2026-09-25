@@ -3,37 +3,25 @@ import io
 from pyinfra import host
 from pyinfra.operations import files
 
-from operations.github_release_binary import github_release_binary
 from operations.user import get_user_name
 
 user = get_user_name()
 ask_ai = host.data.ask_ai
 
-# renovate: datasource=docker depName=alpine
-ALPINE_VERSION = "3.24.2"
-
-# renovate: datasource=github-releases depName=sigoden/aichat
-AICHAT_VERSION = "v0.30.0"
-AICHAT_CHECKSUM = "8378dfc295093efadc3ddddd17f2b49223f120a14ef3503159f375d68f287346"
+# renovate: datasource=docker depName=ghcr.io/bacluc/ask-ai
+ASK_AI_VERSION = "0.0.1"
 
 _DOCKER_CALL = f"""\
 docker run --rm \\
     --user "$UID:$GID" \\
     -e XDG_CONFIG_HOME=/cfg \\
-    -v "$HOME/bin/aichat:/usr/local/bin/aichat:ro" \\
     -v "$HOME/.config/aichat:/cfg/aichat:ro" \\
-    "alpine:{ALPINE_VERSION}" \\
-    /usr/local/bin/aichat --role '%shell%' -- "$full_prompt" \\
+    "ghcr.io/bacluc/ask-ai:{ASK_AI_VERSION}" \\
+    --role '%shell%' -- "$full_prompt" \\
     | perl -0777 -pe 's/<think>.*?<\\/think>\\s*//s'\
 """
 
 if ask_ai["enabled"]:
-    github_release_binary(
-        url=f"https://github.com/sigoden/aichat/releases/download/{AICHAT_VERSION}/aichat-{AICHAT_VERSION}-x86_64-unknown-linux-musl.tar.gz",
-        binary_name="aichat",
-        checksum=AICHAT_CHECKSUM,
-    )
-
     # api_key goes directly into config (mode 600, never in git — set in local.py)
     aichat_config = f"""\
 model: ask-ai:{ask_ai["model"]}
