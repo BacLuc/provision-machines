@@ -4,11 +4,15 @@ FROM mcr.microsoft.com/devcontainers/universal:6.1.7-noble@sha256:584e41561451c9
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
     ansible \
+    autojump \
+    direnv \
     python3-pip \
     python3-apt \
     curl \
     git \
     netcat-openbsd \
+    tmux \
+    zsh-syntax-highlighting \
     && curl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/refs/tags/v1.5.9063/files/docker/systemctl3.py -o /usr/local/bin/systemctl \
     && chmod +x /usr/local/bin/systemctl
 
