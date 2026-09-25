@@ -18,6 +18,23 @@
     "superpowers@git+https://github.com/obra/superpowers.git#v6.3.0"
   ],
   "default_agent": "coordinator",
+  "mcp": {
+    "brave-search": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        // renovate: datasource=npm depName=@brave/brave-search-mcp-server
+        "@brave/brave-search-mcp-server@2.1.4",
+        "--transport",
+        "stdio"
+      ],
+      "enabled": true,
+      "environment": {
+        "BRAVE_API_KEY": "{env:BRAVE_API_KEY}"
+      }
+    }
+  },
   "agent": {
     "build": {
       "mode": "all"

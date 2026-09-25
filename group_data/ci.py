@@ -28,6 +28,7 @@ basic_utils = {
     },
 }
 
+flatpak = {"enabled": False}
 flatpaks: list[str] = []
 
 fluxcd = {
