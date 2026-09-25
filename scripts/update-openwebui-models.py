@@ -282,9 +282,12 @@ def build_preset_specs(model_map: dict[str, str], default_models: list[str]) -> 
     return specs
 
 
-def to_sync_model(spec: dict[str, Any], user_id: str, now: int) -> dict[str, Any]:
+def to_sync_model(
+    spec: dict[str, Any], user_id: str, now: int, existing: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Build the full ModelModel envelope for one preset."""
     preset_id = spec["id"]
+    existing = existing or {}
     params: dict[str, Any] = {"system": PRESET_SYSTEM_PROMPTS[preset_id]}
     capabilities: dict[str, bool] = dict.fromkeys(CAPABILITY_KEYS, False)
     meta: dict[str, Any] = {"capabilities": capabilities}
@@ -302,8 +305,8 @@ def to_sync_model(spec: dict[str, Any], user_id: str, now: int) -> dict[str, Any
         "meta": meta,
         "access_grants": [],
         "is_active": True,
-        "updated_at": now,
-        "created_at": now,
+        "updated_at": existing.get("updated_at") or now,
+        "created_at": existing.get("created_at") or now,
     }
 
 
@@ -418,19 +421,19 @@ def reconcile(
     user_id = _get_user_id(export_rows, signin_body)
     now = int(time.time())
     specs = build_preset_specs(model_map, default_models)
-    models = [to_sync_model(spec, user_id, now) for spec in specs]
     managed_ids = set(default_models)
+    managed_rows: dict[str, Any] = {row_id: row for row in export_rows if (row_id := row.get("id")) in managed_ids}
     colliding = sorted(
         row_id
-        for row in export_rows
-        if (row_id := row.get("id")) in managed_ids
-        and (row.get("base_model_id") in (None, "") or row.get("base_model_id") == row_id)
+        for row_id, row in managed_rows.items()
+        if row.get("base_model_id") in (None, "") or row.get("base_model_id") == row_id
     )
     if colliding:
         raise RuntimeError(
             f"preset id collides with an existing base model row: {colliding}; "
             "rename the preset or remove the base model before syncing"
         )
+    models = [to_sync_model(spec, user_id, now, managed_rows.get(spec["id"])) for spec in specs]
     preserved = [row for row in export_rows if row.get("id") not in managed_ids]
     payload = {"models": preserved + models}
     if dry_run:

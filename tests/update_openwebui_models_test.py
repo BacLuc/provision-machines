@@ -1,5 +1,6 @@
 import ast
 import importlib.util
+import json
 import os
 import shlex
 import types
@@ -369,9 +370,41 @@ def test_reconcile_missing_presets_after_sync_raises(monkeypatch: pytest.MonkeyP
         mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
 
 
-def test_reconcile_second_run_sends_identical_payload(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_reconcile_first_run_stamps_clock(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod.time, "time", lambda: 1790288638)
-    sync_payloads: list[dict[str, Any]] = []
+    calls: list[tuple[str, str, dict[str, Any] | None]] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append((method, url, payload))
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            return (200, []) if len([c for c in calls if c[0] == "GET"]) == 1 else (200, _preset_rows())
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            return 200, _preset_rows()
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    sync_payload = calls[1][2]
+    assert sync_payload is not None
+    for model in sync_payload["models"]:
+        assert model["updated_at"] == 1790288638
+        assert model["created_at"] == 1790288638
+
+
+def test_to_sync_model_falls_back_to_now_without_usable_timestamps() -> None:
+    specs = mod.build_preset_specs(MODEL_MAP, DEFAULT_MODELS)
+    for existing in ({}, {"updated_at": None, "created_at": None}, {"updated_at": 0, "created_at": 0}):
+        model = mod.to_sync_model(specs[0], "admin", 1790288638, existing)
+        assert model["updated_at"] == 1790288638
+        assert model["created_at"] == 1790288638
+
+
+def test_reconcile_second_run_sends_identical_payload(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = iter([1_000_000, 2_000_000])
+    monkeypatch.setattr(mod.time, "time", lambda: next(clock))
+    sync_payloads: list[bytes] = []
 
     def fake_request(
         method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
@@ -380,7 +413,7 @@ def test_reconcile_second_run_sends_identical_payload(monkeypatch: pytest.Monkey
             return 200, _preset_rows()
         if method == "POST" and url.endswith("/api/v1/models/sync"):
             assert payload is not None
-            sync_payloads.append(payload)
+            sync_payloads.append(json.dumps(payload, sort_keys=True).encode())
             return 200, _preset_rows()
         raise AssertionError(f"unexpected request {method} {url}")
 
