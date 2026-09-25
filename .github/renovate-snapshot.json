@@ -23,7 +23,6 @@
   "python3-pip",
   "rajatjindal/kubectl-modify-secret",
   "robscott/kube-capacity",
-  "sigoden/aichat",
   "vshn/appcat-cli",
   "vshn/k8ify",
   "vshn/kharon"

@@ -8,7 +8,7 @@ from operations.user import get_user_name
 user = get_user_name()
 ask_ai = host.data.ask_ai
 
-# renovate: datasource=docker depName=ghcr.io/bacluc/ask-ai
+# renovate: datasource=docker depName=ghcr.io/bacluc-agent/ask-ai
 ASK_AI_VERSION = "0.0.1"
 
 _DOCKER_CALL = f"""\
@@ -16,7 +16,7 @@ docker run --rm \\
     --user "$UID:$GID" \\
     -e XDG_CONFIG_HOME=/cfg \\
     -v "$HOME/.config/aichat:/cfg/aichat:ro" \\
-    "ghcr.io/bacluc/ask-ai:{ASK_AI_VERSION}" \\
+    "ghcr.io/bacluc-agent/ask-ai:{ASK_AI_VERSION}" \\
     --role '%shell%' -- "$full_prompt" \\
     | perl -0777 -pe 's/<think>.*?<\\/think>\\s*//s'\
 """
