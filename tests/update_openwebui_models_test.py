@@ -1,5 +1,8 @@
+import ast
 import importlib.util
 import os
+import shlex
+import types
 from pathlib import Path
 from typing import Any
 from urllib.error import URLError
@@ -459,6 +462,52 @@ def test_deploy_derives_caller_and_admin_keys() -> None:
     assert 'if k != "OPENAI_API_KEYS"' in content
 
 
+def _render_reconcile_command(compose_project_dir: str) -> str:
+    with open(_DEPLOY) as f:
+        tree = ast.parse(f.read())
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.JoinedStr):
+            continue
+        if not any(
+            isinstance(value, ast.FormattedValue)
+            and isinstance(value.value, ast.Call)
+            and isinstance(value.value.func, ast.Attribute)
+            and value.value.func.attr == "quote"
+            for value in node.values
+        ):
+            continue
+        code = compile(ast.Expression(body=node), _DEPLOY, "eval")
+        globals_dict: dict[str, Any] = {
+            "shlex": shlex,
+            "sys": types.SimpleNamespace(executable="/usr/bin/python3"),
+            "compose_project_dir": compose_project_dir,
+        }
+        rendered = eval(code, globals_dict)
+        assert isinstance(rendered, str)
+        return rendered
+    raise AssertionError("reconcile command not found in deploy.py")
+
+
+def test_deploy_reconcile_command_quotes_paths_with_spaces() -> None:
+    command = _render_reconcile_command("/home/user/my openwebui")
+    assert command == (
+        "/usr/bin/python3 '/home/user/my openwebui/update-openwebui-models.py' "
+        "--config '/home/user/my openwebui/openwebui-models-config.json' "
+        "--env-file '/home/user/my openwebui/.env' "
+        "--resources '/home/user/my openwebui/resources.yaml'"
+    )
+
+
+def test_deploy_reconcile_command_plain_paths_unquoted() -> None:
+    command = _render_reconcile_command("/home/user/openwebui")
+    assert command == (
+        "/usr/bin/python3 /home/user/openwebui/update-openwebui-models.py "
+        "--config /home/user/openwebui/openwebui-models-config.json "
+        "--env-file /home/user/openwebui/.env "
+        "--resources /home/user/openwebui/resources.yaml"
+    )
+
+
 def test_authenticate_falls_back_to_env_admin_key(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_request(
         method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
@@ -492,83 +541,143 @@ def test_authenticate_falls_back_to_webui_admin_key(monkeypatch: pytest.MonkeyPa
     assert token == "sk-admin-legacy"
 
 
-def test_wait_ready_polls_until_ready(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_wait_ready_returns_on_200(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
 
     def fake_request(
         method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
     ) -> tuple[int, Any]:
         calls.append(url)
-        return (503, None) if len(calls) < 3 else (200, None)
+        return 200, None
 
     monkeypatch.setattr(mod, "_request_json", fake_request)
-    monkeypatch.setattr(mod.time, "sleep", lambda _: None)
-    monkeypatch.setattr(mod.time, "monotonic", lambda: 0.0)
     mod.wait_ready("http://test")
-    assert len(calls) == 3
-    assert all(url.endswith("/ready") for url in calls)
+    assert calls == ["http://test/ready"]
 
 
-def test_wait_ready_times_out(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_wait_ready_retries_until_200(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append(url)
+        if len(calls) == 1:
+            raise URLError("down")
+        if len(calls) == 2:
+            return 503, None
+        return 200, None
+
+    monkeypatch.setattr(mod, "_request_json", fake_request)
+    monkeypatch.setattr(mod.time, "sleep", lambda seconds: None)
+    mod.wait_ready("http://test")
+    assert calls == ["http://test/ready", "http://test/ready", "http://test/ready"]
+
+
+def test_wait_ready_raises_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(mod, "READY_TIMEOUT_SECONDS", 0)
+
     def fake_request(
         method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
     ) -> tuple[int, Any]:
         return 503, None
 
     monkeypatch.setattr(mod, "_request_json", fake_request)
-    monkeypatch.setattr(mod.time, "sleep", lambda _: None)
-    monkeypatch.setattr(mod, "READY_TIMEOUT_SECONDS", 0)
     with pytest.raises(RuntimeError, match="did not become ready"):
         mod.wait_ready("http://test")
 
 
-def test_request_json_with_retry_retries_urlerror(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_request_json_with_retry_returns_success_immediately(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
 
     def fake_request(
         method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
     ) -> tuple[int, Any]:
         calls.append(url)
-        if len(calls) < 3:
-            raise URLError("boom")
         return 200, {"ok": True}
 
     monkeypatch.setattr(mod, "_request_json", fake_request)
-    monkeypatch.setattr(mod.time, "sleep", lambda _: None)
-    monkeypatch.setattr(mod.time, "monotonic", lambda: 0.0)
-    status, body = mod._request_json_with_retry("GET", "http://test/api")
-    assert (status, body) == (200, {"ok": True})
-    assert len(calls) == 3
+    status, body = mod._request_json_with_retry("GET", "http://test/x")
+    assert status == 200
+    assert body == {"ok": True}
+    assert calls == ["http://test/x"]
 
 
-def test_request_json_with_retry_retries_5xx(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_request_json_with_retry_retries_on_urlerror(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
 
     def fake_request(
         method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
     ) -> tuple[int, Any]:
         calls.append(url)
-        if len(calls) < 3:
-            return 503, {"detail": "unavailable"}
-        return 200, {"ok": True}
+        if len(calls) == 1:
+            raise URLError("down")
+        return 200, None
 
     monkeypatch.setattr(mod, "_request_json", fake_request)
-    monkeypatch.setattr(mod.time, "sleep", lambda _: None)
-    monkeypatch.setattr(mod.time, "monotonic", lambda: 0.0)
-    status, body = mod._request_json_with_retry("GET", "http://test/api")
-    assert (status, body) == (200, {"ok": True})
-    assert len(calls) == 3
+    monkeypatch.setattr(mod.time, "sleep", lambda seconds: None)
+    status, _ = mod._request_json_with_retry("GET", "http://test/x")
+    assert status == 200
+    assert len(calls) == 2
 
 
-def test_request_json_with_retry_times_out(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_request_json_with_retry_retries_on_5xx(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
     def fake_request(
         method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
     ) -> tuple[int, Any]:
-        raise URLError("boom")
+        calls.append(url)
+        if len(calls) == 1:
+            return 503, None
+        return 200, None
 
     monkeypatch.setattr(mod, "_request_json", fake_request)
-    monkeypatch.setattr(mod.time, "sleep", lambda _: None)
+    monkeypatch.setattr(mod.time, "sleep", lambda seconds: None)
+    status, _ = mod._request_json_with_retry("GET", "http://test/x")
+    assert status == 200
+    assert len(calls) == 2
+
+
+def test_request_json_with_retry_returns_4xx_immediately(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append(url)
+        return 404, {"detail": "not found"}
+
+    monkeypatch.setattr(mod, "_request_json", fake_request)
+    status, body = mod._request_json_with_retry("GET", "http://test/x")
+    assert status == 404
+    assert body == {"detail": "not found"}
+    assert len(calls) == 1
+
+
+def test_request_json_with_retry_passes_token_and_payload(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: list[tuple[str, str, str | None, dict[str, Any] | None]] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        seen.append((method, url, token, payload))
+        return 200, None
+
+    monkeypatch.setattr(mod, "_request_json", fake_request)
+    mod._request_json_with_retry("POST", "http://test/x", token="sk-test", payload={"a": 1})
+    assert seen == [("POST", "http://test/x", "sk-test", {"a": 1})]
+
+
+def test_request_json_with_retry_raises_after_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod, "RETRY_TIMEOUT_SECONDS", 0)
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        return 503, None
+
+    monkeypatch.setattr(mod, "_request_json", fake_request)
     with pytest.raises(RuntimeError, match="failed after"):
         mod._request_json_with_retry("GET", "http://test/api")
 
