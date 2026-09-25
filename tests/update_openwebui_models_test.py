@@ -1028,3 +1028,85 @@ def test_cli_failure_exit_code_without_secret_leakage(tmp_path: Path, capsys: py
     captured = capsys.readouterr()
     assert "admin-secret" not in captured.err
     assert "admin-secret" not in captured.out
+
+
+def deploy_inventory(tmp_path: Path, secret: str) -> tuple[Path, dict[str, str]]:
+    all_data = load_all_module("deploy_order_source")
+    openwebui = dict(cast(dict[str, Any], all_data.openwebui))
+    openwebui["enabled"] = True
+    openwebui["compose_project_dir"] = str(tmp_path / "openwebui project")
+    openwebui["ZEN_API_KEY"] = secret
+    openwebui["OPENWEBUI_CALLER_KEY"] = "dummy-caller-key"
+    openwebui["OPENWEBUI_ADMIN_API_KEY"] = "dummy-admin-key"
+    inventory_path = tmp_path / "inventory.py"
+    inventory_path.write_text(f'all = [("@local", {{"openwebui": {openwebui!r}}})]\n')
+    environment = os.environ.copy()
+    environment.pop("CI", None)
+    return inventory_path, environment
+
+
+def run_deploy_dry(inventory_path: Path, environment: dict[str, str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            "uv",
+            "run",
+            "pyinfra",
+            str(inventory_path),
+            "deploys/openwebui/deploy.py",
+            "--dry",
+            "--debug-operations",
+            "-y",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+
+
+def test_openwebui_deploy_orders_operations_without_leaking_secrets(tmp_path: Path) -> None:
+    inventory_path, environment = deploy_inventory(tmp_path, "sk-dummy-zen-key")
+
+    result = run_deploy_dry(inventory_path, environment)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    output = result.stdout + result.stderr
+    expected_names = [
+        "Deploy docker-compose.yml",
+        "Deploy .env",
+        "Deploy aisix-config.yaml",
+        "Deploy resources.yaml",
+        "Deploy openwebui-models.json",
+        "Deploy update-openwebui-models.py",
+        "Deploy systemd service file",
+        "Restart docker before starting openwebui to ensure iptables chains exist",
+        "Enable and start openwebui service",
+        "Reconcile OpenWebUI model presets",
+    ]
+    missing = [name for name in expected_names if name not in output]
+    assert not missing, output
+    positions = [output.index(name) for name in expected_names]
+    assert positions == sorted(positions)
+    for secret in ("sk-dummy-zen-key", "dummy-caller-key", "dummy-admin-key"):
+        assert secret not in output
+    assert "|| true" not in output
+    assert "eval " not in output
+
+
+def test_openwebui_deploy_reconcile_command_has_no_secret_on_argv() -> None:
+    source = Path(DEPLOY_PATH).read_text()
+    assert "shlex.quote" in source
+    assert "docker kill --signal=HUP aisix" in source
+    assert "|| true" not in source
+    assert "eval " not in source
+    assert "OPENWEBUI_ADMIN_API_KEY" not in source.split("Reconcile OpenWebUI model presets", 1)[1]
+
+
+def test_openwebui_deploy_rejects_newline_env_values(tmp_path: Path) -> None:
+    inventory_path, environment = deploy_inventory(tmp_path, "first-line\nsecond-line")
+
+    result = run_deploy_dry(inventory_path, environment)
+
+    assert result.returncode != 0
+    assert "must not contain newlines" in result.stdout + result.stderr
