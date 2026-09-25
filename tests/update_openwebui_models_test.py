@@ -323,18 +323,19 @@ def test_reconcile_terminal_sync_errors_raise(monkeypatch: pytest.MonkeyPatch, s
     assert not [c for c in calls if c[1].endswith("/api/v1/models/import")]
 
 
-def test_reconcile_empty_sync_body_verified_via_export(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_reconcile_sync_200_empty_is_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_request(
         method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
     ) -> tuple[int, Any]:
         if method == "GET" and url.endswith("/api/v1/models/export"):
-            return 200, _preset_rows()
+            return 200, []
         if method == "POST" and url.endswith("/api/v1/models/sync"):
             return 200, []
         raise AssertionError(f"unexpected request {method} {url}")
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
-    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    with pytest.raises(RuntimeError, match="empty model list"):
+        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
 
 
 def test_reconcile_missing_presets_after_sync_raises(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -372,3 +373,32 @@ def test_reconcile_second_run_sends_identical_payload(monkeypatch: pytest.Monkey
     mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
     assert len(sync_payloads) == 2
     assert sync_payloads[0] == sync_payloads[1]
+
+
+_COMPOSE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "deploys",
+    "openwebui",
+    "files",
+    "docker-compose.yml",
+)
+
+_GROUP_DATA = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "group_data",
+)
+
+
+def test_compose_enables_session_sharing() -> None:
+    with open(_COMPOSE) as f:
+        content = f.read()
+    assert "DATABASE_ENABLE_SESSION_SHARING=true" in content
+
+
+def test_no_model_filter_keys() -> None:
+    paths = [_COMPOSE]
+    for name in ("all.py", "ci.py"):
+        paths.append(os.path.join(_GROUP_DATA, name))
+    for path in paths:
+        with open(path) as f:
+            assert "MODEL_FILTER" not in f.read(), path

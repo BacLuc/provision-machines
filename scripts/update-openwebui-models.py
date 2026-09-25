@@ -406,6 +406,11 @@ def reconcile(
             missing = [pid for pid in default_models if pid not in synced_ids]
             if missing:
                 raise RuntimeError(f"models sync did not return presets: {missing}")
+        elif body == []:
+            raise RuntimeError(
+                "sync returned an empty model list; this indicates an internal OpenWebUI error "
+                "such as a database lock, check the open-webui logs"
+            )
         else:
             print("models sync returned an empty result; verifying via export")
     elif status in (404, 405, 501):

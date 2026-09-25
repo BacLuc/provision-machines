@@ -16,6 +16,7 @@ services:
       - "OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}"
       - "OPENAI_API_KEYS=${OPENAI_API_KEYS}"
       - "DEFAULT_MODELS=${DEFAULT_MODELS}"
+      - "DATABASE_ENABLE_SESSION_SHARING=true"
   aisix:
     image: "ghcr.io/api7/aisix:${AISIX_VERSION}"
     container_name: "aisix"
