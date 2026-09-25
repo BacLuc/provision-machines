@@ -1,5 +1,6 @@
 import ast
 import importlib.util
+import itertools
 import json
 import os
 import shlex
@@ -402,27 +403,47 @@ def test_to_sync_model_falls_back_to_now_without_usable_timestamps() -> None:
         assert model["created_at"] == 1790288638
 
 
-def test_reconcile_second_run_sends_identical_payload(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_reconcile_second_run_sends_identical_payload_without_server_updated_at(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     clock = iter([1_000_000, 2_000_000])
     monkeypatch.setattr(mod.time, "time", lambda: next(clock))
-    sync_payloads: list[bytes] = []
+    server_clock = itertools.count(10_000_000, 10_000_000)
+    stored: list[dict[str, Any]] = []
+    sync_payloads: list[dict[str, Any]] = []
 
     def fake_request(
         method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
     ) -> tuple[int, Any]:
         if method == "GET" and url.endswith("/api/v1/models/export"):
-            return 200, _preset_rows()
+            return 200, stored
         if method == "POST" and url.endswith("/api/v1/models/sync"):
             assert payload is not None
-            sync_payloads.append(json.dumps(payload, sort_keys=True).encode())
-            return 200, _preset_rows()
+            sync_payloads.append(payload)
+            stored[:] = [{**model, "updated_at": next(server_clock)} for model in payload["models"]]
+            return 200, stored
         raise AssertionError(f"unexpected request {method} {url}")
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
     mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
     mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+
     assert len(sync_payloads) == 2
-    assert sync_payloads[0] == sync_payloads[1]
+    first, second = sync_payloads
+    assert [model["updated_at"] for model in first["models"]] == [1_000_000] * len(DEFAULT_MODELS)
+    assert [model["updated_at"] for model in second["models"]] == [
+        10_000_000 * (index + 1) for index in range(len(DEFAULT_MODELS))
+    ]
+    assert [model["created_at"] for model in first["models"]] == [1_000_000] * len(DEFAULT_MODELS)
+    assert [model["created_at"] for model in second["models"]] == [1_000_000] * len(DEFAULT_MODELS)
+    stripped = [
+        json.dumps(
+            [{k: v for k, v in model.items() if k != "updated_at"} for model in payload["models"]],
+            sort_keys=True,
+        ).encode()
+        for payload in sync_payloads
+    ]
+    assert stripped[0] == stripped[1]
 
 
 _COMPOSE = os.path.join(
