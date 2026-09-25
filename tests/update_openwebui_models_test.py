@@ -240,3 +240,135 @@ def test_reconcile_preserves_non_managed_models(monkeypatch: pytest.MonkeyPatch)
         if model["id"] in DEFAULT_MODELS:
             assert model["base_model_id"] == MODEL_MAP[model["id"]]
             assert model["name"] == EXPECTED_NAMES[model["id"]]
+
+
+def _preset_rows() -> list[dict[str, Any]]:
+    return [
+        {
+            "id": pid,
+            "user_id": "admin",
+            "base_model_id": alias,
+            "name": EXPECTED_NAMES[pid],
+            "params": {},
+            "meta": {},
+            "access_grants": [],
+            "is_active": True,
+            "updated_at": 1790288638,
+            "created_at": 1790288638,
+        }
+        for pid, alias in MODEL_MAP.items()
+    ]
+
+
+def test_reconcile_falls_back_to_import_on_404(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[str, str, dict[str, Any] | None]] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append((method, url, payload))
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            if len([c for c in calls if c[0] == "GET"]) == 1:
+                return 200, []
+            return 200, _preset_rows()
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            return 404, {"detail": "not found"}
+        if method == "POST" and url.endswith("/api/v1/models/import"):
+            return 200, _preset_rows()
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    sync_payload = calls[1][2]
+    import_payload = calls[2][2]
+    assert sync_payload is not None
+    assert import_payload == sync_payload
+    assert [m["id"] for m in import_payload["models"]] == DEFAULT_MODELS
+
+
+def test_reconcile_import_fallback_failure_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            return 200, []
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            return 405, {"detail": "not allowed"}
+        if method == "POST" and url.endswith("/api/v1/models/import"):
+            return 422, {"detail": "unprocessable"}
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    with pytest.raises(RuntimeError, match="import fallback failed"):
+        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+
+
+@pytest.mark.parametrize("status", [401, 403, 422])
+def test_reconcile_terminal_sync_errors_raise(monkeypatch: pytest.MonkeyPatch, status: int) -> None:
+    calls: list[tuple[str, str, dict[str, Any] | None]] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append((method, url, payload))
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            return 200, []
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            return status, {"detail": "rejected"}
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    with pytest.raises(RuntimeError, match="rejected"):
+        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    assert not [c for c in calls if c[1].endswith("/api/v1/models/import")]
+
+
+def test_reconcile_empty_sync_body_verified_via_export(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            return 200, _preset_rows()
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            return 200, []
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+
+
+def test_reconcile_missing_presets_after_sync_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            return 200, []
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            return 200, _preset_rows()
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    with pytest.raises(RuntimeError, match="presets missing after sync"):
+        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+
+
+def test_reconcile_second_run_sends_identical_payload(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(mod.time, "time", lambda: 1790288638)
+    sync_payloads: list[dict[str, Any]] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            return 200, _preset_rows()
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            assert payload is not None
+            sync_payloads.append(payload)
+            return 200, _preset_rows()
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    assert len(sync_payloads) == 2
+    assert sync_payloads[0] == sync_payloads[1]
