@@ -3,6 +3,7 @@ import importlib.util
 import json
 import os
 import shlex
+import sys
 import types
 from pathlib import Path
 from typing import Any
@@ -909,3 +910,53 @@ def test_reconcile_allows_previous_preset_rows(monkeypatch: pytest.MonkeyPatch) 
     assert sync_payload is not None
     assert [m["id"] for m in sync_payload["models"]] == DEFAULT_MODELS
     assert [m["base_model_id"] for m in sync_payload["models"]] == [MODEL_MAP[p] for p in DEFAULT_MODELS]
+
+
+def _run_main(monkeypatch: pytest.MonkeyPatch, config_path: Path, resources_path: Path) -> None:
+    def fake_wait_ready(base_url: str) -> None:
+        raise RuntimeError("alias check passed, reached the network")
+
+    monkeypatch.setattr(mod, "wait_ready", fake_wait_ready)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["update-openwebui-models.py", "--config", str(config_path), "--resources", str(resources_path)],
+    )
+    mod.main()
+
+
+def _write_main_inputs(tmp_path: Path, resources: str) -> tuple[Path, Path]:
+    config_path = tmp_path / "openwebui-models-config.json"
+    config_path.write_text(json.dumps({"model_map": MODEL_MAP, "default_models": DEFAULT_MODELS}))
+    (tmp_path / ".env").write_text("OPENWEBUI_API_KEY=sk-admin\n")
+    resources_path = tmp_path / "resources.yaml"
+    resources_path.write_text(resources)
+    return config_path, resources_path
+
+
+def test_main_rejects_resources_missing_model_map_alias(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    with open(_RESOURCES) as f:
+        real = f.read()
+    minimal = real[: real.index("  - display_name: router-linux-cli")] + real[real.index("\napi_keys:") :]
+    assert [name for name, _ in mod.parse_aisix_model_names(minimal)] == list(MODEL_MAP.values())[:-1]
+    config_path, resources_path = _write_main_inputs(tmp_path, minimal)
+    with pytest.raises(RuntimeError, match="router-linux-cli"):
+        _run_main(monkeypatch, config_path, resources_path)
+
+
+def test_main_accepts_extra_router_aliases(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    with open(_RESOURCES) as f:
+        real = f.read()
+    extra = (
+        "  - display_name: router-extra\n"
+        "    routing:\n"
+        "      strategy: failover\n"
+        "      targets:\n"
+        "        - model: zen-chat\n"
+        "          priority: 100\n"
+    )
+    spliced = real.replace("\napi_keys:", f"\n{extra}api_keys:")
+    assert [name for name, _ in mod.parse_aisix_model_names(spliced)] == list(MODEL_MAP.values()) + ["router-extra"]
+    config_path, resources_path = _write_main_inputs(tmp_path, spliced)
+    with pytest.raises(RuntimeError, match="reached the network"):
+        _run_main(monkeypatch, config_path, resources_path)

@@ -499,9 +499,9 @@ def main() -> None:
         with open(args.resources) as f:
             aliases = parse_aisix_model_names(f.read())
         alias_names = {name for name, _ in aliases}
-        expected = set(model_map.values())
-        if alias_names != expected:
-            raise RuntimeError(f"router aliases {sorted(alias_names)} do not match model_map {sorted(expected)}")
+        missing = sorted(set(model_map.values()) - alias_names)
+        if missing:
+            raise RuntimeError(f"model_map aliases missing from the router: {missing}")
     wait_ready(base_url)
     token, signin_body = authenticate(base_url, env)
     reconcile(base_url, token, signin_body, model_map, default_models, dry_run=args.dry_run)
