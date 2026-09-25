@@ -16,7 +16,7 @@ provider_keys:
     provider: openai
     adapter: openai
     api_base: ${ZEN_API_BASE}
-    api_key: ${OPENCODE_GO_API_KEY}
+    api_key: ${ZEN_API_KEY}
   - display_name: ollama
     provider: openai
     adapter: openai

@@ -1,6 +1,9 @@
 import importlib.util
 import json
 import os
+import re
+import shutil
+import subprocess
 from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
@@ -146,3 +149,121 @@ def test_openwebui_ci_group_data_mirrors_non_secret_values() -> None:
     assert json.dumps(ci_openwebui, sort_keys=True) == json.dumps(expected, sort_keys=True)
     for key in SECRET_PLACEHOLDERS:
         assert key not in ci_openwebui
+
+
+def test_compose_renders_aisix_gateway_and_openwebui_contract(tmp_path: Path) -> None:
+    shutil.copy(COMPOSE_PATH, tmp_path / "docker-compose.yml")
+    environment = {
+        "AISIX_VERSION": "1.4.0",
+        "ZEN_API_KEY": "test-zen-key",
+        "ZEN_API_BASE": "https://example.invalid/zen/v1",
+        "OLLAMA_API_KEY": "test-ollama-key",
+        "OLLAMA_API_BASE": "http://host.docker.internal:11434/v1",
+        "OPENWEBUI_CALLER_KEY": "test-caller-key",
+        "ENABLE_OPENAI_API": "true",
+        "OPENAI_API_BASE_URL": "http://aisix:3000/v1",
+        "OPENAI_API_KEYS": "test-caller-key",
+        "DEFAULT_MODELS": ",".join(MODEL_IDS),
+        "ENABLE_MODEL_FILTER": "true",
+        "MODEL_FILTER_LIST": ",".join(MODEL_IDS),
+    }
+    for provider in ("ZEN", "OLLAMA"):
+        for family in MODEL_FAMILIES:
+            environment[f"{provider}_{family.upper()}_MODEL"] = f"test-{provider.lower()}-{family}"
+    (tmp_path / ".env").write_text("".join(f"{key}={value}\n" for key, value in environment.items()))
+    result = subprocess.run(
+        ["docker", "compose", "config", "--format", "json"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    services = json.loads(result.stdout)["services"]
+
+    assert list(services) == ["aisix", "open-webui", "searxng"]
+    aisix = services["aisix"]
+    assert aisix["image"] == "ghcr.io/api7/aisix:1.4.0"
+    assert aisix["expose"] == ["3000"]
+    assert "ports" not in aisix
+    assert aisix["restart"] == "unless-stopped"
+    mounts = {mount["target"]: mount for mount in aisix["volumes"]}
+    assert set(mounts) == {"/etc/aisix/config.yaml", "/etc/aisix/resources.yaml"}
+    for mount in mounts.values():
+        assert mount["read_only"] is True
+    aisix_env = aisix["environment"]
+    for key in ("ZEN_API_KEY", "ZEN_API_BASE", "OLLAMA_API_KEY", "OLLAMA_API_BASE", "OPENWEBUI_CALLER_KEY"):
+        assert aisix_env[key] == environment[key]
+    for provider in ("ZEN", "OLLAMA"):
+        for family in MODEL_FAMILIES:
+            assert aisix_env[f"{provider}_{family.upper()}_MODEL"] == environment[f"{provider}_{family.upper()}_MODEL"]
+
+    openwebui_env = services["open-webui"]["environment"]
+    assert openwebui_env["WEBUI_AUTH"] == "False"
+    assert openwebui_env["DATABASE_ENABLE_SESSION_SHARING"] == "True"
+    assert openwebui_env["ENABLE_API_KEYS"].lower() == "true"
+    assert openwebui_env["ENABLE_OPENAI_API"] == "true"
+    assert openwebui_env["OPENAI_API_BASE_URL"] == "http://aisix:3000/v1"
+    assert openwebui_env["OPENAI_API_KEYS"] == "test-caller-key"
+    assert openwebui_env["DEFAULT_MODELS"] == ",".join(MODEL_IDS)
+    assert openwebui_env["ENABLE_MODEL_FILTER"] == "true"
+    assert openwebui_env["MODEL_FILTER_LIST"] == ",".join(MODEL_IDS)
+    assert services["open-webui"]["image"] == "ghcr.io/open-webui/open-webui:v0.11.4"
+
+    compose_text = Path(COMPOSE_PATH).read_text()
+    for source in re.findall(r'- "([^":]+):', compose_text):
+        assert ".." not in source
+        assert not source.startswith("/")
+    for required in (
+        "ZEN_API_KEY:?ZEN_API_KEY is required",
+        "ZEN_API_BASE:?ZEN_API_BASE is required",
+        "OPENWEBUI_CALLER_KEY:?OPENWEBUI_CALLER_KEY is required",
+        "OPENAI_API_KEYS:?OPENAI_API_KEYS is required",
+    ):
+        assert required in compose_text
+    assert re.search(r"^services:\n  aisix:", compose_text, re.MULTILINE)
+    assert "networks:" not in compose_text
+    assert compose_text.startswith("---\n")
+
+
+def test_aisix_resources_validate_with_nonsecret_environment(tmp_path: Path) -> None:
+    resources_text = Path(RESOURCES_PATH).read_text()
+    names = set(re.findall(r"\$\{([A-Z_][A-Z0-9_]*)\}", resources_text))
+    names.update(re.findall(r"^\s*key_env:\s*([A-Z_][A-Z0-9_]*)\s*$", resources_text, re.MULTILINE))
+    variables = sorted(names)
+    assert variables
+    assert "ZEN_API_KEY" in variables
+    assert "OPENCODE_GO_API_KEY" not in variables
+    command = [
+        "docker",
+        "run",
+        "--rm",
+        "--entrypoint",
+        "/usr/local/bin/aisix",
+    ]
+    for variable in variables:
+        command.extend(["-e", f"{variable}=sample-{variable.lower()}"])
+    command.extend(
+        [
+            "--volume",
+            f"{RESOURCES_PATH}:/etc/aisix/resources.yaml:ro",
+            "ghcr.io/api7/aisix:1.4.0",
+            "validate",
+            "--resources",
+            "/etc/aisix/resources.yaml",
+        ]
+    )
+    result = subprocess.run(command, check=False, capture_output=True, text=True)
+    output = result.stdout + result.stderr
+    assert result.returncode == 0, output
+    assert "loaded 23 resource(s)" in output
+
+    mutated = resources_text.replace("      strategy: failover\n", "      strategy: not-a-strategy\n")
+    assert mutated != resources_text
+    mutated_path = tmp_path / "resources-mutated.yaml"
+    mutated_path.write_text(mutated)
+    mutated_command = command.copy()
+    mutated_command[mutated_command.index("--volume") + 1] = f"{mutated_path}:/etc/aisix/resources.yaml:ro"
+    mutated_result = subprocess.run(mutated_command, check=False, capture_output=True, text=True)
+    assert mutated_result.returncode == 1, mutated_result.stdout + mutated_result.stderr
+    assert "schema validation failed" in mutated_result.stderr

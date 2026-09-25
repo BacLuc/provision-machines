@@ -1,5 +1,34 @@
 ---
 services:
+  aisix:
+    image: "ghcr.io/api7/aisix:${AISIX_VERSION}"
+    container_name: "aisix"
+    expose:
+      - "3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "./aisix-config.yaml:/etc/aisix/config.yaml:ro"
+      - "./resources.yaml:/etc/aisix/resources.yaml:ro"
+    restart: "unless-stopped"
+    environment:
+      ZEN_API_KEY: "${ZEN_API_KEY:?ZEN_API_KEY is required}"
+      ZEN_API_BASE: "${ZEN_API_BASE:?ZEN_API_BASE is required}"
+      ZEN_CHAT_MODEL: "${ZEN_CHAT_MODEL:?}"
+      ZEN_CHAT_THINKING_MODEL: "${ZEN_CHAT_THINKING_MODEL:?}"
+      ZEN_WEB_RESEARCH_MODEL: "${ZEN_WEB_RESEARCH_MODEL:?}"
+      ZEN_TRANSLATE_MODEL: "${ZEN_TRANSLATE_MODEL:?}"
+      ZEN_GRAMMAR_MODEL: "${ZEN_GRAMMAR_MODEL:?}"
+      ZEN_LINUX_CLI_MODEL: "${ZEN_LINUX_CLI_MODEL:?}"
+      OLLAMA_API_KEY: "${OLLAMA_API_KEY:?}"
+      OLLAMA_API_BASE: "${OLLAMA_API_BASE:?}"
+      OLLAMA_CHAT_MODEL: "${OLLAMA_CHAT_MODEL:?}"
+      OLLAMA_CHAT_THINKING_MODEL: "${OLLAMA_CHAT_THINKING_MODEL:?}"
+      OLLAMA_WEB_RESEARCH_MODEL: "${OLLAMA_WEB_RESEARCH_MODEL:?}"
+      OLLAMA_TRANSLATE_MODEL: "${OLLAMA_TRANSLATE_MODEL:?}"
+      OLLAMA_GRAMMAR_MODEL: "${OLLAMA_GRAMMAR_MODEL:?}"
+      OLLAMA_LINUX_CLI_MODEL: "${OLLAMA_LINUX_CLI_MODEL:?}"
+      OPENWEBUI_CALLER_KEY: "${OPENWEBUI_CALLER_KEY:?OPENWEBUI_CALLER_KEY is required}"
   open-webui:
     image: "ghcr.io/open-webui/open-webui:v0.11.4"
     container_name: "open-webui"
@@ -12,6 +41,14 @@ services:
     restart: "unless-stopped"
     environment:
       - "WEBUI_AUTH=False"
+      - "DATABASE_ENABLE_SESSION_SHARING=True"
+      - "ENABLE_API_KEYS=true"
+      - "ENABLE_OPENAI_API=${ENABLE_OPENAI_API:?}"
+      - "OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:?}"
+      - "OPENAI_API_KEYS=${OPENAI_API_KEYS:?OPENAI_API_KEYS is required}"
+      - "DEFAULT_MODELS=${DEFAULT_MODELS:?}"
+      - "ENABLE_MODEL_FILTER=${ENABLE_MODEL_FILTER:?}"
+      - "MODEL_FILTER_LIST=${MODEL_FILTER_LIST:?}"
   searxng:
     image: ghcr.io/searxng/searxng:2026.2.16-8e824017d
     ports:
