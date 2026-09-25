@@ -2,6 +2,7 @@ import importlib.util
 import os
 from pathlib import Path
 from typing import Any
+from urllib.error import URLError
 
 import pytest
 
@@ -489,3 +490,102 @@ def test_authenticate_falls_back_to_webui_admin_key(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
     token, _ = mod.authenticate("http://test", {"WEBUI_ADMIN_KEY": "sk-admin-legacy"})
     assert token == "sk-admin-legacy"
+
+
+def test_wait_ready_polls_until_ready(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append(url)
+        return (503, None) if len(calls) < 3 else (200, None)
+
+    monkeypatch.setattr(mod, "_request_json", fake_request)
+    monkeypatch.setattr(mod.time, "sleep", lambda _: None)
+    monkeypatch.setattr(mod.time, "monotonic", lambda: 0.0)
+    mod.wait_ready("http://test")
+    assert len(calls) == 3
+    assert all(url.endswith("/ready") for url in calls)
+
+
+def test_wait_ready_times_out(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        return 503, None
+
+    monkeypatch.setattr(mod, "_request_json", fake_request)
+    monkeypatch.setattr(mod.time, "sleep", lambda _: None)
+    monkeypatch.setattr(mod, "READY_TIMEOUT_SECONDS", 0)
+    with pytest.raises(RuntimeError, match="did not become ready"):
+        mod.wait_ready("http://test")
+
+
+def test_request_json_with_retry_retries_urlerror(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append(url)
+        if len(calls) < 3:
+            raise URLError("boom")
+        return 200, {"ok": True}
+
+    monkeypatch.setattr(mod, "_request_json", fake_request)
+    monkeypatch.setattr(mod.time, "sleep", lambda _: None)
+    monkeypatch.setattr(mod.time, "monotonic", lambda: 0.0)
+    status, body = mod._request_json_with_retry("GET", "http://test/api")
+    assert (status, body) == (200, {"ok": True})
+    assert len(calls) == 3
+
+
+def test_request_json_with_retry_retries_5xx(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append(url)
+        if len(calls) < 3:
+            return 503, {"detail": "unavailable"}
+        return 200, {"ok": True}
+
+    monkeypatch.setattr(mod, "_request_json", fake_request)
+    monkeypatch.setattr(mod.time, "sleep", lambda _: None)
+    monkeypatch.setattr(mod.time, "monotonic", lambda: 0.0)
+    status, body = mod._request_json_with_retry("GET", "http://test/api")
+    assert (status, body) == (200, {"ok": True})
+    assert len(calls) == 3
+
+
+def test_request_json_with_retry_times_out(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        raise URLError("boom")
+
+    monkeypatch.setattr(mod, "_request_json", fake_request)
+    monkeypatch.setattr(mod.time, "sleep", lambda _: None)
+    monkeypatch.setattr(mod, "RETRY_TIMEOUT_SECONDS", 0)
+    with pytest.raises(RuntimeError, match="failed after"):
+        mod._request_json_with_retry("GET", "http://test/api")
+
+
+def test_deploy_reconcile_command_shlex_quoted() -> None:
+    with open(_DEPLOY) as f:
+        content = f.read()
+    reconcile_start = content.index('name="Reconcile openwebui models"')
+    assert reconcile_start > content.index("systemd.service(")
+    command = content[reconcile_start : content.index("_if=", reconcile_start)]
+    assert "shlex.quote" in command
+    assert "shlex.quote(sys.executable)" in command
+    assert "|| true" not in command
+    for interpolation in (
+        "{compose_project_dir}/openwebui-models-config.json",
+        "{compose_project_dir}/.env",
+        "{compose_project_dir}/resources.yaml",
+        "{dirname_of(__file__)}/../../scripts/update-openwebui-models.py",
+    ):
+        assert f"shlex.quote(f'{interpolation}')" in command

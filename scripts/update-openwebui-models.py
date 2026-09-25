@@ -348,7 +348,7 @@ def _request_json_with_retry(
             status, body = _request_json(method, url, token, payload)
         except URLError:
             status, body = 0, None
-        if status == 0 or (isinstance(status, int) and status >= 500):
+        if status == 0 or status >= 500:
             if time.monotonic() >= deadline:
                 raise RuntimeError(f"request to {url} failed after {RETRY_TIMEOUT_SECONDS}s of retries")
             time.sleep(RETRY_INTERVAL_SECONDS)
