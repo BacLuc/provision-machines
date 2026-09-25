@@ -30,6 +30,32 @@ PRESET_NAMES: dict[str, str] = {
     "linux_cli": "Linux CLI",
 }
 
+PRESET_SYSTEM_PROMPTS: dict[str, str] = {
+    "chat": "You are a helpful general-purpose assistant.",
+    "chat_thinking": "You are a helpful assistant that thinks step by step before answering.",
+    "web_research": "You are a research assistant that uses web search to find current, cited information.",
+    "translate_de": "Translate the user's text into German.",
+    "translate_en": "Translate the user's text into English.",
+    "fix_grammar_en": "Fix the grammar and spelling of English text and return the corrected text.",
+    "fix_grammar_de": "Fix the grammar and spelling of German text and return the corrected text.",
+    "linux_cli": "You are a Linux command-line expert giving concise, correct shell commands.",
+}
+
+CAPABILITY_KEYS: list[str] = [
+    "file_context",
+    "vision",
+    "file_upload",
+    "web_search",
+    "image_generation",
+    "code_interpreter",
+    "terminal",
+    "citations",
+    "status_updates",
+    "usage",
+    "memory",
+    "builtin_tools",
+]
+
 READY_TIMEOUT_SECONDS = 60
 READY_INTERVAL_SECONDS = 2
 RETRY_TIMEOUT_SECONDS = 60
@@ -258,15 +284,15 @@ def build_preset_specs(model_map: dict[str, str], default_models: list[str]) -> 
 
 def to_sync_model(spec: dict[str, Any], user_id: str, now: int) -> dict[str, Any]:
     """Build the full ModelModel envelope for one preset."""
-    params: dict[str, Any] = {}
-    meta: dict[str, Any] = {}
-    if spec["id"] == "web_research":
-        params = {"function_calling": "native"}
-        meta = {
-            "capabilities": {"web_search": True},
-            "defaultFeatureIds": ["web_search"],
-            "builtinTools": {"web_search": True},
-        }
+    preset_id = spec["id"]
+    params: dict[str, Any] = {"system": PRESET_SYSTEM_PROMPTS[preset_id]}
+    capabilities: dict[str, bool] = dict.fromkeys(CAPABILITY_KEYS, False)
+    meta: dict[str, Any] = {"capabilities": capabilities}
+    if preset_id == "web_research":
+        params["function_calling"] = "native"
+        capabilities["web_search"] = True
+        meta["defaultFeatureIds"] = ["web_search"]
+        meta["builtinTools"] = {"web_search": True}
     return {
         "id": spec["id"],
         "user_id": user_id,
@@ -441,7 +467,7 @@ def main() -> None:
         "--base-url", default=None, help="OpenWebUI base URL (default: from config or http://127.0.0.1:13307)"
     )
     parser.add_argument(
-        "--resources", default=None, help="path to aisix-resources.yaml to verify router aliases match model_map"
+        "--resources", default=None, help="path to resources.yaml to verify router aliases match model_map"
     )
     parser.add_argument("--dry-run", action="store_true", help="print the sync payload without sending it")
     args = parser.parse_args()

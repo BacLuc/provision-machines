@@ -21,7 +21,7 @@ _RESOURCES = os.path.join(
     "deploys",
     "openwebui",
     "files",
-    "aisix-resources.yaml",
+    "resources.yaml",
 )
 
 MODEL_MAP = {
@@ -113,22 +113,34 @@ def test_sync_payload_exact_shape() -> None:
 def test_web_research_payload() -> None:
     specs = mod.build_preset_specs(MODEL_MAP, DEFAULT_MODELS)
     model = mod.to_sync_model(next(s for s in specs if s["id"] == "web_research"), "admin", 1790288638)
-    assert model["params"] == {"function_calling": "native"}
-    assert model["meta"] == {
-        "capabilities": {"web_search": True},
-        "defaultFeatureIds": ["web_search"],
-        "builtinTools": {"web_search": True},
-    }
+    assert model["params"]["system"] == mod.PRESET_SYSTEM_PROMPTS["web_research"]
+    assert model["params"]["function_calling"] == "native"
+    assert set(model["meta"]["capabilities"]) == set(mod.CAPABILITY_KEYS)
+    assert model["meta"]["capabilities"]["web_search"] is True
+    assert all(v is False for k, v in model["meta"]["capabilities"].items() if k != "web_search")
+    assert model["meta"]["defaultFeatureIds"] == ["web_search"]
+    assert model["meta"]["builtinTools"] == {"web_search": True}
 
 
-def test_non_web_research_payload_empty_params_meta() -> None:
+def test_non_web_research_payload_explicit_capabilities() -> None:
     specs = mod.build_preset_specs(MODEL_MAP, DEFAULT_MODELS)
     for spec in specs:
         if spec["id"] == "web_research":
             continue
         model = mod.to_sync_model(spec, "admin", 1790288638)
-        assert model["params"] == {}
-        assert model["meta"] == {}
+        assert isinstance(model["params"]["system"], str) and model["params"]["system"]
+        assert "function_calling" not in model["params"]
+        assert set(model["meta"]["capabilities"]) == set(mod.CAPABILITY_KEYS)
+        assert all(v is False for v in model["meta"]["capabilities"].values())
+        assert "defaultFeatureIds" not in model["meta"]
+        assert "builtinTools" not in model["meta"]
+
+
+def test_preset_system_prompts_non_empty_and_distinct() -> None:
+    specs = mod.build_preset_specs(MODEL_MAP, DEFAULT_MODELS)
+    prompts = [mod.to_sync_model(spec, "admin", 1790288638)["params"]["system"] for spec in specs]
+    assert all(isinstance(p, str) and p for p in prompts)
+    assert len(set(prompts)) == len(prompts)
 
 
 def test_parse_aisix_model_names_returns_eight_aliases() -> None:
@@ -395,13 +407,17 @@ def test_compose_enables_session_sharing() -> None:
     assert "DATABASE_ENABLE_SESSION_SHARING=true" in content
 
 
-def test_no_model_filter_keys() -> None:
-    paths = [_COMPOSE]
+def test_model_filter_keys_present() -> None:
+    expected_list = ",".join(DEFAULT_MODELS)
     for name in ("all.py", "ci.py"):
-        paths.append(os.path.join(_GROUP_DATA, name))
-    for path in paths:
-        with open(path) as f:
-            assert "MODEL_FILTER" not in f.read(), path
+        with open(os.path.join(_GROUP_DATA, name)) as f:
+            content = f.read()
+        assert '"ENABLE_MODEL_FILTER": "true"' in content, name
+        assert f'"MODEL_FILTER_LIST": "{expected_list}"' in content, name
+    with open(_COMPOSE) as f:
+        content = f.read()
+    assert "ENABLE_MODEL_FILTER=${ENABLE_MODEL_FILTER}" in content
+    assert "MODEL_FILTER_LIST=${MODEL_FILTER_LIST}" in content
 
 
 _DEPLOY = os.path.join(

@@ -76,8 +76,8 @@ if host.data.openwebui["enabled"]:
 
     aisix_resources_file = files.put(
         name="Deploy aisix resources.yaml",
-        src=f"{dirname_of(__file__)}/files/aisix-resources.yaml",
-        dest=f"{compose_project_dir}/aisix-resources.yaml",
+        src=f"{dirname_of(__file__)}/files/resources.yaml",
+        dest=f"{compose_project_dir}/resources.yaml",
         user=user,
         group=user,
         mode="644",
@@ -181,7 +181,7 @@ WantedBy=multi-user.target
     server.shell(
         name="Reconcile openwebui models",
         commands=[
-            f"{shlex.quote(sys.executable)} {shlex.quote(f'{dirname_of(__file__)}/../../scripts/update-openwebui-models.py')} --config {shlex.quote(f'{compose_project_dir}/openwebui-models-config.json')} --env-file {shlex.quote(f'{compose_project_dir}/.env')} --resources {shlex.quote(f'{compose_project_dir}/aisix-resources.yaml')}"
+            f"{shlex.quote(sys.executable)} {shlex.quote(f'{dirname_of(__file__)}/../../scripts/update-openwebui-models.py')} --config {shlex.quote(f'{compose_project_dir}/openwebui-models-config.json')} --env-file {shlex.quote(f'{compose_project_dir}/.env')} --resources {shlex.quote(f'{compose_project_dir}/resources.yaml')}"
         ],
         _if=lambda: (
             searxng_files.changed
