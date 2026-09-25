@@ -405,6 +405,27 @@ _GROUP_DATA = os.path.join(
 )
 
 
+def _openwebui_group_data(name: str) -> dict[str, Any]:
+    with open(os.path.join(_GROUP_DATA, name)) as f:
+        tree = ast.parse(f.read())
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "openwebui" for target in node.targets
+        ):
+            data: dict[str, Any] = ast.literal_eval(node.value)
+            return data
+    raise AssertionError(f"no openwebui assignment in {name}")
+
+
+def test_group_data_default_models_order() -> None:
+    expected = ",".join(DEFAULT_MODELS)
+    for name in ("all.py", "ci.py"):
+        data = _openwebui_group_data(name)
+        assert data["default_models"] == DEFAULT_MODELS, name
+        assert data["extra_env"]["DEFAULT_MODELS"] == expected, name
+        assert data["extra_env"]["MODEL_FILTER_LIST"] == expected, name
+
+
 def test_compose_enables_session_sharing() -> None:
     with open(_COMPOSE) as f:
         content = f.read()
@@ -440,9 +461,7 @@ def test_group_data_admin_key_placeholder() -> None:
 
 
 def test_ci_keeps_openwebui_disabled() -> None:
-    with open(os.path.join(_GROUP_DATA, "ci.py")) as f:
-        content = f.read()
-    assert '"enabled": False' in content
+    assert _openwebui_group_data("ci.py")["enabled"] is False
 
 
 def test_no_caller_split_brain_in_extra_env() -> None:
