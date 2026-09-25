@@ -3,8 +3,10 @@
   "ansible",
   "astral-sh/setup-uv",
   "astral-sh/uv",
+  "autojump",
   "curl",
   "databus23/helm-diff",
+  "direnv",
   "git",
   "git-lfs/git-lfs",
   "itaysk/kubectl-neat",
@@ -24,7 +26,9 @@
   "rajatjindal/kubectl-modify-secret",
   "robscott/kube-capacity",
   "sigoden/aichat",
+  "tmux",
   "vshn/appcat-cli",
   "vshn/k8ify",
-  "vshn/kharon"
+  "vshn/kharon",
+  "zsh-syntax-highlighting"
 ]
