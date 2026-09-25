@@ -16,10 +16,19 @@ _PRESET_IDS = [
     "linux_cli",
 ]
 
+_FAMILY_IDS = [
+    "chat",
+    "chat_thinking",
+    "web_research",
+    "translate",
+    "fix_grammar",
+    "linux_cli",
+]
+
 _SECRET_KEYS = {
     "BRAVE_API_KEY",
     "OPENCODE_GO_API_KEY",
-    "LITELLM_MASTER_KEY",
+    "OPENWEBUI_CALLER_KEY",
     "OPENWEBUI_ADMIN_API_KEY",
 }
 
@@ -49,9 +58,9 @@ def test_ci_mirrors_base_non_secret_fields() -> None:
 
 def test_router_settings() -> None:
     openwebui = _load_openwebui(False)
-    assert openwebui["router_backend"] == "litellm"
-    assert openwebui["router_config_path"] == "litellm-config.yaml"
-    assert openwebui["openai_compatible_base_url"] == "http://litellm:4000/v1"
+    assert openwebui["router_backend"] == "aisix"
+    assert openwebui["router_config_path"] == "aisix-resources.yaml"
+    assert openwebui["openai_compatible_base_url"] == "http://aisix:3000/v1"
 
 
 def test_default_models_order() -> None:
@@ -71,7 +80,7 @@ def test_extra_env() -> None:
     assert openwebui["extra_env"] == {
         "ENABLE_OPENAI_API": "true",
         "OPENAI_API_BASE_URL": "${OPENAI_COMPATIBLE_BASE_URL}",
-        "OPENAI_API_KEYS": "${LITELLM_MASTER_KEY}",
+        "OPENAI_API_KEYS": "${OPENWEBUI_CALLER_KEY}",
         "DEFAULT_MODELS": ",".join(_PRESET_IDS),
         "ENABLE_MODEL_FILTER": "true",
         "MODEL_FILTER_LIST": ",".join(_PRESET_IDS),
@@ -81,12 +90,12 @@ def test_extra_env() -> None:
 def test_zen() -> None:
     openwebui = _load_openwebui(False)
     assert openwebui["zen"]["base_url"] == "https://opencode.ai/zen/go/v1"
-    assert set(openwebui["zen"]["models"].keys()) == set(_PRESET_IDS)
+    assert set(openwebui["zen"]["models"].keys()) == set(_FAMILY_IDS)
 
 
 def test_ollama() -> None:
     openwebui = _load_openwebui(False)
-    assert openwebui["ollama"]["base_url"] == "http://host.docker.internal:11434"
+    assert openwebui["ollama"]["base_url"] == "http://host.docker.internal:11434/v1"
     assert openwebui["ollama"]["model"] == "qwen2.5:3b"
 
 

@@ -11,8 +11,8 @@ from operations.user import get_user_name
 
 user = get_user_name()
 
-# renovate: datasource=docker depName=ghcr.io/berriai/litellm
-LITELLM_VERSION = "1.102.1"
+# renovate: datasource=docker depName=ghcr.io/api7/aisix
+AISIX_VERSION = "1.4.0"
 
 if host.data.openwebui["enabled"]:
     compose_project_dir = host.data.openwebui.get("compose_project_dir") or f"/home/{user}/openwebui"
@@ -64,10 +64,19 @@ if host.data.openwebui["enabled"]:
         mode="644",
     )
 
-    litellm_config_file = files.put(
-        name="Deploy litellm-config.yaml",
-        src=f"{dirname_of(__file__)}/files/litellm-config.yaml",
-        dest=f"{compose_project_dir}/litellm-config.yaml",
+    aisix_config_file = files.put(
+        name="Deploy aisix-config.yaml",
+        src=f"{dirname_of(__file__)}/files/aisix-config.yaml",
+        dest=f"{compose_project_dir}/aisix-config.yaml",
+        user=user,
+        group=user,
+        mode="644",
+    )
+
+    aisix_resources_file = files.put(
+        name="Deploy aisix-resources.yaml",
+        src=f"{dirname_of(__file__)}/files/aisix-resources.yaml",
+        dest=f"{compose_project_dir}/aisix-resources.yaml",
         user=user,
         group=user,
         mode="644",
@@ -76,23 +85,32 @@ if host.data.openwebui["enabled"]:
     openwebui = host.data.openwebui
 
     def _resolve_env(value: str) -> str:
-        return value.replace("${LITELLM_MASTER_KEY}", str(openwebui["LITELLM_MASTER_KEY"])).replace(
+        return value.replace("${OPENWEBUI_CALLER_KEY}", str(openwebui["OPENWEBUI_CALLER_KEY"])).replace(
             "${OPENAI_COMPATIBLE_BASE_URL}", str(openwebui["openai_compatible_base_url"])
         )
+
+    zen_model_env = {
+        "chat": "ZEN_MODEL_CHAT",
+        "chat_thinking": "ZEN_MODEL_CHAT_THINKING",
+        "web_research": "ZEN_MODEL_WEB_RESEARCH",
+        "translate": "ZEN_MODEL_TRANSLATE",
+        "fix_grammar": "ZEN_MODEL_FIX_GRAMMAR",
+        "linux_cli": "ZEN_MODEL_LINUX_CLI",
+    }
 
     env_lines = [
         f"BRAVE_API_KEY={openwebui['BRAVE_API_KEY']}",
         f"OPENCODE_GO_API_KEY={openwebui['OPENCODE_GO_API_KEY']}",
-        f"LITELLM_MASTER_KEY={openwebui['LITELLM_MASTER_KEY']}",
+        f"OPENWEBUI_CALLER_KEY={openwebui['OPENWEBUI_CALLER_KEY']}",
         f"OPENWEBUI_ADMIN_API_KEY={openwebui['OPENWEBUI_ADMIN_API_KEY']}",
         f"OLLAMA_API_KEY={openwebui.get('OLLAMA_API_KEY', 'ollama')}",
         f"ZEN_API_BASE={openwebui['zen']['base_url']}",
         f"OLLAMA_API_BASE={openwebui['ollama']['base_url']}",
-        f"OLLAMA_MODEL=ollama/{openwebui['ollama']['model']}",
-        f"LITELLM_VERSION={LITELLM_VERSION}",
+        f"OLLAMA_MODEL={openwebui['ollama']['model']}",
+        f"AISIX_VERSION={AISIX_VERSION}",
     ]
-    for preset in openwebui["default_models"]:
-        env_lines.append(f"ZEN_{preset.upper()}_MODEL={openwebui['zen']['models'][preset]}")
+    for family, var in zen_model_env.items():
+        env_lines.append(f"{var}={openwebui['zen']['models'][family]}")
     for key, value in openwebui["extra_env"].items():
         env_lines.append(f"{key}={_resolve_env(value)}")
 
@@ -132,10 +150,28 @@ WantedBy=multi-user.target
     )
 
     server.shell(
+        name="Validate aisix resources",
+        commands=[
+            f"docker run --rm --entrypoint /usr/local/bin/aisix "
+            f"--env-file {shlex.quote(compose_project_dir + '/.env')} "
+            f"--volume {shlex.quote(compose_project_dir + '/aisix-resources.yaml')}:/etc/aisix/resources.yaml:ro "
+            f"ghcr.io/api7/aisix:{AISIX_VERSION} validate --resources /etc/aisix/resources.yaml"
+        ],
+        _sudo=True,
+        _if=lambda: aisix_config_file.changed or aisix_resources_file.changed or env_file.changed,
+    )
+
+    server.shell(
         name="Restart docker before starting openwebui to ensure iptables chains exist",
         commands=["systemctl restart docker"],
         _sudo=True,
-        _if=lambda: systemd_file.changed or compose_file.changed or env_file.changed or litellm_config_file.changed,
+        _if=lambda: (
+            systemd_file.changed
+            or compose_file.changed
+            or env_file.changed
+            or aisix_config_file.changed
+            or aisix_resources_file.changed
+        ),
     )
 
     systemd.service(
@@ -151,15 +187,23 @@ WantedBy=multi-user.target
             or systemd_file.changed
             or compose_file.changed
             or env_file.changed
-            or litellm_config_file.changed
+            or aisix_config_file.changed
+            or aisix_resources_file.changed
         ),
+    )
+
+    server.shell(
+        name="Reload aisix resources",
+        commands=["docker kill --signal=HUP aisix"],
+        _sudo=True,
+        _if=lambda: aisix_config_file.changed or aisix_resources_file.changed or env_file.changed,
     )
 
     reconcile_args = json.dumps(
         {
             "base_url": "http://127.0.0.1:13307",
             "admin_api_key": openwebui["OPENWEBUI_ADMIN_API_KEY"],
-            "config_path": f"{compose_project_dir}/litellm-config.yaml",
+            "config_path": f"{compose_project_dir}/aisix-resources.yaml",
             "models": [
                 {"preset_id": preset, "router_model_id": router_id}
                 for preset, router_id in openwebui["model_map"].items()
@@ -199,6 +243,7 @@ WantedBy=multi-user.target
             or systemd_file.changed
             or compose_file.changed
             or env_file.changed
-            or litellm_config_file.changed
+            or aisix_config_file.changed
+            or aisix_resources_file.changed
         ),
     )

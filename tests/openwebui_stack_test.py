@@ -5,25 +5,33 @@ from pathlib import Path
 from typing import Any, cast
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-_LITELLM_CONFIG = _REPO_ROOT / "deploys" / "openwebui" / "files" / "litellm-config.yaml"
+_AISIX_CONFIG = _REPO_ROOT / "deploys" / "openwebui" / "files" / "aisix-config.yaml"
+_AISIX_RESOURCES = _REPO_ROOT / "deploys" / "openwebui" / "files" / "aisix-resources.yaml"
 _COMPOSE = _REPO_ROOT / "deploys" / "openwebui" / "files" / "docker-compose.yml"
 
-_LITELLM_ENV_VARS = [
-    "LITELLM_MASTER_KEY",
+_AISIX_ENV_VARS = [
     "OPENCODE_GO_API_KEY",
     "OLLAMA_API_KEY",
+    "OPENWEBUI_CALLER_KEY",
     "OLLAMA_API_BASE",
     "ZEN_API_BASE",
-    "ZEN_CHAT_MODEL",
-    "ZEN_CHAT_THINKING_MODEL",
-    "ZEN_WEB_RESEARCH_MODEL",
-    "ZEN_TRANSLATE_DE_MODEL",
-    "ZEN_TRANSLATE_EN_MODEL",
-    "ZEN_FIX_GRAMMAR_EN_MODEL",
-    "ZEN_FIX_GRAMMAR_DE_MODEL",
-    "ZEN_LINUX_CLI_MODEL",
+    "ZEN_MODEL_CHAT",
+    "ZEN_MODEL_CHAT_THINKING",
+    "ZEN_MODEL_WEB_RESEARCH",
+    "ZEN_MODEL_TRANSLATE",
+    "ZEN_MODEL_FIX_GRAMMAR",
+    "ZEN_MODEL_LINUX_CLI",
     "OLLAMA_MODEL",
 ]
+
+_ZEN_MODEL_ENV = {
+    "chat": "ZEN_MODEL_CHAT",
+    "chat_thinking": "ZEN_MODEL_CHAT_THINKING",
+    "web_research": "ZEN_MODEL_WEB_RESEARCH",
+    "translate": "ZEN_MODEL_TRANSLATE",
+    "fix_grammar": "ZEN_MODEL_FIX_GRAMMAR",
+    "linux_cli": "ZEN_MODEL_LINUX_CLI",
+}
 
 _OPENWEBUI_ENV_VARS = [
     "ENABLE_OPENAI_API",
@@ -45,9 +53,10 @@ def _load_openwebui() -> dict[str, Any]:
     return cast(dict[str, Any], mod.openwebui)
 
 
-def _litellm_entries() -> list[str]:
-    text = _LITELLM_CONFIG.read_text()
-    return re.split(r"\n  - model_name: ", text)[1:]
+def _model_entries() -> list[str]:
+    text = _AISIX_RESOURCES.read_text()
+    models_section = text.split("\nmodels:\n", 1)[1].split("\napi_keys:", 1)[0]
+    return re.split(r"\n  - display_name: ", "\n" + models_section)[1:]
 
 
 def _service_block(text: str, name: str) -> str:
@@ -60,78 +69,108 @@ def _env_vars(block: str) -> list[str]:
     return re.findall(r'^      - "([A-Z_]+)=', block, re.MULTILINE)
 
 
-def test_litellm_config_has_16_entries_matching_model_map() -> None:
-    entries = _litellm_entries()
-    assert len(entries) == 16
-    router_ids = {entry.splitlines()[0].strip() for entry in entries}
-    assert router_ids == set(_load_openwebui()["model_map"].values())
+def test_aisix_config_is_bootstrap_only() -> None:
+    text = _AISIX_CONFIG.read_text()
+    assert "resources_file: /etc/aisix/resources.yaml" in text
+    assert "0.0.0.0:3000" in text
 
 
-def test_litellm_params_reference_env_vars() -> None:
-    for entry in _litellm_entries():
-        params = entry.split("litellm_params:")[1]
-        for key in ("model", "api_base", "api_key"):
-            line = next(line for line in params.splitlines() if line.strip().startswith(f"{key}:"))
-            assert line.strip().startswith(f"{key}: os.environ/"), line
+def test_aisix_resources_shape() -> None:
+    text = _AISIX_RESOURCES.read_text()
+    assert '_format_version: "1"' in text
+    provider_section = text.split("provider_keys:", 1)[1].split("\nmodels:", 1)[0]
+    assert len(re.findall(r"display_name:", provider_section)) == 2
+    entries = _model_entries()
+    assert len(entries) == 20
+    direct = [entry for entry in entries if "\n    routing:" not in entry]
+    aliases = [entry for entry in entries if "\n    routing:" in entry]
+    assert len(direct) == 12
+    assert len(aliases) == 8
+    caller_section = text.split("\napi_keys:", 1)[1]
+    assert len(re.findall(r"display_name:", caller_section)) == 1
 
 
-def test_litellm_each_router_has_order_1_and_2() -> None:
-    orders_by_router: dict[str, list[str]] = {}
-    for entry in _litellm_entries():
-        router_id = entry.splitlines()[0].strip()
-        params = entry.split("litellm_params:")[1]
-        order = next(line.strip() for line in params.splitlines() if line.strip().startswith("order:"))
-        orders_by_router.setdefault(router_id, []).append(order)
-    for router_id, orders in orders_by_router.items():
-        assert sorted(orders) == ["order: 1", "order: 2"], router_id
+def test_aisix_router_aliases_match_model_map() -> None:
+    aliases = {entry.splitlines()[0].strip() for entry in _model_entries() if "\n    routing:" in entry}
+    assert aliases == set(_load_openwebui()["model_map"].values())
 
 
-def test_litellm_zen_entries_have_openai_provider() -> None:
-    for entry in _litellm_entries():
-        params = entry.split("litellm_params:")[1]
-        order = next(line.strip() for line in params.splitlines() if line.strip().startswith("order:"))
-        if order == "order: 1":
-            provider = next(
-                line.strip() for line in params.splitlines() if line.strip().startswith("custom_llm_provider:")
-            )
-            assert provider == "custom_llm_provider: openai", entry
+def test_aisix_aliases_failover_zen_first() -> None:
+    for entry in _model_entries():
+        if "\n    routing:" not in entry:
+            continue
+        alias = entry.splitlines()[0].strip()
+        assert "strategy: failover" in entry, alias
+        assert "max_fallbacks: 1" in entry, alias
+        assert "retry_on_429: true" in entry, alias
+        targets = re.findall(r"- model: (\S+)\n\s+priority: (-?\d+)", entry)
+        assert len(targets) == 2, alias
+        assert targets[0][1] == "100" and targets[0][0].startswith("zen-"), alias
+        assert targets[1][1] == "-1" and targets[1][0].startswith("ollama-"), alias
 
 
-def test_litellm_router_settings() -> None:
-    text = _LITELLM_CONFIG.read_text()
-    assert "routing_strategy: simple-shuffle" in text
-    assert "num_retries: 1" in text
-    assert "timeout: 60" in text
+def test_aisix_api_bases_are_openai_compatible() -> None:
+    openwebui = _load_openwebui()
+    bases = {
+        "ZEN_API_BASE": openwebui["zen"]["base_url"],
+        "OLLAMA_API_BASE": openwebui["ollama"]["base_url"],
+    }
+    refs = set()
+    for line in _AISIX_RESOURCES.read_text().splitlines():
+        stripped = line.strip()
+        if stripped.startswith("api_base:"):
+            match = re.fullmatch(r"api_base: \$\{([A-Z_]+)\}", stripped)
+            assert match is not None, stripped
+            refs.add(match.group(1))
+    assert refs == set(bases)
+    for var, base in bases.items():
+        assert base.endswith("/v1"), (var, base)
 
 
-def test_litellm_general_settings_master_key() -> None:
-    assert "master_key: os.environ/LITELLM_MASTER_KEY" in _LITELLM_CONFIG.read_text()
+def test_aisix_resources_use_env_only() -> None:
+    text = _AISIX_RESOURCES.read_text()
+    for key in ("api_base:", "api_key:", "model_name:"):
+        for line in text.splitlines():
+            stripped = line.strip()
+            if stripped.startswith(key):
+                assert "${" in stripped, stripped
 
 
-def test_litellm_no_fallbacks() -> None:
-    text = _LITELLM_CONFIG.read_text()
-    assert "fallbacks" not in text
-    assert "default_fallbacks" not in text
+def test_aisix_caller_key_allows_all_aliases() -> None:
+    text = _AISIX_RESOURCES.read_text()
+    assert "key_env: OPENWEBUI_CALLER_KEY" in text
+    allowed = re.search(r"allowed_models:\n((?:      - \S+\n)+)", text)
+    assert allowed is not None
+    models = re.findall(r"- (\S+)", allowed.group(1))
+    assert set(models) == set(_load_openwebui()["model_map"].values())
 
 
-def test_compose_litellm_service() -> None:
+def test_compose_aisix_service() -> None:
     text = _COMPOSE.read_text()
-    block = _service_block(text, "litellm")
-    assert 'image: "ghcr.io/berriai/litellm:${LITELLM_VERSION}"' in block
+    block = _service_block(text, "aisix")
+    assert 'image: "ghcr.io/api7/aisix:${AISIX_VERSION}"' in block
     assert "ports:" not in block
+    assert '"3000"' in block
     assert '- "host.docker.internal:host-gateway"' in block
-    assert '"./litellm-config.yaml:/app/config.yaml:ro"' in block
-    assert 'command: ["--config", "/app/config.yaml"]' in block
+    assert '"./aisix-config.yaml:/etc/aisix/config.yaml:ro"' in block
+    assert '"./aisix-resources.yaml:/etc/aisix/resources.yaml:ro"' in block
     assert 'restart: "unless-stopped"' in block
-    assert _env_vars(block) == _LITELLM_ENV_VARS
+    assert _env_vars(block) == _AISIX_ENV_VARS
 
 
 def test_compose_openwebui_env() -> None:
     block = _service_block(_COMPOSE.read_text(), "open-webui")
     assert "WEBUI_AUTH=False" in block
     assert "DATABASE_ENABLE_SESSION_SHARING=true" in block
+    assert "http://aisix:3000/v1" not in block
     for var in _OPENWEBUI_ENV_VARS:
         assert f"${{{var}}}" in block
+
+
+def test_compose_no_router_port_published() -> None:
+    text = _COMPOSE.read_text()
+    assert "4000" not in text
+    assert "litellm" not in text
 
 
 def test_compose_searxng_unchanged() -> None:
@@ -145,16 +184,15 @@ def _rendered_env_keys() -> set[str]:
     keys = {
         "BRAVE_API_KEY",
         "OPENCODE_GO_API_KEY",
-        "LITELLM_MASTER_KEY",
+        "OPENWEBUI_CALLER_KEY",
         "OPENWEBUI_ADMIN_API_KEY",
         "OLLAMA_API_KEY",
         "ZEN_API_BASE",
         "OLLAMA_API_BASE",
         "OLLAMA_MODEL",
-        "LITELLM_VERSION",
+        "AISIX_VERSION",
     }
-    for preset in openwebui["default_models"]:
-        keys.add(f"ZEN_{preset.upper()}_MODEL")
+    keys.update(_ZEN_MODEL_ENV.values())
     keys.update(openwebui["extra_env"].keys())
     return keys
 
@@ -164,8 +202,8 @@ def test_compose_env_vars_covered_by_rendered_env() -> None:
     assert compose_vars <= _rendered_env_keys()
 
 
-def test_litellm_config_env_refs_covered_by_rendered_env() -> None:
-    refs = set(re.findall(r"os\.environ/([A-Z_]+)", _LITELLM_CONFIG.read_text()))
+def test_aisix_resources_env_refs_covered_by_rendered_env() -> None:
+    refs = set(re.findall(r"\$\{([A-Z_]+)\}", _AISIX_RESOURCES.read_text()))
     assert refs <= _rendered_env_keys()
 
 
@@ -173,3 +211,11 @@ def test_deploy_args_file_contract_keys() -> None:
     deploy_source = (_REPO_ROOT / "deploys" / "openwebui" / "deploy.py").read_text()
     for key in ('"base_url"', '"admin_api_key"', '"config_path"', '"models"', '"preset_id"', '"router_model_id"'):
         assert key in deploy_source
+
+
+def test_deploy_validates_and_reloads_aisix() -> None:
+    deploy_source = (_REPO_ROOT / "deploys" / "openwebui" / "deploy.py").read_text()
+    assert "validate --resources" in deploy_source
+    assert "docker kill --signal=HUP aisix" in deploy_source
+    assert "aisix-resources.yaml" in deploy_source
+    assert "litellm" not in deploy_source.lower()

@@ -141,53 +141,73 @@ def test_to_sync_model_non_web_research_flags() -> None:
     assert "function_calling" not in preset["params"]
 
 
-def test_parse_litellm_model_names_from_config() -> None:
-    text = (_REPO_ROOT / "deploys" / "openwebui" / "files" / "litellm-config.yaml").read_text()
-    names = mod.parse_litellm_model_names(text)
-    assert len(names) == 16
-    assert set(names) == set(_MODEL_MAP.values())
+def test_parse_aisix_router_aliases_from_resources() -> None:
+    text = (_REPO_ROOT / "deploys" / "openwebui" / "files" / "aisix-resources.yaml").read_text()
+    aliases = mod.parse_aisix_router_aliases(text)
+    assert len(aliases) == 8
+    assert set(aliases) == set(_MODEL_MAP.values())
 
 
-def test_parse_litellm_model_names_rejects_tabs() -> None:
+def test_parse_aisix_router_aliases_skips_direct_models() -> None:
+    text = (
+        '_format_version: "1"\n'
+        "models:\n"
+        "  - display_name: zen-chat\n"
+        "    provider: opencode\n"
+        "    model_name: ${ZEN_MODEL_CHAT}\n"
+        "    provider_key: opencode\n"
+        "  - display_name: router-chat\n"
+        "    routing:\n"
+        "      strategy: failover\n"
+    )
+    assert mod.parse_aisix_router_aliases(text) == ["router-chat"]
+
+
+def test_parse_aisix_router_aliases_rejects_missing_models() -> None:
     with pytest.raises(mod.YamlParseError):
-        mod.parse_litellm_model_names("model_list:\n\t- model_name: x\n")
+        mod.parse_aisix_router_aliases('_format_version: "1"\n')
 
 
-def test_parse_litellm_model_names_rejects_anchors() -> None:
+def test_parse_aisix_router_aliases_rejects_tabs() -> None:
     with pytest.raises(mod.YamlParseError):
-        mod.parse_litellm_model_names("model_list:\n  - model_name: &anchor x\n")
+        mod.parse_aisix_router_aliases("models:\n\t- display_name: x\n")
 
 
-def test_parse_litellm_model_names_rejects_flow_style() -> None:
+def test_parse_aisix_router_aliases_rejects_anchors() -> None:
     with pytest.raises(mod.YamlParseError):
-        mod.parse_litellm_model_names("model_list:\n  - model_name: [x]\n")
+        mod.parse_aisix_router_aliases("models:\n  - display_name: &anchor x\n")
 
 
-def test_parse_litellm_model_names_rejects_duplicate_keys() -> None:
+def test_parse_aisix_router_aliases_rejects_flow_style() -> None:
     with pytest.raises(mod.YamlParseError):
-        mod.parse_litellm_model_names("model_list:\n  - model_name: a\n    model_name: b\n")
+        mod.parse_aisix_router_aliases("models:\n  - display_name: [x]\n")
 
 
-def test_parse_litellm_model_names_rejects_malformed_indentation() -> None:
+def test_parse_aisix_router_aliases_rejects_duplicate_keys() -> None:
     with pytest.raises(mod.YamlParseError):
-        mod.parse_litellm_model_names(
-            "model_list:\n  - model_name: a\n    litellm_params:\n      model: os.environ/X\n     api_base: os.environ/Y\n"
+        mod.parse_aisix_router_aliases("models:\n  - display_name: a\n    display_name: b\n")
+
+
+def test_parse_aisix_router_aliases_rejects_malformed_indentation() -> None:
+    with pytest.raises(mod.YamlParseError):
+        mod.parse_aisix_router_aliases(
+            "models:\n  - display_name: a\n    routing:\n      strategy: failover\n     targets:\n"
         )
 
 
 def test_read_env_file(tmp_path: Path) -> None:
     env_file = tmp_path / ".env"
-    env_file.write_text("BRAVE_API_KEY=secret-brave\nLITELLM_MASTER_KEY=secret-master\n# comment\nEMPTY=\n")
+    env_file.write_text("BRAVE_API_KEY=secret-brave\nOPENWEBUI_CALLER_KEY=secret-caller\n# comment\nEMPTY=\n")
     assert mod.read_env_file(str(env_file)) == {
         "BRAVE_API_KEY": "secret-brave",
-        "LITELLM_MASTER_KEY": "secret-master",
+        "OPENWEBUI_CALLER_KEY": "secret-caller",
         "EMPTY": "",
     }
 
 
 def test_read_env_file_never_prints_secrets(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     env_file = tmp_path / ".env"
-    env_file.write_text("LITELLM_MASTER_KEY=super-secret-value\n")
+    env_file.write_text("OPENWEBUI_CALLER_KEY=super-secret-value\n")
     mod.read_env_file(str(env_file))
     captured = capsys.readouterr()
     assert "super-secret-value" not in captured.out

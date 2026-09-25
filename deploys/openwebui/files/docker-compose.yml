@@ -19,29 +19,29 @@ services:
       - "ENABLE_MODEL_FILTER=${ENABLE_MODEL_FILTER}"
       - "MODEL_FILTER_LIST=${MODEL_FILTER_LIST}"
       - "DATABASE_ENABLE_SESSION_SHARING=true"
-  litellm:
-    image: "ghcr.io/berriai/litellm:${LITELLM_VERSION}"
-    container_name: "litellm"
+  aisix:
+    image: "ghcr.io/api7/aisix:${AISIX_VERSION}"
+    container_name: "aisix"
+    expose:
+      - "3000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - "./litellm-config.yaml:/app/config.yaml:ro"
-    command: ["--config", "/app/config.yaml"]
+      - "./aisix-config.yaml:/etc/aisix/config.yaml:ro"
+      - "./aisix-resources.yaml:/etc/aisix/resources.yaml:ro"
     restart: "unless-stopped"
     environment:
-      - "LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}"
       - "OPENCODE_GO_API_KEY=${OPENCODE_GO_API_KEY}"
       - "OLLAMA_API_KEY=${OLLAMA_API_KEY}"
+      - "OPENWEBUI_CALLER_KEY=${OPENWEBUI_CALLER_KEY}"
       - "OLLAMA_API_BASE=${OLLAMA_API_BASE}"
       - "ZEN_API_BASE=${ZEN_API_BASE}"
-      - "ZEN_CHAT_MODEL=${ZEN_CHAT_MODEL}"
-      - "ZEN_CHAT_THINKING_MODEL=${ZEN_CHAT_THINKING_MODEL}"
-      - "ZEN_WEB_RESEARCH_MODEL=${ZEN_WEB_RESEARCH_MODEL}"
-      - "ZEN_TRANSLATE_DE_MODEL=${ZEN_TRANSLATE_DE_MODEL}"
-      - "ZEN_TRANSLATE_EN_MODEL=${ZEN_TRANSLATE_EN_MODEL}"
-      - "ZEN_FIX_GRAMMAR_EN_MODEL=${ZEN_FIX_GRAMMAR_EN_MODEL}"
-      - "ZEN_FIX_GRAMMAR_DE_MODEL=${ZEN_FIX_GRAMMAR_DE_MODEL}"
-      - "ZEN_LINUX_CLI_MODEL=${ZEN_LINUX_CLI_MODEL}"
+      - "ZEN_MODEL_CHAT=${ZEN_MODEL_CHAT}"
+      - "ZEN_MODEL_CHAT_THINKING=${ZEN_MODEL_CHAT_THINKING}"
+      - "ZEN_MODEL_WEB_RESEARCH=${ZEN_MODEL_WEB_RESEARCH}"
+      - "ZEN_MODEL_TRANSLATE=${ZEN_MODEL_TRANSLATE}"
+      - "ZEN_MODEL_FIX_GRAMMAR=${ZEN_MODEL_FIX_GRAMMAR}"
+      - "ZEN_MODEL_LINUX_CLI=${ZEN_MODEL_LINUX_CLI}"
       - "OLLAMA_MODEL=${OLLAMA_MODEL}"
   searxng:
     image: ghcr.io/searxng/searxng:2026.2.16-8e824017d

@@ -1,0 +1,184 @@
+_format_version: "1"
+
+provider_keys:
+  - display_name: opencode
+    provider: opencode
+    adapter: openai
+    api_base: ${ZEN_API_BASE}
+    api_key: ${OPENCODE_GO_API_KEY}
+
+  - display_name: ollama
+    provider: ollama
+    adapter: openai
+    api_base: ${OLLAMA_API_BASE}
+    api_key: ${OLLAMA_API_KEY}
+
+models:
+  - display_name: zen-chat
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT}
+    provider_key: opencode
+
+  - display_name: ollama-chat
+    provider: ollama
+    model_name: ${OLLAMA_MODEL}
+    provider_key: ollama
+
+  - display_name: zen-chat-thinking
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT_THINKING}
+    provider_key: opencode
+
+  - display_name: ollama-chat-thinking
+    provider: ollama
+    model_name: ${OLLAMA_MODEL}
+    provider_key: ollama
+
+  - display_name: zen-web-research
+    provider: opencode
+    model_name: ${ZEN_MODEL_WEB_RESEARCH}
+    provider_key: opencode
+
+  - display_name: ollama-web-research
+    provider: ollama
+    model_name: ${OLLAMA_MODEL}
+    provider_key: ollama
+
+  - display_name: zen-translate
+    provider: opencode
+    model_name: ${ZEN_MODEL_TRANSLATE}
+    provider_key: opencode
+
+  - display_name: ollama-translate
+    provider: ollama
+    model_name: ${OLLAMA_MODEL}
+    provider_key: ollama
+
+  - display_name: zen-fix-grammar
+    provider: opencode
+    model_name: ${ZEN_MODEL_FIX_GRAMMAR}
+    provider_key: opencode
+
+  - display_name: ollama-fix-grammar
+    provider: ollama
+    model_name: ${OLLAMA_MODEL}
+    provider_key: ollama
+
+  - display_name: zen-linux-cli
+    provider: opencode
+    model_name: ${ZEN_MODEL_LINUX_CLI}
+    provider_key: opencode
+
+  - display_name: ollama-linux-cli
+    provider: ollama
+    model_name: ${OLLAMA_MODEL}
+    provider_key: ollama
+
+  - display_name: router-chat
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-chat
+          priority: 100
+        - model: ollama-chat
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+
+  - display_name: router-chat-thinking
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-chat-thinking
+          priority: 100
+        - model: ollama-chat-thinking
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+
+  - display_name: router-web-research
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-web-research
+          priority: 100
+        - model: ollama-web-research
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+
+  - display_name: router-translate-de
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-translate
+          priority: 100
+        - model: ollama-translate
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+
+  - display_name: router-translate-en
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-translate
+          priority: 100
+        - model: ollama-translate
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+
+  - display_name: router-fix-grammar-en
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-fix-grammar
+          priority: 100
+        - model: ollama-fix-grammar
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+
+  - display_name: router-fix-grammar-de
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-fix-grammar
+          priority: 100
+        - model: ollama-fix-grammar
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+
+  - display_name: router-linux-cli
+    routing:
+      strategy: failover
+      targets:
+        - model: zen-linux-cli
+          priority: 100
+        - model: ollama-linux-cli
+          priority: -1
+      retries: 0
+      max_fallbacks: 1
+      retry_on_429: true
+
+api_keys:
+  - display_name: openwebui
+    key_env: OPENWEBUI_CALLER_KEY
+    allowed_models:
+      - router-chat
+      - router-chat-thinking
+      - router-web-research
+      - router-translate-de
+      - router-translate-en
+      - router-fix-grammar-en
+      - router-fix-grammar-de
+      - router-linux-cli

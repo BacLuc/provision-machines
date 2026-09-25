@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reconcile OpenWebUI model presets through the LiteLLM router."""
+"""Reconcile OpenWebUI model presets through the AISIX router."""
 
 import argparse
 import json
@@ -97,7 +97,8 @@ def _tokenize(text: str) -> list[tuple[int, str]]:
                 continue
         if any(c in stripped for c in "&*"):
             raise YamlParseError("anchors are not supported")
-        if any(c in stripped for c in "{}[]"):
+        without_env = re.sub(r"\$\{[A-Za-z_][A-Za-z0-9_]*\}", "", stripped)
+        if any(c in without_env for c in "{}[]"):
             raise YamlParseError("flow style is not supported")
         entries.append((len(line) - len(line.lstrip(" ")), stripped))
     return entries
@@ -205,17 +206,22 @@ def _parse_yaml(text: str) -> dict[str, Any]:
     return value
 
 
-def parse_litellm_model_names(text: str) -> list[str]:
+def parse_aisix_router_aliases(text: str) -> list[str]:
     root = _parse_yaml(text)
-    model_list = root.get("model_list")
-    if not isinstance(model_list, list):
-        raise YamlParseError("missing model_list sequence")
-    names: list[str] = []
-    for entry in model_list:
-        if not isinstance(entry, dict) or not isinstance(entry.get("model_name"), str):
-            raise YamlParseError("model_list entries must be mappings with a model_name string")
-        names.append(entry["model_name"])
-    return names
+    models = root.get("models")
+    if not isinstance(models, list):
+        raise YamlParseError("missing models sequence")
+    aliases: list[str] = []
+    for entry in models:
+        if not isinstance(entry, dict) or not isinstance(entry.get("display_name"), str):
+            raise YamlParseError("models entries must be mappings with a display_name string")
+        routing = entry.get("routing")
+        if routing is None:
+            continue
+        if not isinstance(routing, dict):
+            raise YamlParseError("routing entry must be a mapping")
+        aliases.append(entry["display_name"])
+    return aliases
 
 
 def build_preset_specs(models: list[dict[str, str]]) -> list[dict[str, Any]]:
@@ -436,7 +442,7 @@ def reconcile(args: argparse.Namespace, token: str) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Reconcile OpenWebUI model presets through the LiteLLM router")
+    parser = argparse.ArgumentParser(description="Reconcile OpenWebUI model presets through the AISIX router")
     parser.add_argument(
         "--args-file", required=True, help="JSON file with base_url, admin_api_key, config_path and models"
     )
@@ -449,11 +455,11 @@ def main() -> None:
     config_path = str(data["config_path"])
     models = data["models"]
     env = read_env_file(os.path.join(os.path.dirname(config_path), ".env"))
-    config_router_ids = set(parse_litellm_model_names(Path(config_path).read_text()))
+    config_router_ids = set(parse_aisix_router_aliases(Path(config_path).read_text()))
     args_router_ids = {str(model["router_model_id"]) for model in models}
     if config_router_ids != args_router_ids:
         raise RuntimeError(
-            f"router_model_id mismatch: litellm config has {sorted(config_router_ids)}, args file has {sorted(args_router_ids)}"
+            f"router_model_id mismatch: aisix resources has {sorted(config_router_ids)}, args file has {sorted(args_router_ids)}"
         )
     namespace = argparse.Namespace(base_url=base_url, admin_api_key=admin_api_key, models=models, dry_run=args.dry_run)
     wait_ready(base_url)
