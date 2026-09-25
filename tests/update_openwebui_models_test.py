@@ -247,6 +247,33 @@ def test_reconcile_sync_payload(monkeypatch: pytest.MonkeyPatch) -> None:
     assert preserved["created_at"] == 1
 
 
+def test_reconcile_preserves_row_without_string_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    idless = {"name": "NoId", "params": {"system": "s"}}
+    exported: list[dict[str, Any]] = [idless]
+    calls: list[tuple[str, str, dict[str, Any] | None]] = []
+
+    def fake_request_json(method: str, url: str, token: str, payload: dict[str, Any] | None = None) -> Any:
+        nonlocal exported
+        calls.append((method, url, payload))
+        if url.endswith("/api/v1/models/export"):
+            return exported
+        if url.endswith("/api/v1/users/"):
+            return {"users": [{"id": "admin-1", "role": "admin"}]}
+        if url.endswith("/api/v1/models/sync"):
+            assert payload is not None
+            exported = payload["models"]
+            return payload["models"]
+        return None
+
+    monkeypatch.setattr(mod, "request_json", fake_request_json)
+    args = argparse.Namespace(base_url="http://x", admin_api_key="", models=_MODELS, dry_run=False)
+    mod.reconcile(args, "token")
+    sync_call = next(call for call in calls if call[0] == "POST" and call[1].endswith("/api/v1/models/sync"))
+    body = sync_call[2]
+    assert body is not None
+    assert body["models"][-1] == idless
+
+
 def test_normalize_preserved_info_envelope() -> None:
     row = {
         "id": "other",

@@ -408,7 +408,12 @@ def reconcile(args: argparse.Namespace, token: str) -> None:
         managed_ids.add(spec["preset_id"])
         managed_ids.add(spec["router_model_id"])
     for row in exported:
-        if isinstance(row, dict) and row.get("id") not in managed_ids:
+        if not isinstance(row, dict):
+            continue
+        row_id = row.get("id")
+        if not isinstance(row_id, str):
+            payload.append(row)
+        elif row_id not in managed_ids:
             payload.append(normalize_preserved(row, admin_user_id))
     body = {"models": payload}
     if args.dry_run:

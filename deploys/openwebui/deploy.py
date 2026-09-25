@@ -176,16 +176,26 @@ WantedBy=multi-user.target
         _sudo=True,
     )
 
+    reconcile_script_file = files.put(
+        name="Deploy update-openwebui-models.py",
+        src=f"{dirname_of(__file__)}/../../scripts/update-openwebui-models.py",
+        dest=f"{compose_project_dir}/update-openwebui-models.py",
+        user=user,
+        group=user,
+        mode="755",
+    )
+
     server.shell(
         name="Reconcile OpenWebUI models",
         commands=[
             f"cd {shlex.quote(compose_project_dir)} && "
-            f"python3 {shlex.quote(str(dirname_of(__file__) + '/../../scripts/update-openwebui-models.py'))} "
+            f"python3 {shlex.quote(compose_project_dir + '/update-openwebui-models.py')} "
             f"--args-file {shlex.quote(compose_project_dir + '/openwebui-models-args.json')}"
         ],
         _sudo=True,
         _if=lambda: (
             args_file.changed
+            or reconcile_script_file.changed
             or systemd_file.changed
             or compose_file.changed
             or env_file.changed
