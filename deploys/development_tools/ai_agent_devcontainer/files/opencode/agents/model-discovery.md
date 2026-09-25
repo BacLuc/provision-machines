@@ -33,13 +33,13 @@ Use the following tables to decide:
 
 ### 2a) Best models per phase, ordered cheap → premium (generic)
 
-|                                                     | 💵 Cheap but OK (fast)                        | 💰 Good value / workhorse          | 💎 Most intelligent (expensive)               |
-| --------------------------------------------------- | --------------------------------------------- | ---------------------------------- | --------------------------------------------- |
-| **Refinement** (fast iterative edits)               | `dev`, `k2c`, `dsF`, `glmF`, `lite`           | `sonnet`, `glm`, `qw`              | `opus`, `gptX`                                |
-| **Planning** (design, breakdown, long context)      | `glm`, `kimi`, `mm`, `qw` (big cheap context) | `sonnet`, `gpt`, `dsP`, `gpro`     | `opus`, `gptX`, `qwX`, `gpro` (deep-research) |
-| **Building** (real feature code, multi-file)        | `k2c`, `dev`, `dsF`                           | `sonnet`, `glm`, `qw`, `gpt`, `mm` | `opus`, `gptX`, `gpro`, `qwX`                 |
-| **Testing** (unit + e2e incl. Playwright)           | `k2c`, `dev`, `dsF`, `glmF`                   | `sonnet`, `gpt`, `glm`             | `opus`, `gptX`                                |
-| **Review** (code review, security, maintainability) | `glm`, `qw`, `kimi`, `gpt`                    | `sonnet`, `dsP`                    | `opus`, `gptX`, `gpro`                        |
+|                                                     | 💵 Cheap but OK (fast)                        | 💰 Good value / workhorse          | 💎 Most intelligent (expensive) |
+| --------------------------------------------------- | --------------------------------------------- | ---------------------------------- | ------------------------------- |
+| **Refinement** (fast iterative edits)               | `dev`, `k2c`, `dsF`, `glmF`, `lite`           | `sonnet`, `glm`, `qw`              | `opus`, `gptX`                  |
+| **Planning** (design, breakdown, long context)      | `glm`, `kimi`, `mm`, `qw` (big cheap context) | `sonnet`, `gpt`, `dsP`, `gpro`     | `opus`, `gptX`, `qwX`, `gpro`   |
+| **Building** (real feature code, multi-file)        | `k2c`, `dev`, `dsF`                           | `sonnet`, `glm`, `qw`, `gpt`, `mm` | `opus`, `gptX`, `gpro`, `qwX`   |
+| **Testing** (unit + e2e incl. Playwright)           | `k2c`, `dev`, `dsF`, `glmF`                   | `sonnet`, `gpt`, `glm`             | `opus`, `gptX`                  |
+| **Review** (code review, security, maintainability) | `glm`, `qw`, `kimi`, `gpt`                    | `sonnet`, `dsP`                    | `opus`, `gptX`, `gpro`          |
 
 ### 2b) Model picks per task/context (ordered cheap → premium per phase)
 
