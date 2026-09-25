@@ -18,6 +18,7 @@ services:
       - "DEFAULT_MODELS=${DEFAULT_MODELS}"
       - "ENABLE_MODEL_FILTER=${ENABLE_MODEL_FILTER}"
       - "MODEL_FILTER_LIST=${MODEL_FILTER_LIST}"
+      - "ENABLE_API_KEYS=${ENABLE_API_KEYS}"
       - "DATABASE_ENABLE_SESSION_SHARING=true"
   aisix:
     image: "ghcr.io/api7/aisix:${AISIX_VERSION}"

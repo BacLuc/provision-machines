@@ -144,6 +144,7 @@ openwebui = {
         "DEFAULT_MODELS": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
         "ENABLE_MODEL_FILTER": "true",
         "MODEL_FILTER_LIST": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
+        "ENABLE_API_KEYS": "true",
     },
     "opencode_api_key": "",
     "ollama_api_key": "",

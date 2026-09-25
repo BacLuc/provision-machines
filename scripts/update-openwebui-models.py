@@ -382,12 +382,12 @@ def authenticate(base_url: str, env: dict[str, str]) -> tuple[str, dict[str, Any
             return token, body
     admin_key = env.get("OPENWEBUI_API_KEY") or env.get("WEBUI_ADMIN_KEY")
     if admin_key:
-        status, body = _request_json_with_retry("GET", f"{base_url}/api/v1/users/user", token=admin_key)
+        status, body = _request_json_with_retry("GET", f"{base_url}/api/v1/users/user/info", token=admin_key)
         if status == 200:
             return admin_key, None
     raise RuntimeError(
-        "could not authenticate against OpenWebUI; set OPENWEBUI_API_KEY or WEBUI_ADMIN_KEY "
-        "in the .env (or configure an admin user) and retry"
+        "could not authenticate against OpenWebUI; put an OpenWebUI API key (sk-...) "
+        "into OPENWEBUI_API_KEY in the .env and retry"
     )
 
 

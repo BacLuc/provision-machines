@@ -426,6 +426,15 @@ def test_group_data_default_models_order() -> None:
         assert data["extra_env"]["MODEL_FILTER_LIST"] == expected, name
 
 
+def test_api_keys_enabled_for_open_webui_service() -> None:
+    for name in ("all.py", "ci.py"):
+        assert _openwebui_group_data(name)["extra_env"]["ENABLE_API_KEYS"] == "true", name
+    with open(_COMPOSE) as f:
+        content = f.read()
+    block = content[content.index("  open-webui:") : content.index("  aisix:")]
+    assert "ENABLE_API_KEYS=${ENABLE_API_KEYS}" in block
+
+
 def test_compose_enables_session_sharing() -> None:
     with open(_COMPOSE) as f:
         content = f.read()
@@ -533,7 +542,7 @@ def test_authenticate_falls_back_to_env_admin_key(monkeypatch: pytest.MonkeyPatc
     ) -> tuple[int, Any]:
         if url.endswith("/api/v1/auths/signin"):
             return 401, {"detail": "unauthorized"}
-        if url.endswith("/api/v1/users/user"):
+        if url.endswith("/api/v1/users/user/info"):
             assert token == "sk-admin"
             return 200, {"id": "admin"}
         raise AssertionError(f"unexpected request {method} {url}")
@@ -550,7 +559,7 @@ def test_authenticate_falls_back_to_webui_admin_key(monkeypatch: pytest.MonkeyPa
     ) -> tuple[int, Any]:
         if url.endswith("/api/v1/auths/signin"):
             return 401, {"detail": "unauthorized"}
-        if url.endswith("/api/v1/users/user"):
+        if url.endswith("/api/v1/users/user/info"):
             assert token == "sk-admin-legacy"
             return 200, {"id": "admin"}
         raise AssertionError(f"unexpected request {method} {url}")
@@ -558,6 +567,38 @@ def test_authenticate_falls_back_to_webui_admin_key(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
     token, _ = mod.authenticate("http://test", {"WEBUI_ADMIN_KEY": "sk-admin-legacy"})
     assert token == "sk-admin-legacy"
+
+
+def test_authenticate_raises_when_signin_and_admin_key_fail(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append(url)
+        if url.endswith("/api/v1/auths/signin"):
+            return 401, {"detail": "unauthorized"}
+        if url.endswith("/api/v1/users/user/info"):
+            return 403, {"detail": "api key not allowed"}
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    with pytest.raises(RuntimeError, match="OpenWebUI API key"):
+        mod.authenticate("http://test", {"OPENWEBUI_API_KEY": "sk-rejected"})
+    assert calls == ["http://test/api/v1/auths/signin", "http://test/api/v1/users/user/info"]
+
+
+def test_authenticate_raises_without_admin_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        if url.endswith("/api/v1/auths/signin"):
+            return 401, {"detail": "unauthorized"}
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    with pytest.raises(RuntimeError, match="OpenWebUI API key"):
+        mod.authenticate("http://test", {})
 
 
 def test_wait_ready_returns_on_200(monkeypatch: pytest.MonkeyPatch) -> None:
