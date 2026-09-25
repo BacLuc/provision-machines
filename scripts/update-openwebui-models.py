@@ -420,6 +420,17 @@ def reconcile(
     specs = build_preset_specs(model_map, default_models)
     models = [to_sync_model(spec, user_id, now) for spec in specs]
     managed_ids = set(default_models)
+    colliding = sorted(
+        row_id
+        for row in export_rows
+        if (row_id := row.get("id")) in managed_ids
+        and (row.get("base_model_id") in (None, "") or row.get("base_model_id") == row_id)
+    )
+    if colliding:
+        raise RuntimeError(
+            f"preset id collides with an existing base model row: {colliding}; "
+            "rename the preset or remove the base model before syncing"
+        )
     preserved = [row for row in export_rows if row.get("id") not in managed_ids]
     payload = {"models": preserved + models}
     if dry_run:

@@ -127,6 +127,15 @@ if host.data.openwebui["enabled"]:
         mode="644",
     )
 
+    reconcile_script_file = files.put(
+        name="Deploy openwebui models reconcile script",
+        src=f"{dirname_of(__file__)}/../../scripts/update-openwebui-models.py",
+        dest=f"{compose_project_dir}/update-openwebui-models.py",
+        user=user,
+        group=user,
+        mode="644",
+    )
+
     systemd_file = files.put(
         name="Deploy systemd service file",
         src=io.StringIO(
@@ -172,16 +181,21 @@ WantedBy=multi-user.target
             or systemd_file.changed
             or compose_file.changed
             or aisix_config_file.changed
-            or aisix_resources_file.changed
             or env_file.changed
             or models_config_file.changed
         ),
     )
 
     server.shell(
+        name="Reload aisix resources",
+        commands=[f"docker compose -f {compose_project_dir}/docker-compose.yml kill -s SIGHUP aisix"],
+        _if=lambda: aisix_resources_file.changed,
+    )
+
+    server.shell(
         name="Reconcile openwebui models",
         commands=[
-            f"{shlex.quote(sys.executable)} {shlex.quote(f'{dirname_of(__file__)}/../../scripts/update-openwebui-models.py')} --config {shlex.quote(f'{compose_project_dir}/openwebui-models-config.json')} --env-file {shlex.quote(f'{compose_project_dir}/.env')} --resources {shlex.quote(f'{compose_project_dir}/resources.yaml')}"
+            f"{shlex.quote(sys.executable)} {shlex.quote(f'{compose_project_dir}/update-openwebui-models.py')} --config {shlex.quote(f'{compose_project_dir}/openwebui-models-config.json')} --env-file {shlex.quote(f'{compose_project_dir}/.env')} --resources {shlex.quote(f'{compose_project_dir}/resources.yaml')}"
         ],
         _if=lambda: (
             searxng_files.changed
@@ -192,5 +206,6 @@ WantedBy=multi-user.target
             or aisix_resources_file.changed
             or env_file.changed
             or models_config_file.changed
+            or reconcile_script_file.changed
         ),
     )

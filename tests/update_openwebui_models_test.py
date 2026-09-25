@@ -586,6 +586,124 @@ def test_deploy_reconcile_command_shlex_quoted() -> None:
         "{compose_project_dir}/openwebui-models-config.json",
         "{compose_project_dir}/.env",
         "{compose_project_dir}/resources.yaml",
-        "{dirname_of(__file__)}/../../scripts/update-openwebui-models.py",
+        "{compose_project_dir}/update-openwebui-models.py",
     ):
         assert f"shlex.quote(f'{interpolation}')" in command
+
+
+def test_deploy_sighup_reloads_aisix() -> None:
+    with open(_DEPLOY) as f:
+        content = f.read()
+    assert "kill -s SIGHUP aisix" in content
+    systemd_start = content.index("systemd.service(")
+    systemd_end = content.index("server.shell(", systemd_start)
+    systemd_block = content[systemd_start:systemd_end]
+    assert "aisix_resources_file.changed" not in systemd_block
+
+
+def test_deploy_copies_reconcile_script() -> None:
+    with open(_DEPLOY) as f:
+        content = f.read()
+    assert "reconcile_script_file = files.put(" in content
+    assert "update-openwebui-models.py" in content
+    assert 'dest=f"{compose_project_dir}/update-openwebui-models.py"' in content
+    reconcile_start = content.index('name="Reconcile openwebui models"')
+    command = content[reconcile_start : content.index("_if=", reconcile_start)]
+    assert "{compose_project_dir}/update-openwebui-models.py" in command
+    assert "../../scripts/update-openwebui-models.py" not in command
+    assert "or reconcile_script_file.changed" in content
+
+
+def test_reconcile_fails_on_base_row_collision(monkeypatch: pytest.MonkeyPatch) -> None:
+    base_row = {
+        "id": "chat",
+        "user_id": "admin",
+        "base_model_id": "chat",
+        "name": "Chat",
+        "params": {},
+        "meta": {},
+        "access_grants": [],
+        "is_active": True,
+        "updated_at": 1790288638,
+        "created_at": 1790288638,
+    }
+    calls: list[tuple[str, str, dict[str, Any] | None]] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append((method, url, payload))
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            return 200, [base_row]
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    with pytest.raises(RuntimeError, match="preset id collides with an existing base model row"):
+        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    assert [c[0] for c in calls] == ["GET"]
+    assert not [c for c in calls if c[0] == "POST"]
+
+
+def test_reconcile_fails_on_base_row_collision_missing_base_model_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    base_row = {
+        "id": "chat",
+        "user_id": "admin",
+        "name": "Chat",
+        "params": {},
+        "meta": {},
+        "access_grants": [],
+        "is_active": True,
+        "updated_at": 1790288638,
+        "created_at": 1790288638,
+    }
+    calls: list[tuple[str, str, dict[str, Any] | None]] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append((method, url, payload))
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            return 200, [base_row]
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    with pytest.raises(RuntimeError, match="preset id collides with an existing base model row"):
+        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    assert [c[0] for c in calls] == ["GET"]
+
+
+def test_reconcile_allows_previous_preset_rows(monkeypatch: pytest.MonkeyPatch) -> None:
+    previous_preset = {
+        "id": "chat",
+        "user_id": "admin",
+        "base_model_id": "router-chat",
+        "name": "Chat",
+        "params": {},
+        "meta": {},
+        "access_grants": [],
+        "is_active": True,
+        "updated_at": 1790288638,
+        "created_at": 1790288638,
+    }
+    calls: list[tuple[str, str, dict[str, Any] | None]] = []
+
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        calls.append((method, url, payload))
+        if method == "GET" and url.endswith("/api/v1/models/export"):
+            if len([c for c in calls if c[0] == "GET"]) == 1:
+                return 200, [previous_preset]
+            return 200, _preset_rows()
+        if method == "POST" and url.endswith("/api/v1/models/sync"):
+            return 200, _preset_rows()
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    sync_payload = calls[1][2]
+    assert sync_payload is not None
+    assert [m["id"] for m in sync_payload["models"]] == DEFAULT_MODELS
+    assert [m["base_model_id"] for m in sync_payload["models"]] == [MODEL_MAP[p] for p in DEFAULT_MODELS]
