@@ -92,12 +92,15 @@ if host.data.openwebui["enabled"]:
                     f"OPENCODE_API_KEY={host.data.openwebui['opencode_api_key']}",
                     f"OLLAMA_API_KEY={host.data.openwebui['ollama_api_key']}",
                     f"OPENWEBUI_CALLER_KEY={host.data.openwebui['openwebui_caller_key']}",
+                    f"OPENAI_API_KEYS={host.data.openwebui['openwebui_caller_key']}",
+                    f"OPENWEBUI_API_KEY={host.data.openwebui['openwebui_admin_key']}",
+                    f"WEBUI_ADMIN_KEY={host.data.openwebui['openwebui_admin_key']}",
                     f"OPENCODE_BASE_URL={host.data.openwebui['opencode_base_url']}",
                     f"OLLAMA_BASE_URL={host.data.openwebui['ollama_base_url']}",
                     f"ZEN_MODEL_CHAT={host.data.openwebui['zen_model_chat']}",
                     f"OLLAMA_MODEL_CHAT={host.data.openwebui['ollama_model_chat']}",
                 ]
-                + [f"{k}={v}" for k, v in host.data.openwebui["extra_env"].items()]
+                + [f"{k}={v}" for k, v in host.data.openwebui["extra_env"].items() if k != "OPENAI_API_KEYS"]
             )
             + "\n"
         ),

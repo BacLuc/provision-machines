@@ -402,3 +402,74 @@ def test_no_model_filter_keys() -> None:
     for path in paths:
         with open(path) as f:
             assert "MODEL_FILTER" not in f.read(), path
+
+
+_DEPLOY = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "deploys",
+    "openwebui",
+    "deploy.py",
+)
+
+
+def test_group_data_admin_key_placeholder() -> None:
+    for name in ("all.py", "ci.py"):
+        with open(os.path.join(_GROUP_DATA, name)) as f:
+            content = f.read()
+        assert '"openwebui_admin_key": ""' in content, name
+
+
+def test_ci_keeps_openwebui_disabled() -> None:
+    with open(os.path.join(_GROUP_DATA, "ci.py")) as f:
+        content = f.read()
+    assert '"enabled": False' in content
+
+
+def test_no_caller_split_brain_in_extra_env() -> None:
+    for name in ("all.py", "ci.py"):
+        with open(os.path.join(_GROUP_DATA, name)) as f:
+            content = f.read()
+        assert '"openwebui_caller_key": ""' in content, name
+        assert "OPENAI_API_KEYS" not in content, name
+
+
+def test_deploy_derives_caller_and_admin_keys() -> None:
+    with open(_DEPLOY) as f:
+        content = f.read()
+    assert "OPENAI_API_KEYS={host.data.openwebui['openwebui_caller_key']}" in content
+    assert "OPENWEBUI_API_KEY={host.data.openwebui['openwebui_admin_key']}" in content
+    assert "WEBUI_ADMIN_KEY={host.data.openwebui['openwebui_admin_key']}" in content
+    assert 'if k != "OPENAI_API_KEYS"' in content
+
+
+def test_authenticate_falls_back_to_env_admin_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        if url.endswith("/api/v1/auths/signin"):
+            return 401, {"detail": "unauthorized"}
+        if url.endswith("/api/v1/users/user"):
+            assert token == "sk-admin"
+            return 200, {"id": "admin"}
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    token, signin_body = mod.authenticate("http://test", {"OPENWEBUI_API_KEY": "sk-admin"})
+    assert token == "sk-admin"
+    assert signin_body is None
+
+
+def test_authenticate_falls_back_to_webui_admin_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_request(
+        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
+    ) -> tuple[int, Any]:
+        if url.endswith("/api/v1/auths/signin"):
+            return 401, {"detail": "unauthorized"}
+        if url.endswith("/api/v1/users/user"):
+            assert token == "sk-admin-legacy"
+            return 200, {"id": "admin"}
+        raise AssertionError(f"unexpected request {method} {url}")
+
+    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
+    token, _ = mod.authenticate("http://test", {"WEBUI_ADMIN_KEY": "sk-admin-legacy"})
+    assert token == "sk-admin-legacy"

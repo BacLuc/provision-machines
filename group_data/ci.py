@@ -141,12 +141,12 @@ openwebui = {
     "extra_env": {
         "ENABLE_OPENAI_API": "true",
         "OPENAI_API_BASE_URL": "http://aisix:3000/v1",
-        "OPENAI_API_KEYS": "",
         "DEFAULT_MODELS": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
     },
     "opencode_api_key": "",
     "ollama_api_key": "",
     "openwebui_caller_key": "",
+    "openwebui_admin_key": "",
     "opencode_base_url": "https://opencode.ai/zen/go/v1",
     "ollama_base_url": "http://host.docker.internal:11434/v1",
     "zen_model_chat": "deepseek-v4-flash",
