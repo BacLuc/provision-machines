@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Reconcile the declarative OpenWebUI model presets."""
+"""Reconcile the declarative OpenWebUI model presets against a running OpenWebUI.
+
+Reads the manifest, the AISIX resources file and the mode-600 .env, then rewrites the
+OpenWebUI model table so it matches the eight presets. /models/sync prunes everything it
+is not given, so every unrelated row is re-sent; when sync is unavailable (404/405/501)
+the script falls back to the additive /models/import endpoint and deletes stale rows one
+by one, which cannot prune, so the final export is the only exact verification.
+"""
 
 from __future__ import annotations
 
@@ -285,8 +292,10 @@ def build_models(
     result: list[dict[str, object]] = []
     for model_id, preset in zip(default_models, presets, strict=True):
         previous = existing_by_id.get(model_id)
-        if previous is not None and (previous.get("base_model_id") is None or previous.get("preset") is False):
-            raise ValueError(f"desired model ID collides with a base model: {model_id}")
+        if previous is not None and (
+            previous.get("base_model_id") is None or previous.get("base_model_id") not in model_map.values()
+        ):
+            raise ValueError(f"desired model ID collides with a non-managed model: {model_id}")
         web_search = _as_bool(preset.get("web_search"), f"presets.{model_id}.web_search")
         params: dict[str, object] = {"system": _as_str(preset.get("system"), f"presets.{model_id}.system")}
         if web_search:
@@ -314,9 +323,16 @@ def build_sync_payload(
     user_id: str,
     now: int,
 ) -> list[dict[str, object]]:
+    _, model_map, _ = _manifest_parts(manifest)
+    aliases = set(model_map.values())
     managed = build_models(manifest, existing, user_id=user_id, now=now)
     managed_ids = {model["id"] for model in managed}
-    preserved = [dict(model) for model in existing if model.get("id") not in managed_ids]
+    preserved = [
+        dict(model)
+        for model in existing
+        if model.get("id") not in managed_ids
+        and (model.get("base_model_id") is None or model.get("base_model_id") not in aliases)
+    ]
     return managed + preserved
 
 
@@ -425,7 +441,7 @@ def authenticate(
     if api_key:
         user = request_json(
             "GET",
-            f"{base}/api/v1/users/user",
+            f"{base}/api/v1/auths/user",
             api_key=api_key,
             opener=opener,
             sleep=sleep,
@@ -442,7 +458,14 @@ def authenticate(
     token = response.get("token")
     if not isinstance(token, str) or not token:
         raise ReconciliationError("authentication response did not include a token")
-    return {"Authorization": f"Bearer {token}"}, _response_user_id(response)
+    verified = request_json(
+        "GET",
+        f"{base}/api/v1/auths/user",
+        token=token,
+        opener=opener,
+        sleep=sleep,
+    )
+    return {"Authorization": f"Bearer {token}"}, _response_user_id(verified)
 
 
 def wait_ready(
@@ -533,24 +556,40 @@ def reconcile(
     env = read_env_file(env_path)
     wait_ready(base, {}, opener=opener, sleep=sleep)
     auth_headers, user_id = authenticate(base, env, opener=opener, sleep=sleep)
-    exported = _model_list(
+    pre_export = _model_list(
         request_json("GET", f"{base}/api/v1/models/export", headers=auth_headers, opener=opener, sleep=sleep),
         "model export",
     )
+    all_rows = _model_list(
+        request_json("GET", f"{base}/api/v1/models/all", headers=auth_headers, opener=opener, sleep=sleep),
+        "model list",
+    )
     timestamp = int(time.time()) if now is None else now
-    desired = build_models(manifest, exported, user_id=user_id, now=timestamp)
-    sync_payload = {"models": build_sync_payload(manifest, exported, user_id=user_id, now=timestamp)}
+    desired = build_models(manifest, all_rows, user_id=user_id, now=timestamp)
+    synced_models = build_sync_payload(manifest, all_rows, user_id=user_id, now=timestamp)
+    payload_ids = {str(model["id"]) for model in synced_models}
+    _, model_map, _ = _manifest_parts(manifest)
+    aliases = set(model_map.values())
+    managed_ids = {model["id"] for model in desired}
+    preserved_before = {
+        str(model.get("id"))
+        for model in pre_export
+        if model.get("id") not in managed_ids and model.get("base_model_id") not in aliases
+    }
     try:
         sync_result = request_json(
             "POST",
             f"{base}/api/v1/models/sync",
             headers=auth_headers,
-            payload=sync_payload,
+            payload={"models": synced_models},
             opener=opener,
             sleep=sleep,
         )
         if not isinstance(sync_result, list) or not sync_result:
             raise ReconciliationError("OpenWebUI returned an empty or invalid model sync response")
+        synced_ids = {str(model.get("id")) for model in _model_list(sync_result, "model sync response")}
+        if synced_ids != payload_ids:
+            raise ReconciliationError("OpenWebUI model sync response did not match the submitted models")
     except HttpStatusError as error:
         if error.status not in {404, 405, 501}:
             raise
@@ -565,9 +604,11 @@ def reconcile(
         if imported is not True:
             raise ReconciliationError("OpenWebUI model import did not succeed") from None
         desired_ids = {model["id"] for model in desired}
-        for model in exported:
+        for model in all_rows:
             model_id = model.get("id")
             if not isinstance(model_id, str) or model_id in desired_ids:
+                continue
+            if model.get("base_model_id") is None or model.get("base_model_id") not in aliases:
                 continue
             deleted = request_json(
                 "POST",
@@ -584,6 +625,9 @@ def reconcile(
         "model export",
     )
     verify_models(desired, actual)
+    dropped = sorted(preserved_before - {str(model.get("id")) for model in actual})
+    if dropped:
+        raise ReconciliationError(f"model export dropped preserved rows: {', '.join(dropped)}")
     return actual
 
 
