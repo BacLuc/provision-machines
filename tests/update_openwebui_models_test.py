@@ -92,7 +92,7 @@ def test_build_preset_specs_rejects_missing_map_entry() -> None:
 def test_sync_payload_exact_shape() -> None:
     specs = mod.build_preset_specs(MODEL_MAP, DEFAULT_MODELS)
     now = 1790288638
-    models = [mod.to_sync_model(spec, "admin", now) for spec in specs]
+    models = [mod.to_sync_model(spec, now) for spec in specs]
     payload = {"models": models}
     assert list(payload["models"][0].keys()) == [
         "id",
@@ -110,7 +110,7 @@ def test_sync_payload_exact_shape() -> None:
     assert [m["base_model_id"] for m in payload["models"]] == [MODEL_MAP[p] for p in DEFAULT_MODELS]
     assert [m["name"] for m in payload["models"]] == [EXPECTED_NAMES[p] for p in DEFAULT_MODELS]
     for model in payload["models"]:
-        assert model["user_id"] == "admin"
+        assert model["user_id"] == mod.USER_ID
         assert model["access_grants"] == []
         assert model["is_active"] is True
         assert model["updated_at"] == now
@@ -119,7 +119,7 @@ def test_sync_payload_exact_shape() -> None:
 
 def test_web_research_payload() -> None:
     specs = mod.build_preset_specs(MODEL_MAP, DEFAULT_MODELS)
-    model = mod.to_sync_model(next(s for s in specs if s["id"] == "web_research"), "admin", 1790288638)
+    model = mod.to_sync_model(next(s for s in specs if s["id"] == "web_research"), 1790288638)
     assert model["params"]["system"] == mod.PRESET_SYSTEM_PROMPTS["web_research"]
     assert model["params"]["function_calling"] == "native"
     assert set(model["meta"]["capabilities"]) == set(mod.CAPABILITY_KEYS)
@@ -134,7 +134,7 @@ def test_non_web_research_payload_explicit_capabilities() -> None:
     for spec in specs:
         if spec["id"] == "web_research":
             continue
-        model = mod.to_sync_model(spec, "admin", 1790288638)
+        model = mod.to_sync_model(spec, 1790288638)
         assert isinstance(model["params"]["system"], str) and model["params"]["system"]
         assert "function_calling" not in model["params"]
         assert set(model["meta"]["capabilities"]) == set(mod.CAPABILITY_KEYS)
@@ -145,7 +145,7 @@ def test_non_web_research_payload_explicit_capabilities() -> None:
 
 def test_preset_system_prompts_non_empty_and_distinct() -> None:
     specs = mod.build_preset_specs(MODEL_MAP, DEFAULT_MODELS)
-    prompts = [mod.to_sync_model(spec, "admin", 1790288638)["params"]["system"] for spec in specs]
+    prompts = [mod.to_sync_model(spec, 1790288638)["params"]["system"] for spec in specs]
     assert all(isinstance(p, str) and p for p in prompts)
     assert len(set(prompts)) == len(prompts)
 
@@ -247,7 +247,7 @@ def test_reconcile_preserves_non_managed_models(monkeypatch: pytest.MonkeyPatch)
         raise AssertionError(f"unexpected request {method} {url}")
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
-    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
     sync_payload = calls[1][2]
     assert sync_payload is not None
     synced = sync_payload["models"]
@@ -297,7 +297,7 @@ def test_reconcile_falls_back_to_import_on_404(monkeypatch: pytest.MonkeyPatch) 
         raise AssertionError(f"unexpected request {method} {url}")
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
-    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
     sync_payload = calls[1][2]
     import_payload = calls[2][2]
     assert sync_payload is not None
@@ -319,7 +319,7 @@ def test_reconcile_import_fallback_failure_raises(monkeypatch: pytest.MonkeyPatc
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
     with pytest.raises(RuntimeError, match="import fallback failed"):
-        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+        mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
 
 
 @pytest.mark.parametrize("status", [401, 403, 422])
@@ -338,7 +338,7 @@ def test_reconcile_terminal_sync_errors_raise(monkeypatch: pytest.MonkeyPatch, s
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
     with pytest.raises(RuntimeError, match="rejected"):
-        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+        mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
     assert not [c for c in calls if c[1].endswith("/api/v1/models/import")]
 
 
@@ -354,7 +354,7 @@ def test_reconcile_sync_200_empty_is_failure(monkeypatch: pytest.MonkeyPatch) ->
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
     with pytest.raises(RuntimeError, match="empty model list"):
-        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+        mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
 
 
 def test_reconcile_missing_presets_after_sync_raises(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -369,7 +369,7 @@ def test_reconcile_missing_presets_after_sync_raises(monkeypatch: pytest.MonkeyP
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
     with pytest.raises(RuntimeError, match="presets missing after sync"):
-        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+        mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
 
 
 def test_reconcile_first_run_stamps_clock(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -387,7 +387,7 @@ def test_reconcile_first_run_stamps_clock(monkeypatch: pytest.MonkeyPatch) -> No
         raise AssertionError(f"unexpected request {method} {url}")
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
-    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
     sync_payload = calls[1][2]
     assert sync_payload is not None
     for model in sync_payload["models"]:
@@ -395,15 +395,15 @@ def test_reconcile_first_run_stamps_clock(monkeypatch: pytest.MonkeyPatch) -> No
         assert model["created_at"] == 1790288638
 
 
-def test_to_sync_model_falls_back_to_now_without_usable_timestamps() -> None:
+def test_to_sync_model_falls_back_to_now_without_usable_created_at() -> None:
     specs = mod.build_preset_specs(MODEL_MAP, DEFAULT_MODELS)
-    for existing in ({}, {"updated_at": None, "created_at": None}, {"updated_at": 0, "created_at": 0}):
-        model = mod.to_sync_model(specs[0], "admin", 1790288638, existing)
+    for existing in ({}, {"created_at": None}, {"created_at": 0}):
+        model = mod.to_sync_model(specs[0], 1790288638, existing)
         assert model["updated_at"] == 1790288638
         assert model["created_at"] == 1790288638
 
 
-def test_reconcile_second_run_sends_identical_payload_without_server_updated_at(
+def test_reconcile_rerun_payloads_differ_only_in_server_owned_updated_at(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     clock = iter([1_000_000, 2_000_000])
@@ -420,27 +420,29 @@ def test_reconcile_second_run_sends_identical_payload_without_server_updated_at(
         if method == "POST" and url.endswith("/api/v1/models/sync"):
             assert payload is not None
             sync_payloads.append(payload)
-            stored[:] = [{**model, "updated_at": next(server_clock)} for model in payload["models"]]
+            stored[:] = [
+                {**model, "user_id": "server-owned", "updated_at": next(server_clock)} for model in payload["models"]
+            ]
             return 200, stored
         raise AssertionError(f"unexpected request {method} {url}")
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
-    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
-    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
+    mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
 
     assert len(sync_payloads) == 2
     first, second = sync_payloads
     assert [model["updated_at"] for model in first["models"]] == [1_000_000] * len(DEFAULT_MODELS)
-    assert [model["updated_at"] for model in second["models"]] == [
-        10_000_000 * (index + 1) for index in range(len(DEFAULT_MODELS))
-    ]
+    assert [model["updated_at"] for model in second["models"]] == [2_000_000] * len(DEFAULT_MODELS)
     assert [model["created_at"] for model in first["models"]] == [1_000_000] * len(DEFAULT_MODELS)
     assert [model["created_at"] for model in second["models"]] == [1_000_000] * len(DEFAULT_MODELS)
+    assert {model["user_id"] for model in first["models"]} == {mod.USER_ID}
+    assert {model["user_id"] for model in second["models"]} == {mod.USER_ID}
     stripped = [
         json.dumps(
             [{k: v for k, v in model.items() if k != "updated_at"} for model in payload["models"]],
             sort_keys=True,
-        ).encode()
+        )
         for payload in sync_payloads
     ]
     assert stripped[0] == stripped[1]
@@ -586,9 +588,8 @@ def test_authenticate_falls_back_to_env_admin_key(monkeypatch: pytest.MonkeyPatc
         raise AssertionError(f"unexpected request {method} {url}")
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
-    token, signin_body = mod.authenticate("http://test", {"OPENWEBUI_API_KEY": "sk-admin"})
+    token = mod.authenticate("http://test", {"OPENWEBUI_API_KEY": "sk-admin"})
     assert token == "sk-admin"
-    assert signin_body is None
 
 
 def test_authenticate_falls_back_to_webui_admin_key(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -603,7 +604,7 @@ def test_authenticate_falls_back_to_webui_admin_key(monkeypatch: pytest.MonkeyPa
         raise AssertionError(f"unexpected request {method} {url}")
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
-    token, _ = mod.authenticate("http://test", {"WEBUI_ADMIN_KEY": "sk-admin-legacy"})
+    token = mod.authenticate("http://test", {"WEBUI_ADMIN_KEY": "sk-admin-legacy"})
     assert token == "sk-admin-legacy"
 
 
@@ -856,7 +857,7 @@ def test_reconcile_fails_on_base_row_collision(monkeypatch: pytest.MonkeyPatch) 
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
     with pytest.raises(RuntimeError, match="preset id collides with an existing base model row"):
-        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+        mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
     assert [c[0] for c in calls] == ["GET"]
     assert not [c for c in calls if c[0] == "POST"]
 
@@ -887,7 +888,7 @@ def test_reconcile_fails_on_base_row_collision_missing_base_model_id(
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
     with pytest.raises(RuntimeError, match="preset id collides with an existing base model row"):
-        mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+        mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
     assert [c[0] for c in calls] == ["GET"]
 
 
@@ -919,7 +920,7 @@ def test_reconcile_allows_previous_preset_rows(monkeypatch: pytest.MonkeyPatch) 
         raise AssertionError(f"unexpected request {method} {url}")
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
-    mod.reconcile("http://test", "token", None, MODEL_MAP, DEFAULT_MODELS)
+    mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
     sync_payload = calls[1][2]
     assert sync_payload is not None
     assert [m["id"] for m in sync_payload["models"]] == DEFAULT_MODELS

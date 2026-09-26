@@ -41,6 +41,8 @@ PRESET_SYSTEM_PROMPTS: dict[str, str] = {
     "linux_cli": "You are a Linux command-line expert giving concise, correct shell commands.",
 }
 
+USER_ID = "admin"
+
 CAPABILITY_KEYS: list[str] = [
     "file_context",
     "vision",
@@ -282,9 +284,7 @@ def build_preset_specs(model_map: dict[str, str], default_models: list[str]) -> 
     return specs
 
 
-def to_sync_model(
-    spec: dict[str, Any], user_id: str, now: int, existing: dict[str, Any] | None = None
-) -> dict[str, Any]:
+def to_sync_model(spec: dict[str, Any], now: int, existing: dict[str, Any] | None = None) -> dict[str, Any]:
     """Build the full ModelModel envelope for one preset."""
     preset_id = spec["id"]
     existing = existing or {}
@@ -298,14 +298,14 @@ def to_sync_model(
         meta["builtinTools"] = {"web_search": True}
     return {
         "id": spec["id"],
-        "user_id": user_id,
+        "user_id": USER_ID,
         "base_model_id": spec["base_model_id"],
         "name": spec["name"],
         "params": params,
         "meta": meta,
         "access_grants": [],
         "is_active": True,
-        "updated_at": existing.get("updated_at") or now,
+        "updated_at": now,
         "created_at": existing.get("created_at") or now,
     }
 
@@ -374,42 +374,29 @@ def wait_ready(base_url: str) -> None:
         time.sleep(READY_INTERVAL_SECONDS)
 
 
-def authenticate(base_url: str, env: dict[str, str]) -> tuple[str, dict[str, Any] | None]:
-    """Return (bearer token, signin body) for the admin API."""
+def authenticate(base_url: str, env: dict[str, str]) -> str:
+    """Return a bearer token for the admin API."""
     status, body = _request_json_with_retry(
         "POST", f"{base_url}/api/v1/auths/signin", payload={"email": "", "password": ""}
     )
     if status == 200 and isinstance(body, dict):
         token = body.get("token")
         if isinstance(token, str) and token:
-            return token, body
+            return token
     admin_key = env.get("OPENWEBUI_API_KEY") or env.get("WEBUI_ADMIN_KEY")
     if admin_key:
         status, body = _request_json_with_retry("GET", f"{base_url}/api/v1/models/base", token=admin_key)
         if status == 200:
-            return admin_key, None
+            return admin_key
     raise RuntimeError(
         "could not authenticate against OpenWebUI; put an OpenWebUI API key (sk-...) "
         "into OPENWEBUI_API_KEY in the .env and retry"
     )
 
 
-def _get_user_id(export_rows: list[dict[str, Any]], signin_body: dict[str, Any] | None) -> str:
-    for row in export_rows:
-        user_id = row.get("user_id")
-        if isinstance(user_id, str) and user_id:
-            return user_id
-    if signin_body is not None:
-        user_id = signin_body.get("id")
-        if isinstance(user_id, str) and user_id:
-            return user_id
-    return "admin"
-
-
 def reconcile(
     base_url: str,
     token: str,
-    signin_body: dict[str, Any] | None,
     model_map: dict[str, str],
     default_models: list[str],
     dry_run: bool = False,
@@ -418,7 +405,6 @@ def reconcile(
     if status != 200 or not isinstance(body, list):
         raise RuntimeError(f"models export failed with status {status}")
     export_rows = [row for row in body if isinstance(row, dict)]
-    user_id = _get_user_id(export_rows, signin_body)
     now = int(time.time())
     specs = build_preset_specs(model_map, default_models)
     managed_ids = set(default_models)
@@ -433,7 +419,7 @@ def reconcile(
             f"preset id collides with an existing base model row: {colliding}; "
             "rename the preset or remove the base model before syncing"
         )
-    models = [to_sync_model(spec, user_id, now, managed_rows.get(spec["id"])) for spec in specs]
+    models = [to_sync_model(spec, now, managed_rows.get(spec["id"])) for spec in specs]
     preserved = [row for row in export_rows if row.get("id") not in managed_ids]
     payload = {"models": preserved + models}
     if dry_run:
@@ -503,8 +489,8 @@ def main() -> None:
         if missing:
             raise RuntimeError(f"model_map aliases missing from the router: {missing}")
     wait_ready(base_url)
-    token, signin_body = authenticate(base_url, env)
-    reconcile(base_url, token, signin_body, model_map, default_models, dry_run=args.dry_run)
+    token = authenticate(base_url, env)
+    reconcile(base_url, token, model_map, default_models, dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
