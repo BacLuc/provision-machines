@@ -306,26 +306,6 @@ php_development = {
 openwebui = {
     "enabled": True,
     "BRAVE_API_KEY": "",
-    "default_models": [
-        "chat",
-        "chat_thinking",
-        "web_research",
-        "translate_de",
-        "translate_en",
-        "fix_grammar_en",
-        "fix_grammar_de",
-        "linux_cli",
-    ],
-    "model_map": {
-        "chat": "router-chat",
-        "chat_thinking": "router-chat-thinking",
-        "web_research": "router-web-research",
-        "translate_de": "router-translate-de",
-        "translate_en": "router-translate-en",
-        "fix_grammar_en": "router-fix-grammar-en",
-        "fix_grammar_de": "router-fix-grammar-de",
-        "linux_cli": "router-linux-cli",
-    },
     "extra_env": {
         "ENABLE_OPENAI_API": "true",
         "OPENAI_API_BASE_URL": "http://aisix:3000/v1",
