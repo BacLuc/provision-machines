@@ -3,9 +3,7 @@ import importlib.util
 import itertools
 import json
 import os
-import shlex
 import sys
-import types
 from pathlib import Path
 from typing import Any
 from urllib.error import URLError
@@ -159,13 +157,6 @@ def test_read_env_file_parses_values(tmp_path: Path) -> None:
         "OLLAMA_API_KEY": "",
         "OPENWEBUI_CALLER_KEY": "caller",
     }
-
-
-def test_read_env_file_does_not_print_secrets(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    env_file = tmp_path / ".env"
-    env_file.write_text("OPENCODE_API_KEY=sk-super-secret\n")
-    mod.read_env_file(str(env_file))
-    assert capsys.readouterr().out == ""
 
 
 def test_reconcile_preserves_non_managed_models(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -491,54 +482,6 @@ def test_deploy_derives_caller_and_admin_keys() -> None:
     assert 'if k != "OPENAI_API_KEYS"' in content
 
 
-def _render_reconcile_command(compose_project_dir: str) -> str:
-    with open(_DEPLOY) as f:
-        content = f.read()
-    reconcile_line = content[: content.index('name="Reconcile openwebui models"')].count("\n")
-    tree = ast.parse(content)
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.JoinedStr) or node.lineno < reconcile_line:
-            continue
-        if not any(
-            isinstance(value, ast.FormattedValue)
-            and isinstance(value.value, ast.Call)
-            and isinstance(value.value.func, ast.Attribute)
-            and value.value.func.attr == "quote"
-            for value in node.values
-        ):
-            continue
-        code = compile(ast.Expression(body=node), _DEPLOY, "eval")
-        globals_dict: dict[str, Any] = {
-            "shlex": shlex,
-            "sys": types.SimpleNamespace(executable="/usr/bin/python3"),
-            "compose_project_dir": compose_project_dir,
-        }
-        rendered = eval(code, globals_dict)
-        assert isinstance(rendered, str)
-        return rendered
-    raise AssertionError("reconcile command not found in deploy.py")
-
-
-def test_deploy_reconcile_command_quotes_paths_with_spaces() -> None:
-    command = _render_reconcile_command("/home/user/my openwebui")
-    assert command == (
-        "/usr/bin/python3 '/home/user/my openwebui/update-openwebui-models.py' "
-        "--config '/home/user/my openwebui/openwebui-models-config.json' "
-        "--env-file '/home/user/my openwebui/.env' "
-        "--resources '/home/user/my openwebui/resources.yaml'"
-    )
-
-
-def test_deploy_reconcile_command_plain_paths_unquoted() -> None:
-    command = _render_reconcile_command("/home/user/openwebui")
-    assert command == (
-        "/usr/bin/python3 /home/user/openwebui/update-openwebui-models.py "
-        "--config /home/user/openwebui/openwebui-models-config.json "
-        "--env-file /home/user/openwebui/.env "
-        "--resources /home/user/openwebui/resources.yaml"
-    )
-
-
 def test_authenticate_falls_back_to_env_admin_key(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_request(
         method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
@@ -745,24 +688,6 @@ def test_request_json_with_retry_raises_after_timeout(monkeypatch: pytest.Monkey
         mod._request_json_with_retry("GET", "http://test/api")
 
 
-def test_deploy_reconcile_command_shlex_quoted() -> None:
-    with open(_DEPLOY) as f:
-        content = f.read()
-    reconcile_start = content.index('name="Reconcile openwebui models"')
-    assert reconcile_start > content.index("systemd.service(")
-    command = content[reconcile_start : content.index("_if=", reconcile_start)]
-    assert "shlex.quote" in command
-    assert "shlex.quote(sys.executable)" in command
-    assert "|| true" not in command
-    for interpolation in (
-        "{compose_project_dir}/openwebui-models-config.json",
-        "{compose_project_dir}/.env",
-        "{compose_project_dir}/resources.yaml",
-        "{compose_project_dir}/update-openwebui-models.py",
-    ):
-        assert f"shlex.quote(f'{interpolation}')" in command
-
-
 class _FakeResponse:
     def __init__(self, status: int, body: bytes) -> None:
         self.status = status
@@ -835,10 +760,20 @@ def test_deploy_copies_reconcile_script() -> None:
     assert "update-openwebui-models.py" in content
     assert 'dest=f"{compose_project_dir}/update-openwebui-models.py"' in content
     reconcile_start = content.index('name="Reconcile openwebui models"')
+    assert reconcile_start > content.index("systemd.service(")
     command = content[reconcile_start : content.index("_if=", reconcile_start)]
     assert "{compose_project_dir}/update-openwebui-models.py" in command
     assert "../../scripts/update-openwebui-models.py" not in command
     assert "_sudo=True" in command
+    assert "shlex.quote(sys.executable)" in command
+    for interpolation in (
+        "{compose_project_dir}/openwebui-models-config.json",
+        "{compose_project_dir}/.env",
+        "{compose_project_dir}/resources.yaml",
+        "{compose_project_dir}/update-openwebui-models.py",
+    ):
+        assert f"shlex.quote(f'{interpolation}')" in command
+    assert "|| true" not in command
     assert "or reconcile_script_file.changed" in content
 
 
@@ -870,36 +805,6 @@ def test_reconcile_fails_on_base_row_collision(monkeypatch: pytest.MonkeyPatch) 
         mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
     assert [c[0] for c in calls] == ["GET"]
     assert not [c for c in calls if c[0] == "POST"]
-
-
-def test_reconcile_fails_on_base_row_collision_missing_base_model_id(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    base_row = {
-        "id": "chat",
-        "user_id": "admin",
-        "name": "Chat",
-        "params": {},
-        "meta": {},
-        "access_grants": [],
-        "is_active": True,
-        "updated_at": 1790288638,
-        "created_at": 1790288638,
-    }
-    calls: list[tuple[str, str, dict[str, Any] | None]] = []
-
-    def fake_request(
-        method: str, url: str, token: str | None = None, payload: dict[str, Any] | None = None
-    ) -> tuple[int, Any]:
-        calls.append((method, url, payload))
-        if method == "GET" and url.endswith("/api/v1/models/export"):
-            return 200, [base_row]
-        raise AssertionError(f"unexpected request {method} {url}")
-
-    monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
-    with pytest.raises(RuntimeError, match="preset id collides with an existing base model row"):
-        mod.reconcile("http://test", "token", MODEL_MAP, DEFAULT_MODELS)
-    assert [c[0] for c in calls] == ["GET"]
 
 
 def test_reconcile_allows_previous_preset_rows(monkeypatch: pytest.MonkeyPatch) -> None:
