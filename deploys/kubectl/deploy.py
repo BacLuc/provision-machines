@@ -161,7 +161,7 @@ complete -F __start_kubectl k
         )
 
     # renovate: datasource=github-releases depName=databus23/helm-diff
-    helm_diff_version = "3.15.11"
+    helm_diff_version = "3.15.15"
     helm_diff_path = f"/home/{user}/.local/share/helm/plugins/helm-diff/bin/diff"
     helm_diff_checksum = "61ea49ed3ec36b8ca0e005f68220fcd236f58475ce87731c49762e1d14111739"
 
