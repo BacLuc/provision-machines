@@ -651,7 +651,8 @@ def test_wait_ready_returns_on_200(monkeypatch: pytest.MonkeyPatch) -> None:
     assert calls == ["http://test/ready"]
 
 
-def test_wait_ready_retries_until_200(monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize("error", [URLError("down"), TimeoutError("timed out"), json.JSONDecodeError("x", "", 0)])
+def test_wait_ready_retries_until_200(monkeypatch: pytest.MonkeyPatch, error: Exception) -> None:
     calls: list[str] = []
 
     def fake_request(
@@ -659,7 +660,7 @@ def test_wait_ready_retries_until_200(monkeypatch: pytest.MonkeyPatch) -> None:
     ) -> tuple[int, Any]:
         calls.append(url)
         if len(calls) == 1:
-            raise URLError("down")
+            raise error
         if len(calls) == 2:
             return 503, None
         return 200, None

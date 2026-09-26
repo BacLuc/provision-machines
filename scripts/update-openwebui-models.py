@@ -16,7 +16,7 @@ import os
 import re
 import time
 from typing import Any
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 PRESET_NAMES: dict[str, str] = {
@@ -349,7 +349,7 @@ def _request_json_with_retry(
     while True:
         try:
             status, body = _request_json(method, url, token, payload)
-        except URLError:
+        except (OSError, ValueError):
             status, body = 0, None
         if status == 0 or status >= 500:
             if time.monotonic() >= deadline:
@@ -367,7 +367,7 @@ def wait_ready(base_url: str) -> None:
             status, _ = _request_json("GET", f"{base_url}/ready")
             if status == 200:
                 return
-        except URLError:
+        except (OSError, ValueError):
             pass
         if time.monotonic() >= deadline:
             raise RuntimeError(f"{base_url}/ready did not become ready within {READY_TIMEOUT_SECONDS}s")
