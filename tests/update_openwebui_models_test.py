@@ -578,7 +578,7 @@ def test_authenticate_falls_back_to_env_admin_key(monkeypatch: pytest.MonkeyPatc
     ) -> tuple[int, Any]:
         if url.endswith("/api/v1/auths/signin"):
             return 401, {"detail": "unauthorized"}
-        if url.endswith("/api/v1/users/user/info"):
+        if url.endswith("/api/v1/models/base"):
             assert token == "sk-admin"
             return 200, {"id": "admin"}
         raise AssertionError(f"unexpected request {method} {url}")
@@ -595,7 +595,7 @@ def test_authenticate_falls_back_to_webui_admin_key(monkeypatch: pytest.MonkeyPa
     ) -> tuple[int, Any]:
         if url.endswith("/api/v1/auths/signin"):
             return 401, {"detail": "unauthorized"}
-        if url.endswith("/api/v1/users/user/info"):
+        if url.endswith("/api/v1/models/base"):
             assert token == "sk-admin-legacy"
             return 200, {"id": "admin"}
         raise AssertionError(f"unexpected request {method} {url}")
@@ -614,14 +614,14 @@ def test_authenticate_raises_when_signin_and_admin_key_fail(monkeypatch: pytest.
         calls.append(url)
         if url.endswith("/api/v1/auths/signin"):
             return 401, {"detail": "unauthorized"}
-        if url.endswith("/api/v1/users/user/info"):
+        if url.endswith("/api/v1/models/base"):
             return 403, {"detail": "api key not allowed"}
         raise AssertionError(f"unexpected request {method} {url}")
 
     monkeypatch.setattr(mod, "_request_json_with_retry", fake_request)
     with pytest.raises(RuntimeError, match="OpenWebUI API key"):
         mod.authenticate("http://test", {"OPENWEBUI_API_KEY": "sk-rejected"})
-    assert calls == ["http://test/api/v1/auths/signin", "http://test/api/v1/users/user/info"]
+    assert calls == ["http://test/api/v1/auths/signin", "http://test/api/v1/models/base"]
 
 
 def test_authenticate_raises_without_admin_key(monkeypatch: pytest.MonkeyPatch) -> None:

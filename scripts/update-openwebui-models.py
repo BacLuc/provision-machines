@@ -385,7 +385,7 @@ def authenticate(base_url: str, env: dict[str, str]) -> tuple[str, dict[str, Any
             return token, body
     admin_key = env.get("OPENWEBUI_API_KEY") or env.get("WEBUI_ADMIN_KEY")
     if admin_key:
-        status, body = _request_json_with_retry("GET", f"{base_url}/api/v1/users/user/info", token=admin_key)
+        status, body = _request_json_with_retry("GET", f"{base_url}/api/v1/models/base", token=admin_key)
         if status == 200:
             return admin_key, None
     raise RuntimeError(
