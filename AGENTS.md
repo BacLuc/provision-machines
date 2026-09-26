@@ -53,7 +53,7 @@ are assigned to a python variable or a dict entry, and have a renovate comment o
 
 ```yaml
 # renovate: datasource=github-releases depName=vshn/k8ify
-k8ify_version = "2.6.0"
+k8ify_version = "2.7.0"
 # the checksum here doesn't get updated, so it is wrong.
 k8ify_checksum = "f3605d34439c0bef36930c71ad2b066acc0ba821e68c98e764fffc1a66dcc3b9"
 
