@@ -1,7 +1,6 @@
 import io
 import json
 import shlex
-import sys
 
 from pyinfra import host
 from pyinfra.facts.files import Directory
@@ -110,32 +109,6 @@ if host.data.openwebui["enabled"]:
         mode="600",
     )
 
-    models_config_file = files.put(
-        name="Deploy openwebui models config",
-        src=io.StringIO(
-            json.dumps(
-                {
-                    "model_map": host.data.openwebui["model_map"],
-                    "base_url": "http://127.0.0.1:13307",
-                    "default_models": host.data.openwebui["default_models"],
-                }
-            )
-        ),
-        dest=f"{compose_project_dir}/openwebui-models-config.json",
-        user=user,
-        group=user,
-        mode="644",
-    )
-
-    reconcile_script_file = files.put(
-        name="Deploy openwebui models reconcile script",
-        src=f"{dirname_of(__file__)}/../../scripts/update-openwebui-models.py",
-        dest=f"{compose_project_dir}/update-openwebui-models.py",
-        user=user,
-        group=user,
-        mode="644",
-    )
-
     systemd_file = files.put(
         name="Deploy systemd service file",
         src=io.StringIO(
@@ -194,25 +167,5 @@ WantedBy=multi-user.target
             or aisix_config_file.changed
             or aisix_resources_file.changed
             or env_file.changed
-            or models_config_file.changed
-        ),
-    )
-
-    server.shell(
-        name="Reconcile openwebui models",
-        commands=[
-            f"{shlex.quote(sys.executable)} {shlex.quote(f'{compose_project_dir}/update-openwebui-models.py')} --config {shlex.quote(f'{compose_project_dir}/openwebui-models-config.json')} --env-file {shlex.quote(f'{compose_project_dir}/.env')} --resources {shlex.quote(f'{compose_project_dir}/resources.yaml')}"
-        ],
-        _sudo=True,
-        _if=lambda: (
-            searxng_files.changed
-            or settings_file.changed
-            or systemd_file.changed
-            or compose_file.changed
-            or aisix_config_file.changed
-            or aisix_resources_file.changed
-            or env_file.changed
-            or models_config_file.changed
-            or reconcile_script_file.changed
         ),
     )
