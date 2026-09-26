@@ -6,18 +6,33 @@ provider_keys:
     adapter: openai
     api_base: ${OPENCODE_BASE_URL}
     api_key: ${OPENCODE_API_KEY}
+    request:
+      default_headers:
+        x-opencode-session: openwebui
 
   - display_name: opencode-2
     provider: opencode
     adapter: openai
     api_base: ${OPENCODE_BASE_URL}
     api_key: ${OPENCODE_API_KEY_2}
+    request:
+      default_headers:
+        x-opencode-session: openwebui
 
   - display_name: opencode-3
     provider: opencode
     adapter: openai
     api_base: ${OPENCODE_BASE_URL}
     api_key: ${OPENCODE_API_KEY_3}
+    request:
+      default_headers:
+        x-opencode-session: openwebui
+
+  - display_name: ollama
+    provider: ollama
+    adapter: openai
+    api_base: ${OLLAMA_BASE_URL}
+    api_key: ${OLLAMA_API_KEY}
 
   - display_name: requesty
     provider: requesty
@@ -32,157 +47,191 @@ provider_keys:
     api_key: ${CORTECS_API_KEY}
 
 models:
-  - display_name: chat
+  - display_name: opencode-chat
     provider: opencode
     model_name: ${ZEN_MODEL_CHAT}
     provider_key: opencode
 
-  - display_name: chat-2
+  - display_name: opencode-chat-2
     provider: opencode
     model_name: ${ZEN_MODEL_CHAT}
     provider_key: opencode-2
 
-  - display_name: thinking
+  - display_name: opencode-chat-3
     provider: opencode
-    model_name: ${ZEN_MODEL_THINKING}
-    provider_key: opencode
-
-  - display_name: thinking-2
-    provider: opencode
-    model_name: ${ZEN_MODEL_THINKING}
-    provider_key: opencode-2
-
-  - display_name: web-research
-    provider: opencode
-    model_name: ${ZEN_MODEL_WEB_RESEARCH}
-    provider_key: opencode
-
-  - display_name: web-research-2
-    provider: opencode
-    model_name: ${ZEN_MODEL_WEB_RESEARCH}
-    provider_key: opencode-2
-
-  - display_name: quick
-    provider: opencode
-    model_name: ${ZEN_MODEL_QUICK}
-    provider_key: opencode
-
-  - display_name: quick-2
-    provider: opencode
-    model_name: ${ZEN_MODEL_QUICK}
-    provider_key: opencode-2
-
-  - display_name: opencode/*
-    provider: opencode
-    model_name: "*"
-    provider_key: opencode
-
-  - display_name: opencode-2/*
-    provider: opencode
-    model_name: "*"
-    provider_key: opencode-2
-
-  - display_name: opencode-3/*
-    provider: opencode
-    model_name: "*"
+    model_name: ${ZEN_MODEL_CHAT}
     provider_key: opencode-3
 
-  - display_name: requesty/*
+  - display_name: opencode-thinking
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT_THINKING}
+    provider_key: opencode
+
+  - display_name: opencode-thinking-2
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT_THINKING}
+    provider_key: opencode-2
+
+  - display_name: opencode-thinking-3
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT_THINKING}
+    provider_key: opencode-3
+
+  - display_name: opencode-web-research
+    provider: opencode
+    model_name: ${ZEN_MODEL_WEB_RESEARCH}
+    provider_key: opencode
+
+  - display_name: opencode-web-research-2
+    provider: opencode
+    model_name: ${ZEN_MODEL_WEB_RESEARCH}
+    provider_key: opencode-2
+
+  - display_name: opencode-web-research-3
+    provider: opencode
+    model_name: ${ZEN_MODEL_WEB_RESEARCH}
+    provider_key: opencode-3
+
+  - display_name: opencode-fast
+    provider: opencode
+    model_name: ${ZEN_MODEL_FAST}
+    provider_key: opencode
+
+  - display_name: opencode-fast-2
+    provider: opencode
+    model_name: ${ZEN_MODEL_FAST}
+    provider_key: opencode-2
+
+  - display_name: opencode-fast-3
+    provider: opencode
+    model_name: ${ZEN_MODEL_FAST}
+    provider_key: opencode-3
+
+  - display_name: ollama-chat
+    provider: ollama
+    model_name: ${OLLAMA_MODEL_CHAT}
+    provider_key: ollama
+
+  - display_name: requesty-chat
     provider: requesty
-    model_name: "*"
+    model_name: ${REQUESTY_MODEL_CHAT}
     provider_key: requesty
 
-  - display_name: cortecs/*
+  - display_name: cortecs-chat
     provider: cortecs
-    model_name: "*"
+    model_name: ${CORTECS_MODEL_CHAT}
     provider_key: cortecs
 
-  - display_name: router-chat
+  - display_name: chat
     routing:
       strategy: failover
       targets:
-        - model: chat
+        - model: opencode-chat
           priority: 100
-        - model: chat-2
-          priority: 1
+        - model: opencode-chat-2
+          priority: -1
+        - model: opencode-chat-3
+          priority: -2
       retries: 0
+      max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: router-chat-thinking
+  - display_name: chat_thinking
     routing:
       strategy: failover
       targets:
-        - model: thinking
+        - model: opencode-thinking
           priority: 100
-        - model: thinking-2
-          priority: 1
+        - model: opencode-thinking-2
+          priority: -1
+        - model: opencode-thinking-3
+          priority: -2
       retries: 0
+      max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: router-web-research
+  - display_name: web_research
     routing:
       strategy: failover
       targets:
-        - model: web-research
+        - model: opencode-web-research
           priority: 100
-        - model: web-research-2
-          priority: 1
+        - model: opencode-web-research-2
+          priority: -1
+        - model: opencode-web-research-3
+          priority: -2
       retries: 0
+      max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: router-translate-de
+  - display_name: translate_de
     routing:
       strategy: failover
       targets:
-        - model: quick
+        - model: opencode-fast
           priority: 100
-        - model: quick-2
-          priority: 1
+        - model: opencode-fast-2
+          priority: -1
+        - model: opencode-fast-3
+          priority: -2
       retries: 0
+      max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: router-translate-en
+  - display_name: translate_en
     routing:
       strategy: failover
       targets:
-        - model: quick
+        - model: opencode-fast
           priority: 100
-        - model: quick-2
-          priority: 1
+        - model: opencode-fast-2
+          priority: -1
+        - model: opencode-fast-3
+          priority: -2
       retries: 0
+      max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: router-fix-grammar-en
+  - display_name: fix_grammar_en
     routing:
       strategy: failover
       targets:
-        - model: quick
+        - model: opencode-fast
           priority: 100
-        - model: quick-2
-          priority: 1
+        - model: opencode-fast-2
+          priority: -1
+        - model: opencode-fast-3
+          priority: -2
       retries: 0
+      max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: router-fix-grammar-de
+  - display_name: fix_grammar_de
     routing:
       strategy: failover
       targets:
-        - model: quick
+        - model: opencode-fast
           priority: 100
-        - model: quick-2
-          priority: 1
+        - model: opencode-fast-2
+          priority: -1
+        - model: opencode-fast-3
+          priority: -2
       retries: 0
+      max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: router-linux-cli
+  - display_name: linux_cli
     routing:
       strategy: failover
       targets:
-        - model: quick
+        - model: opencode-fast
           priority: 100
-        - model: quick-2
-          priority: 1
+        - model: opencode-fast-2
+          priority: -1
+        - model: opencode-fast-3
+          priority: -2
       retries: 0
+      max_fallbacks: 2
       retry_on_429: true
 
 api_keys:

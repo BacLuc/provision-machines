@@ -37,17 +37,11 @@ openwebui = {
     "opencode_api_key": "sk-...",
     "opencode_api_key_2": "sk-...",
     "opencode_api_key_3": "sk-...",
+    "ollama_api_key": "...",
     "requesty_api_key": "sk-...",
-    "cortecs_api_key": "sk-...",
+    "cortecs_api_key": "...",
     "openwebui_caller_key": "...",
-    "openwebui_admin_key": "sk-...",
 }
 ```
 
-Every one of those keys is required — the `aisix validate` pre-flight in
-`deploys/openwebui/deploy.py` fails the deploy while any of them is empty,
-because AISIX rejects an unset or empty `${VAR}`. No real secret goes in `all.py`.
-
-Swapping a model behind a router alias is a one-line change in the same file, for
-example `openwebui = {"zen_model_quick": "novita/deepseek/deepseek-v3.2"}` — the
-`router-*` names in `resources.yaml` and in `DEFAULT_MODELS` do not change.
+The six first keys are written from `local.py` into the mode-600 `.env`; an empty one fails the `Validate aisix resources before starting the stack` pre-flight in `deploys/openwebui/deploy.py` with `environment variable X is unset or empty`. No real secret goes in `all.py`.
