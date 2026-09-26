@@ -309,7 +309,7 @@ openwebui = {
     "extra_env": {
         "ENABLE_OPENAI_API": "true",
         "OPENAI_API_BASE_URL": "http://aisix:3000/v1",
-        "DEFAULT_MODELS": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
+        "DEFAULT_MODELS": "router-chat,router-chat-thinking,router-web-research,router-translate-de,router-translate-en,router-fix-grammar-en,router-fix-grammar-de,router-linux-cli",
         "ENABLE_API_KEYS": "true",
     },
     # Set in local.py — written into the openwebui .env (mode 600)
