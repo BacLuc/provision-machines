@@ -218,8 +218,8 @@ def filter_models(models, mode="default", price_class=None):
     return result
 
 
-def strip_jsonc_comments(text):
-    """Remove // line comments and /* */ block comments from JSONC text, preserving string contents."""
+def normalize_jsonc(text):
+    """Remove // line comments, /* */ block comments and trailing commas from JSONC text, preserving string contents."""
     result = []
     i = 0
     n = len(text)
@@ -247,6 +247,15 @@ def strip_jsonc_comments(text):
             in_string = True
             result.append(text[i])
             i += 1
+        elif text[i] == ",":
+            j = i + 1
+            while j < n and text[j].isspace():
+                j += 1
+            if j < n and text[j] in "}]":
+                i += 1
+                continue
+            result.append(text[i])
+            i += 1
         else:
             result.append(text[i])
             i += 1
@@ -264,7 +273,7 @@ def npm_name(spec):
 def update_config(models, config_path, npm_package=None, provider_name=None, api_base_url=None):
     """Update the opencode.jsonc config with the given models."""
     with open(config_path) as f:
-        config = json.loads(strip_jsonc_comments(f.read()))
+        config = json.loads(normalize_jsonc(f.read()))
 
     provider_name = provider_name or PROVIDER_NAME
     api_base_url = api_base_url or API_BASE_URL
