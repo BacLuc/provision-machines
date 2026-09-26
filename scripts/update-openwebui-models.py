@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import re
+import sys
 import time
 from typing import Any
 from urllib.error import HTTPError
@@ -311,4 +312,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as error:
+        sys.exit(str(error))
