@@ -36,7 +36,7 @@ github_release_binary(
 )
 
 # renovate: datasource=github-releases depName=vshn/kharon
-kharon_version = "1.8.0"
+kharon_version = "1.8.1"
 kharon_checksum = "6c1ff7997774d53ceab132480512dfb77c2b0f3899ad19298af4f96b42d65931"
 
 if enabled:
