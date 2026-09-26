@@ -7,7 +7,7 @@ to be ready, authenticates, and syncs the eight presets via
 POST /api/v1/models/sync.
 
 Usage:
-    scripts/update-openwebui-models.py --config <config.json> [--env-file <path>] [--base-url <url>] [--dry-run]
+    scripts/update-openwebui-models.py --config <config.json> [--env-file <path>] [--base-url <url>]
 """
 
 import argparse
@@ -218,7 +218,6 @@ def reconcile(
     token: str,
     model_map: dict[str, str],
     default_models: list[str],
-    dry_run: bool = False,
 ) -> None:
     status, body = _request_json_with_retry("GET", f"{base_url}/api/v1/models/export", token=token)
     if status != 200 or not isinstance(body, list):
@@ -241,9 +240,6 @@ def reconcile(
     models = [to_sync_model(spec, now, managed_rows.get(spec["id"])) for spec in specs]
     preserved = [row for row in export_rows if row.get("id") not in managed_ids]
     payload = {"models": preserved + models}
-    if dry_run:
-        print(json.dumps(payload, indent=2))
-        return
     status, body = _request_json_with_retry("POST", f"{base_url}/api/v1/models/sync", token=token, payload=payload)
     if status == 200:
         if isinstance(body, list) and body:
@@ -288,7 +284,6 @@ def main() -> None:
     parser.add_argument(
         "--resources", default=None, help="path to resources.yaml to verify router aliases match model_map"
     )
-    parser.add_argument("--dry-run", action="store_true", help="print the sync payload without sending it")
     args = parser.parse_args()
 
     with open(args.config) as f:
@@ -308,7 +303,7 @@ def main() -> None:
             raise RuntimeError(f"model_map aliases missing from the router: {missing}")
     wait_ready(base_url)
     token = authenticate(base_url, env)
-    reconcile(base_url, token, model_map, default_models, dry_run=args.dry_run)
+    reconcile(base_url, token, model_map, default_models)
 
 
 if __name__ == "__main__":
