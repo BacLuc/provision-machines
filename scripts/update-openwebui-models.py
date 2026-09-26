@@ -19,26 +19,30 @@ from typing import Any
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-PRESET_NAMES: dict[str, str] = {
-    "chat": "Chat",
-    "chat_thinking": "Chat (Thinking)",
-    "web_research": "Web Research",
-    "translate_de": "Translate to German",
-    "translate_en": "Translate to English",
-    "fix_grammar_en": "Fix English Grammar",
-    "fix_grammar_de": "Fix German Grammar",
-    "linux_cli": "Linux CLI",
-}
-
-PRESET_SYSTEM_PROMPTS: dict[str, str] = {
-    "chat": "You are a helpful general-purpose assistant.",
-    "chat_thinking": "You are a helpful assistant that thinks step by step before answering.",
-    "web_research": "You are a research assistant that uses web search to find current, cited information.",
-    "translate_de": "Translate the user's text into German.",
-    "translate_en": "Translate the user's text into English.",
-    "fix_grammar_en": "Fix the grammar and spelling of English text and return the corrected text.",
-    "fix_grammar_de": "Fix the grammar and spelling of German text and return the corrected text.",
-    "linux_cli": "You are a Linux command-line expert giving concise, correct shell commands.",
+PRESETS: dict[str, tuple[str, str]] = {
+    "chat": ("Chat", "You are a helpful general-purpose assistant."),
+    "chat_thinking": (
+        "Chat (Thinking)",
+        "You are a helpful assistant that thinks step by step before answering.",
+    ),
+    "web_research": (
+        "Web Research",
+        "You are a research assistant that uses web search to find current, cited information.",
+    ),
+    "translate_de": ("Translate to German", "Translate the user's text into German."),
+    "translate_en": ("Translate to English", "Translate the user's text into English."),
+    "fix_grammar_en": (
+        "Fix English Grammar",
+        "Fix the grammar and spelling of English text and return the corrected text.",
+    ),
+    "fix_grammar_de": (
+        "Fix German Grammar",
+        "Fix the grammar and spelling of German text and return the corrected text.",
+    ),
+    "linux_cli": (
+        "Linux CLI",
+        "You are a Linux command-line expert giving concise, correct shell commands.",
+    ),
 }
 
 USER_ID = "admin"
@@ -87,14 +91,14 @@ def build_preset_specs(model_map: dict[str, str], default_models: list[str]) -> 
     """Build the eight preset specs in the fixed default_models order."""
     specs: list[dict[str, Any]] = []
     for preset_id in default_models:
-        if preset_id not in PRESET_NAMES:
+        if preset_id not in PRESETS:
             raise ValueError(f"unknown preset id {preset_id!r}")
         base_model_id = model_map.get(preset_id)
         if base_model_id is None:
             raise ValueError(f"model_map missing entry for preset {preset_id!r}")
         if base_model_id == preset_id:
             raise ValueError(f"base_model_id must differ from preset id {preset_id!r}")
-        specs.append({"id": preset_id, "base_model_id": base_model_id, "name": PRESET_NAMES[preset_id]})
+        specs.append({"id": preset_id, "base_model_id": base_model_id, "name": PRESETS[preset_id][0]})
     return specs
 
 
@@ -102,7 +106,7 @@ def to_sync_model(spec: dict[str, Any], now: int, existing: dict[str, Any] | Non
     """Build the full ModelModel envelope for one preset."""
     preset_id = spec["id"]
     existing = existing or {}
-    params: dict[str, Any] = {"system": PRESET_SYSTEM_PROMPTS[preset_id]}
+    params: dict[str, Any] = {"system": PRESETS[preset_id][1]}
     capabilities: dict[str, bool] = dict.fromkeys(CAPABILITY_KEYS, False)
     meta: dict[str, Any] = {"capabilities": capabilities}
     if preset_id == "web_research":

@@ -120,7 +120,7 @@ def test_sync_payload_exact_shape() -> None:
 def test_web_research_payload() -> None:
     specs = mod.build_preset_specs(MODEL_MAP, DEFAULT_MODELS)
     model = mod.to_sync_model(next(s for s in specs if s["id"] == "web_research"), 1790288638)
-    assert model["params"]["system"] == mod.PRESET_SYSTEM_PROMPTS["web_research"]
+    assert model["params"]["system"] == mod.PRESETS["web_research"][1]
     assert model["params"]["function_calling"] == "native"
     assert set(model["meta"]["capabilities"]) == set(mod.CAPABILITY_KEYS)
     assert model["meta"]["capabilities"]["web_search"] is True
