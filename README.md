@@ -35,10 +35,19 @@ Put machine-specific secrets there, e.g. the `openwebui` keys:
 ```python
 openwebui = {
     "opencode_api_key": "sk-...",
-    "ollama_api_key": "...",
+    "opencode_api_key_2": "sk-...",
+    "opencode_api_key_3": "sk-...",
+    "requesty_api_key": "sk-...",
+    "cortecs_api_key": "sk-...",
     "openwebui_caller_key": "...",
     "openwebui_admin_key": "sk-...",
 }
 ```
 
-The three first keys are required — `deploys/openwebui/deploy.py` refuses to start the stack while any of them is empty. No real secret goes in `all.py`.
+Every one of those keys is required — the `aisix validate` pre-flight in
+`deploys/openwebui/deploy.py` fails the deploy while any of them is empty,
+because AISIX rejects an unset or empty `${VAR}`. No real secret goes in `all.py`.
+
+Swapping a model behind a router alias is a one-line change in the same file, for
+example `openwebui = {"zen_model_quick": "novita/deepseek/deepseek-v3.2"}` — the
+`router-*` names in `resources.yaml` and in `DEFAULT_MODELS` do not change.
