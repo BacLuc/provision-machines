@@ -528,9 +528,11 @@ def test_deploy_derives_caller_and_admin_keys() -> None:
 
 def _render_reconcile_command(compose_project_dir: str) -> str:
     with open(_DEPLOY) as f:
-        tree = ast.parse(f.read())
+        content = f.read()
+    reconcile_line = content[: content.index('name="Reconcile openwebui models"')].count("\n")
+    tree = ast.parse(content)
     for node in ast.walk(tree):
-        if not isinstance(node, ast.JoinedStr):
+        if not isinstance(node, ast.JoinedStr) or node.lineno < reconcile_line:
             continue
         if not any(
             isinstance(value, ast.FormattedValue)
@@ -795,6 +797,15 @@ def test_deploy_reconcile_command_shlex_quoted() -> None:
         "{compose_project_dir}/update-openwebui-models.py",
     ):
         assert f"shlex.quote(f'{interpolation}')" in command
+
+
+def test_deploy_validates_aisix_resources_before_starting_the_stack() -> None:
+    with open(_DEPLOY) as f:
+        content = f.read()
+    step = content.index('name="Validate aisix resources before starting the stack"')
+    assert "aisix --config /etc/aisix/config.yaml validate --resources /etc/aisix/resources.yaml" in content
+    assert "_sudo=True" in content[step : content.index("_if=", step)]
+    assert step < content.index("systemd.service(")
 
 
 def test_deploy_applies_aisix_resources_via_systemd_restart() -> None:
