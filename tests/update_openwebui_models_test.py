@@ -800,6 +800,53 @@ def test_deploy_reconcile_command_shlex_quoted() -> None:
         assert f"shlex.quote(f'{interpolation}')" in command
 
 
+class _FakeResponse:
+    def __init__(self, status: int, body: bytes) -> None:
+        self.status = status
+        self._body = body
+
+    def read(self) -> bytes:
+        return self._body
+
+    def __enter__(self) -> "_FakeResponse":
+        return self
+
+    def __exit__(self, *args: Any) -> None:
+        pass
+
+
+def test_reconcile_over_the_wire_sends_bearer_token_and_models_payload(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requests: list[Any] = []
+    exports: list[list[dict[str, Any]]] = []
+
+    def fake_urlopen(req: Any, timeout: int = 30) -> _FakeResponse:
+        requests.append(req)
+        if req.full_url.endswith("/ready"):
+            return _FakeResponse(200, b"")
+        if req.full_url.endswith("/api/v1/auths/signin"):
+            return _FakeResponse(200, b'{"token": "sk-x"}')
+        if req.full_url.endswith("/api/v1/models/export"):
+            return _FakeResponse(200, json.dumps([] if not exports else exports[-1]).encode())
+        if req.full_url.endswith("/api/v1/models/sync"):
+            exports.append(json.loads(req.data)["models"])
+            return _FakeResponse(200, json.dumps(exports[-1]).encode())
+        raise AssertionError(f"unexpected request {req.full_url}")
+
+    monkeypatch.setattr(mod, "urlopen", fake_urlopen)
+    mod.wait_ready("http://test")
+    token = mod.authenticate("http://test", {})
+    mod.reconcile("http://test", token, MODEL_MAP, DEFAULT_MODELS)
+
+    sync = next(req for req in requests if req.full_url.endswith("/api/v1/models/sync"))
+    assert sync.get_method() == "POST"
+    assert sync.get_header("Authorization") == "Bearer sk-x"
+    assert sync.get_header("Content-type") == "application/json"
+    assert list(json.loads(sync.data)) == ["models"]
+    assert [model["id"] for model in json.loads(sync.data)["models"]] == DEFAULT_MODELS
+
+
 def test_deploy_validates_aisix_resources_before_starting_the_stack() -> None:
     with open(_DEPLOY) as f:
         content = f.read()
