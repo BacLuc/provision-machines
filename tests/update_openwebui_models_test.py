@@ -827,6 +827,7 @@ def test_deploy_copies_reconcile_script() -> None:
     command = content[reconcile_start : content.index("_if=", reconcile_start)]
     assert "{compose_project_dir}/update-openwebui-models.py" in command
     assert "../../scripts/update-openwebui-models.py" not in command
+    assert "_sudo=True" in command
     assert "or reconcile_script_file.changed" in content
 
 

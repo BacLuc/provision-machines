@@ -203,6 +203,7 @@ WantedBy=multi-user.target
         commands=[
             f"{shlex.quote(sys.executable)} {shlex.quote(f'{compose_project_dir}/update-openwebui-models.py')} --config {shlex.quote(f'{compose_project_dir}/openwebui-models-config.json')} --env-file {shlex.quote(f'{compose_project_dir}/.env')} --resources {shlex.quote(f'{compose_project_dir}/resources.yaml')}"
         ],
+        _sudo=True,
         _if=lambda: (
             searxng_files.changed
             or settings_file.changed
