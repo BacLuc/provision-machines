@@ -26,3 +26,19 @@ uv run scripts/run_pyinfra_local.py
 ```shell
 uv run scripts/lint.py
 ```
+
+## Machine-specific secrets
+
+`group_data/local.py` is gitignored and deep-merged over `group_data/all.py` last.
+Put machine-specific secrets there, e.g. the `openwebui` keys:
+
+```python
+openwebui = {
+    "opencode_api_key": "sk-...",
+    "ollama_api_key": "...",
+    "openwebui_caller_key": "...",
+    "openwebui_admin_key": "sk-...",
+}
+```
+
+The three first keys are required — `deploys/openwebui/deploy.py` refuses to start the stack while any of them is empty. No real secret goes in `all.py`.
