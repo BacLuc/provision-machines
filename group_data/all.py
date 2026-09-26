@@ -314,13 +314,19 @@ openwebui = {
     },
     # Set in local.py — written into the openwebui .env (mode 600)
     "opencode_api_key": "",
-    "ollama_api_key": "",
+    "opencode_api_key_2": "",
+    "opencode_api_key_3": "",
+    "opencode_base_url": "https://opencode.ai/zen/go/v1",
+    "requesty_api_key": "",
+    "requesty_base_url": "https://router.requesty.ai/v1",
+    "cortecs_api_key": "",
+    "cortecs_base_url": "https://api.cortecs.ai/v1",
     "openwebui_caller_key": "",
     "openwebui_admin_key": "",
-    "opencode_base_url": "https://opencode.ai/zen/go/v1",
-    "ollama_base_url": "http://host.docker.internal:11434/v1",
     "zen_model_chat": "deepseek-v4-flash",
-    "ollama_model_chat": "qwen2.5:3b",
+    "zen_model_thinking": "deepseek-v4-pro",
+    "zen_model_web_research": "glm-5.3-flash",
+    "zen_model_quick": "qwen3.8-flash",
 }
 
 vagrant = {
