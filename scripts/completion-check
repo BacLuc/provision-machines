@@ -22,6 +22,7 @@ check 'tests (pytest)' uv run pytest
 check 'linting (ruff)' uv run ruff check .
 check 'types (mypy)' uv run mypy .
 # renovate: datasource=docker depName=ghcr.io/bacluc/prettier-image/prettier-image
-check 'formatting (prettier) + diff clean' sh -c 'docker run --rm -v "$PWD:/workdir" -w /workdir -u "$UID" ghcr.io/bacluc/prettier-image/prettier-image:5.1.0 && git diff --exit-code'
+export prettier_image_version=5.1.0
+check 'formatting (prettier) + diff clean' sh -c 'docker run --rm -v "$PWD:/workdir" -w /workdir -u "$UID" ghcr.io/bacluc/prettier-image/prettier-image:$prettier_image_version && git diff --exit-code'
 
 exit "$status"
