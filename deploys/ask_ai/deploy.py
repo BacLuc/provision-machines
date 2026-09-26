@@ -9,7 +9,7 @@ user = get_user_name()
 ask_ai = host.data.ask_ai
 
 # renovate: datasource=docker depName=ghcr.io/bacluc-agent/ask-ai
-ASK_AI_VERSION = "0.0.1"
+ASK_AI_VERSION = "1.0.0"
 
 _DOCKER_CALL = f"""\
 docker run --rm \\
