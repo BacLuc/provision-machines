@@ -9,9 +9,6 @@ from pyinfra.operations import files, server, systemd
 from operations.filesystem import dirname_of
 from operations.user import get_user_name
 
-# renovate: datasource=docker depName=ghcr.io/api7/aisix
-aisix_version = "1.4.0"
-
 user = get_user_name()
 
 if host.data.openwebui["enabled"]:
@@ -87,7 +84,6 @@ if host.data.openwebui["enabled"]:
         src=io.StringIO(
             "\n".join(
                 [
-                    f"AISIX_VERSION={aisix_version}",
                     f"OPENCODE_API_KEY={host.data.openwebui['opencode_api_key']}",
                     f"OPENCODE_API_KEY_2={host.data.openwebui['opencode_api_key_2']}",
                     f"OPENCODE_API_KEY_3={host.data.openwebui['opencode_api_key_3']}",

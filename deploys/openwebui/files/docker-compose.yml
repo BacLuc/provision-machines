@@ -2,7 +2,6 @@
 services:
   open-webui:
     image: "ghcr.io/open-webui/open-webui:v0.11.4"
-    container_name: "open-webui"
     ports:
       - "127.0.0.1:13307:8080"
     extra_hosts:
@@ -19,28 +18,15 @@ services:
       - "ENABLE_API_KEYS=${ENABLE_API_KEYS}"
       - "DATABASE_ENABLE_SESSION_SHARING=true"
   aisix:
-    image: "ghcr.io/api7/aisix:${AISIX_VERSION}"
-    container_name: "aisix"
+    image: "ghcr.io/api7/aisix:1.4.0"
     restart: "unless-stopped"
     volumes:
       - "./aisix-config.yaml:/etc/aisix/config.yaml:ro"
       - "./resources.yaml:/etc/aisix/resources.yaml:ro"
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    environment:
-      - "OPENCODE_API_KEY=${OPENCODE_API_KEY}"
-      - "OPENCODE_API_KEY_2=${OPENCODE_API_KEY_2}"
-      - "OPENCODE_API_KEY_3=${OPENCODE_API_KEY_3}"
-      - "OPENCODE_BASE_URL=${OPENCODE_BASE_URL}"
-      - "REQUESTY_API_KEY=${REQUESTY_API_KEY}"
-      - "REQUESTY_BASE_URL=${REQUESTY_BASE_URL}"
-      - "CORTECS_API_KEY=${CORTECS_API_KEY}"
-      - "CORTECS_BASE_URL=${CORTECS_BASE_URL}"
-      - "OPENWEBUI_CALLER_KEY=${OPENWEBUI_CALLER_KEY}"
-      - "ZEN_MODEL_CHAT=${ZEN_MODEL_CHAT}"
-      - "ZEN_MODEL_THINKING=${ZEN_MODEL_THINKING}"
-      - "ZEN_MODEL_WEB_RESEARCH=${ZEN_MODEL_WEB_RESEARCH}"
-      - "ZEN_MODEL_QUICK=${ZEN_MODEL_QUICK}"
+    env_file:
+      - ".env"
   searxng:
     image: ghcr.io/searxng/searxng:2026.2.16-8e824017d
     ports:
