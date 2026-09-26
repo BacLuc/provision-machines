@@ -9,7 +9,7 @@ from operations.user import get_user_name
 user = get_user_name()
 
 # renovate: datasource=docker depName=ghcr.io/bacluc/prettier-image/prettier-image
-bash_prettier_image_version = "5.1.0"
+bash_prettier_image_version = "5.1.1"
 
 if host.data.bash["enabled"]:
     apt.packages(
