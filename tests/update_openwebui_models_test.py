@@ -797,14 +797,13 @@ def test_deploy_reconcile_command_shlex_quoted() -> None:
         assert f"shlex.quote(f'{interpolation}')" in command
 
 
-def test_deploy_sighup_reloads_aisix() -> None:
+def test_deploy_applies_aisix_resources_via_systemd_restart() -> None:
     with open(_DEPLOY) as f:
         content = f.read()
-    assert "kill -s SIGHUP aisix" in content
+    assert "SIGHUP" not in content
     systemd_start = content.index("systemd.service(")
     systemd_end = content.index("server.shell(", systemd_start)
-    systemd_block = content[systemd_start:systemd_end]
-    assert "aisix_resources_file.changed" not in systemd_block
+    assert "aisix_resources_file.changed" in content[systemd_start:systemd_end]
 
 
 def test_deploy_copies_reconcile_script() -> None:

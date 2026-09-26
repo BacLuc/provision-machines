@@ -181,15 +181,10 @@ WantedBy=multi-user.target
             or systemd_file.changed
             or compose_file.changed
             or aisix_config_file.changed
+            or aisix_resources_file.changed
             or env_file.changed
             or models_config_file.changed
         ),
-    )
-
-    server.shell(
-        name="Reload aisix resources",
-        commands=[f"docker compose -f {compose_project_dir}/docker-compose.yml kill -s SIGHUP aisix"],
-        _if=lambda: aisix_resources_file.changed,
     )
 
     server.shell(
