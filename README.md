@@ -37,7 +37,6 @@ openwebui = {
     "opencode_api_key": "sk-...",
     "opencode_api_key_2": "sk-...",
     "opencode_api_key_3": "sk-...",
-    "ollama_api_key": "...",
     "requesty_api_key": "sk-...",
     "cortecs_api_key": "...",
     "openwebui_caller_key": "...",
