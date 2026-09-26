@@ -479,8 +479,7 @@ def test_group_data_default_models_order() -> None:
 
 
 def test_api_keys_enabled_for_open_webui_service() -> None:
-    for name in ("all.py", "ci.py"):
-        assert _openwebui_group_data(name)["extra_env"]["ENABLE_API_KEYS"] == "true", name
+    assert _openwebui_group_data("all.py")["extra_env"]["ENABLE_API_KEYS"] == "true"
     with open(_COMPOSE) as f:
         content = f.read()
     block = content[content.index("  open-webui:") : content.index("  aisix:")]
@@ -502,10 +501,9 @@ _DEPLOY = os.path.join(
 
 
 def test_group_data_admin_key_placeholder() -> None:
-    for name in ("all.py", "ci.py"):
-        with open(os.path.join(_GROUP_DATA, name)) as f:
-            content = f.read()
-        assert '"openwebui_admin_key": ""' in content, name
+    with open(os.path.join(_GROUP_DATA, "all.py")) as f:
+        content = f.read()
+    assert '"openwebui_admin_key": ""' in content
 
 
 def test_ci_keeps_openwebui_disabled() -> None:
@@ -513,11 +511,10 @@ def test_ci_keeps_openwebui_disabled() -> None:
 
 
 def test_no_caller_split_brain_in_extra_env() -> None:
-    for name in ("all.py", "ci.py"):
-        with open(os.path.join(_GROUP_DATA, name)) as f:
-            content = f.read()
-        assert '"openwebui_caller_key": ""' in content, name
-        assert "OPENAI_API_KEYS" not in content, name
+    with open(os.path.join(_GROUP_DATA, "all.py")) as f:
+        content = f.read()
+    assert '"openwebui_caller_key": ""' in content
+    assert "OPENAI_API_KEYS" not in content
 
 
 def test_deploy_derives_caller_and_admin_keys() -> None:

@@ -306,9 +306,6 @@ php_development = {
 openwebui = {
     "enabled": True,
     "BRAVE_API_KEY": "",
-    "router_backend": "aisix",
-    "router_config_path": "resources.yaml",
-    "openai_compatible_base_url": "http://aisix:3000/v1",
     "default_models": [
         "chat",
         "chat_thinking",
