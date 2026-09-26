@@ -1,0 +1,230 @@
+_format_version: "1"
+
+provider_keys:
+  - display_name: opencode
+    provider: opencode
+    adapter: openai
+    api_base: ${OPENCODE_BASE_URL}
+    api_key: ${OPENCODE_API_KEY}
+    request:
+      default_headers:
+        x-opencode-session: openwebui
+
+  - display_name: opencode-2
+    provider: opencode
+    adapter: openai
+    api_base: ${OPENCODE_BASE_URL}
+    api_key: ${OPENCODE_API_KEY_2}
+    request:
+      default_headers:
+        x-opencode-session: openwebui
+
+  - display_name: opencode-3
+    provider: opencode
+    adapter: openai
+    api_base: ${OPENCODE_BASE_URL}
+    api_key: ${OPENCODE_API_KEY_3}
+    request:
+      default_headers:
+        x-opencode-session: openwebui
+
+  - display_name: requesty
+    provider: requesty
+    adapter: openai
+    api_base: ${REQUESTY_BASE_URL}
+    api_key: ${REQUESTY_API_KEY}
+
+  - display_name: cortecs
+    provider: cortecs
+    adapter: openai
+    api_base: ${CORTECS_BASE_URL}
+    api_key: ${CORTECS_API_KEY}
+
+models:
+  - display_name: opencode-chat
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT}
+    provider_key: opencode
+
+  - display_name: opencode-chat-2
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT}
+    provider_key: opencode-2
+
+  - display_name: opencode-chat-3
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT}
+    provider_key: opencode-3
+
+  - display_name: opencode-thinking
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT_THINKING}
+    provider_key: opencode
+
+  - display_name: opencode-thinking-2
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT_THINKING}
+    provider_key: opencode-2
+
+  - display_name: opencode-thinking-3
+    provider: opencode
+    model_name: ${ZEN_MODEL_CHAT_THINKING}
+    provider_key: opencode-3
+
+  - display_name: opencode-web-research
+    provider: opencode
+    model_name: ${ZEN_MODEL_WEB_RESEARCH}
+    provider_key: opencode
+
+  - display_name: opencode-web-research-2
+    provider: opencode
+    model_name: ${ZEN_MODEL_WEB_RESEARCH}
+    provider_key: opencode-2
+
+  - display_name: opencode-web-research-3
+    provider: opencode
+    model_name: ${ZEN_MODEL_WEB_RESEARCH}
+    provider_key: opencode-3
+
+  - display_name: opencode-fast
+    provider: opencode
+    model_name: ${ZEN_MODEL_FAST}
+    provider_key: opencode
+
+  - display_name: opencode-fast-2
+    provider: opencode
+    model_name: ${ZEN_MODEL_FAST}
+    provider_key: opencode-2
+
+  - display_name: opencode-fast-3
+    provider: opencode
+    model_name: ${ZEN_MODEL_FAST}
+    provider_key: opencode-3
+
+  - display_name: requesty-chat
+    provider: requesty
+    model_name: ${REQUESTY_MODEL_CHAT}
+    provider_key: requesty
+
+  - display_name: cortecs-chat
+    provider: cortecs
+    model_name: ${CORTECS_MODEL_CHAT}
+    provider_key: cortecs
+
+  - display_name: chat
+    routing:
+      strategy: failover
+      targets:
+        - model: opencode-chat
+          priority: 100
+        - model: opencode-chat-2
+          priority: -1
+        - model: opencode-chat-3
+          priority: -2
+      retries: 0
+      retry_on_429: true
+      fallback_on_statuses: [400, 401, 402, 403, 429]
+
+  - display_name: chat_thinking
+    routing:
+      strategy: failover
+      targets:
+        - model: opencode-thinking
+          priority: 100
+        - model: opencode-thinking-2
+          priority: -1
+        - model: opencode-thinking-3
+          priority: -2
+      retries: 0
+      retry_on_429: true
+      fallback_on_statuses: [400, 401, 402, 403, 429]
+
+  - display_name: web_research
+    routing:
+      strategy: failover
+      targets:
+        - model: opencode-web-research
+          priority: 100
+        - model: opencode-web-research-2
+          priority: -1
+        - model: opencode-web-research-3
+          priority: -2
+      retries: 0
+      retry_on_429: true
+      fallback_on_statuses: [400, 401, 402, 403, 429]
+
+  - display_name: translate_de
+    routing:
+      strategy: failover
+      targets:
+        - model: opencode-fast
+          priority: 100
+        - model: opencode-fast-2
+          priority: -1
+        - model: opencode-fast-3
+          priority: -2
+      retries: 0
+      retry_on_429: true
+      fallback_on_statuses: [400, 401, 402, 403, 429]
+
+  - display_name: translate_en
+    routing:
+      strategy: failover
+      targets:
+        - model: opencode-fast
+          priority: 100
+        - model: opencode-fast-2
+          priority: -1
+        - model: opencode-fast-3
+          priority: -2
+      retries: 0
+      retry_on_429: true
+      fallback_on_statuses: [400, 401, 402, 403, 429]
+
+  - display_name: fix_grammar_en
+    routing:
+      strategy: failover
+      targets:
+        - model: opencode-fast
+          priority: 100
+        - model: opencode-fast-2
+          priority: -1
+        - model: opencode-fast-3
+          priority: -2
+      retries: 0
+      retry_on_429: true
+      fallback_on_statuses: [400, 401, 402, 403, 429]
+
+  - display_name: fix_grammar_de
+    routing:
+      strategy: failover
+      targets:
+        - model: opencode-fast
+          priority: 100
+        - model: opencode-fast-2
+          priority: -1
+        - model: opencode-fast-3
+          priority: -2
+      retries: 0
+      retry_on_429: true
+      fallback_on_statuses: [400, 401, 402, 403, 429]
+
+  - display_name: linux_cli
+    routing:
+      strategy: failover
+      targets:
+        - model: opencode-fast
+          priority: 100
+        - model: opencode-fast-2
+          priority: -1
+        - model: opencode-fast-3
+          priority: -2
+      retries: 0
+      retry_on_429: true
+      fallback_on_statuses: [400, 401, 402, 403, 429]
+
+api_keys:
+  - display_name: openwebui
+    key_env: OPENWEBUI_CALLER_KEY
+    allowed_models:
+      - "*"

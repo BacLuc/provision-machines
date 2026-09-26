@@ -306,6 +306,28 @@ php_development = {
 openwebui = {
     "enabled": True,
     "BRAVE_API_KEY": "",
+    "extra_env": {
+        "ENABLE_OPENAI_API": "true",
+        "OPENAI_API_BASE_URL": "http://aisix:3000/v1",
+        "DEFAULT_MODELS": "chat,chat_thinking,web_research,translate_de,translate_en,fix_grammar_en,fix_grammar_de,linux_cli",
+        "ENABLE_API_KEYS": "true",
+    },
+    # Set in local.py — written into the openwebui .env (mode 600)
+    "opencode_api_key": "",
+    "opencode_api_key_2": "",
+    "opencode_api_key_3": "",
+    "requesty_api_key": "",
+    "cortecs_api_key": "",
+    "openwebui_caller_key": "",
+    "opencode_base_url": "https://opencode.ai/zen/go/v1",
+    "requesty_base_url": "https://router.requesty.ai/v1",
+    "cortecs_base_url": "https://api.cortecs.ai/v1",
+    "zen_model_chat": "deepseek-v4-flash",
+    "zen_model_chat_thinking": "deepseek-v4-pro",
+    "zen_model_web_research": "qwen3.8-flash",
+    "zen_model_fast": "mimo-v2.6-flash",
+    "requesty_model_chat": "novita/deepseek/deepseek-v3.2",
+    "cortecs_model_chat": "glm-5.3-flash",
 }
 
 vagrant = {

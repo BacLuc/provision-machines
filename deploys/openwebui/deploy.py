@@ -1,11 +1,13 @@
 import io
 import json
+import shlex
 
 from pyinfra import host
 from pyinfra.facts.files import Directory
 from pyinfra.operations import files, server, systemd
 
 from operations.filesystem import dirname_of
+from operations.openwebui_env import env_lines
 from operations.user import get_user_name
 
 user = get_user_name()
@@ -60,10 +62,31 @@ if host.data.openwebui["enabled"]:
         mode="644",
     )
 
-    files.file(
-        name="Remove stale .env file",
-        path=f"{compose_project_dir}/.env",
-        present=False,
+    aisix_config_file = files.put(
+        name="Deploy aisix config.yaml",
+        src=f"{dirname_of(__file__)}/files/aisix-config.yaml",
+        dest=f"{compose_project_dir}/aisix-config.yaml",
+        user=user,
+        group=user,
+        mode="644",
+    )
+
+    aisix_resources_file = files.put(
+        name="Deploy aisix resources.yaml",
+        src=f"{dirname_of(__file__)}/files/resources.yaml",
+        dest=f"{compose_project_dir}/resources.yaml",
+        user=user,
+        group=user,
+        mode="644",
+    )
+
+    env_file = files.put(
+        name="Deploy .env",
+        src=io.StringIO("\n".join(env_lines(host.data.openwebui)) + "\n"),
+        dest=f"{compose_project_dir}/.env",
+        user=user,
+        group=user,
+        mode="600",
     )
 
     systemd_file = files.put(
@@ -98,6 +121,16 @@ WantedBy=multi-user.target
         _if=lambda: systemd_file.changed or compose_file.changed,
     )
 
+    server.shell(
+        name="Validate aisix resources before starting the stack",
+        commands=[
+            f"docker compose -f {shlex.quote(f'{compose_project_dir}/docker-compose.yml')} run --rm --no-deps --entrypoint aisix aisix --config /etc/aisix/config.yaml validate --resources /etc/aisix/resources.yaml"
+        ],
+        _if=lambda: (
+            compose_file.changed or aisix_config_file.changed or aisix_resources_file.changed or env_file.changed
+        ),
+    )
+
     systemd.service(
         name="Enable and start openwebui service",
         service="openwebui",
@@ -105,5 +138,13 @@ WantedBy=multi-user.target
         enabled=True,
         restarted=True,
         _sudo=True,
-        _if=lambda: searxng_files.changed or settings_file.changed or systemd_file.changed or compose_file.changed,
+        _if=lambda: (
+            searxng_files.changed
+            or settings_file.changed
+            or systemd_file.changed
+            or compose_file.changed
+            or aisix_config_file.changed
+            or aisix_resources_file.changed
+            or env_file.changed
+        ),
     )

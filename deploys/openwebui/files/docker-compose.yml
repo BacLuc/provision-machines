@@ -2,7 +2,6 @@
 services:
   open-webui:
     image: "ghcr.io/open-webui/open-webui:v0.11.4"
-    container_name: "open-webui"
     ports:
       - "127.0.0.1:13307:8080"
     extra_hosts:
@@ -10,8 +9,22 @@ services:
     volumes:
       - "open-webui:/app/backend/data"
     restart: "unless-stopped"
+    env_file:
+      - "./.env"
     environment:
       - "WEBUI_AUTH=False"
+  aisix:
+    image: "ghcr.io/api7/aisix:1.4.0"
+    restart: "unless-stopped"
+    volumes:
+      - "./aisix-config.yaml:/etc/aisix/config.yaml:ro"
+      - "./resources.yaml:/etc/aisix/resources.yaml:ro"
+    environment:
+      RUST_LOG: debug
+    env_file:
+      - "./.env"
+    ports:
+      - "127.0.0.1:13309:3000"
   searxng:
     image: ghcr.io/searxng/searxng:2026.2.16-8e824017d
     ports:
