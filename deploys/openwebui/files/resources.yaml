@@ -111,7 +111,32 @@ models:
     model_name: ${CORTECS_MODEL_CHAT}
     provider_key: cortecs
 
-  - display_name: chat
+  - display_name: opencode/*
+    provider: opencode
+    model_name: "*"
+    provider_key: opencode
+
+  - display_name: opencode-2/*
+    provider: opencode
+    model_name: "*"
+    provider_key: opencode-2
+
+  - display_name: opencode-3/*
+    provider: opencode
+    model_name: "*"
+    provider_key: opencode-3
+
+  - display_name: requesty/*
+    provider: requesty
+    model_name: "*"
+    provider_key: requesty
+
+  - display_name: cortecs/*
+    provider: cortecs
+    model_name: "*"
+    provider_key: cortecs
+
+  - display_name: router-chat
     routing:
       strategy: failover
       targets:
@@ -125,7 +150,7 @@ models:
       max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: chat_thinking
+  - display_name: router-chat-thinking
     routing:
       strategy: failover
       targets:
@@ -139,7 +164,7 @@ models:
       max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: web_research
+  - display_name: router-web-research
     routing:
       strategy: failover
       targets:
@@ -153,7 +178,7 @@ models:
       max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: translate_de
+  - display_name: router-translate-de
     routing:
       strategy: failover
       targets:
@@ -167,7 +192,7 @@ models:
       max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: translate_en
+  - display_name: router-translate-en
     routing:
       strategy: failover
       targets:
@@ -181,7 +206,7 @@ models:
       max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: fix_grammar_en
+  - display_name: router-fix-grammar-en
     routing:
       strategy: failover
       targets:
@@ -195,7 +220,7 @@ models:
       max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: fix_grammar_de
+  - display_name: router-fix-grammar-de
     routing:
       strategy: failover
       targets:
@@ -209,7 +234,7 @@ models:
       max_fallbacks: 2
       retry_on_429: true
 
-  - display_name: linux_cli
+  - display_name: router-linux-cli
     routing:
       strategy: failover
       targets:
