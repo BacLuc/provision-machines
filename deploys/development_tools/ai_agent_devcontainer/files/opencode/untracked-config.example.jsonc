@@ -4,49 +4,49 @@
   "provider": {
     "opencode-go-anthropic": {
       "options": {
-        "apiKey": "apiKey"
-      }
+        "apiKey": "apiKey",
+      },
     },
     "opencode-go-openai": {
       "options": {
-        "apiKey": "apiKey"
-      }
+        "apiKey": "apiKey",
+      },
     },
     "google": {
       "options": {
-        "apiKey": "apikey"
-      }
+        "apiKey": "apikey",
+      },
     },
     "cortecs": {
       "options": {
-        "apiKey": "apikey"
-      }
+        "apiKey": "apikey",
+      },
     },
     "cortecs2": {
       "options": {
-        "apiKey": "apikey"
-      }
+        "apiKey": "apikey",
+      },
     },
     "requesty": {
       "options": {
-        "apiKey": "apikey"
-      }
+        "apiKey": "apikey",
+      },
     },
     "requesty2": {
       "options": {
-        "apiKey": "apikey"
-      }
+        "apiKey": "apikey",
+      },
     },
     "openrouter": {
       "options": {
-        "apiKey": "apikey"
-      }
+        "apiKey": "apikey",
+      },
     },
     "vshn-us-ai": {
       "options": {
         "baseURL": "baseurl",
-        "apiKey": "apikey"
-      }
-    }
-  }
+        "apiKey": "apikey",
+      },
+    },
+  },
 }
