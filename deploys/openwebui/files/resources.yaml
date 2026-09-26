@@ -147,7 +147,6 @@ models:
         - model: opencode-chat-3
           priority: -2
       retries: 0
-      max_fallbacks: 2
       retry_on_429: true
 
   - display_name: router-chat-thinking
@@ -161,7 +160,6 @@ models:
         - model: opencode-thinking-3
           priority: -2
       retries: 0
-      max_fallbacks: 2
       retry_on_429: true
 
   - display_name: router-web-research
@@ -175,7 +173,6 @@ models:
         - model: opencode-web-research-3
           priority: -2
       retries: 0
-      max_fallbacks: 2
       retry_on_429: true
 
   - display_name: router-translate-de
@@ -189,7 +186,6 @@ models:
         - model: opencode-fast-3
           priority: -2
       retries: 0
-      max_fallbacks: 2
       retry_on_429: true
 
   - display_name: router-translate-en
@@ -203,7 +199,6 @@ models:
         - model: opencode-fast-3
           priority: -2
       retries: 0
-      max_fallbacks: 2
       retry_on_429: true
 
   - display_name: router-fix-grammar-en
@@ -217,7 +212,6 @@ models:
         - model: opencode-fast-3
           priority: -2
       retries: 0
-      max_fallbacks: 2
       retry_on_429: true
 
   - display_name: router-fix-grammar-de
@@ -231,7 +225,6 @@ models:
         - model: opencode-fast-3
           priority: -2
       retries: 0
-      max_fallbacks: 2
       retry_on_429: true
 
   - display_name: router-linux-cli
@@ -245,7 +238,6 @@ models:
         - model: opencode-fast-3
           priority: -2
       retries: 0
-      max_fallbacks: 2
       retry_on_429: true
 
 api_keys:
