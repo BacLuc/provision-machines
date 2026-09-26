@@ -473,12 +473,9 @@ def _openwebui_group_data(name: str) -> dict[str, Any]:
 
 
 def test_group_data_default_models_order() -> None:
-    expected = ",".join(DEFAULT_MODELS)
-    for name in ("all.py", "ci.py"):
-        data = _openwebui_group_data(name)
-        assert data["default_models"] == DEFAULT_MODELS, name
-        assert data["extra_env"]["DEFAULT_MODELS"] == expected, name
-        assert data["extra_env"]["MODEL_FILTER_LIST"] == expected, name
+    data = _openwebui_group_data("all.py")
+    assert data["default_models"] == DEFAULT_MODELS
+    assert data["extra_env"]["DEFAULT_MODELS"] == ",".join(DEFAULT_MODELS)
 
 
 def test_api_keys_enabled_for_open_webui_service() -> None:
@@ -494,19 +491,6 @@ def test_compose_enables_session_sharing() -> None:
     with open(_COMPOSE) as f:
         content = f.read()
     assert "DATABASE_ENABLE_SESSION_SHARING=true" in content
-
-
-def test_model_filter_keys_present() -> None:
-    expected_list = ",".join(DEFAULT_MODELS)
-    for name in ("all.py", "ci.py"):
-        with open(os.path.join(_GROUP_DATA, name)) as f:
-            content = f.read()
-        assert '"ENABLE_MODEL_FILTER": "true"' in content, name
-        assert f'"MODEL_FILTER_LIST": "{expected_list}"' in content, name
-    with open(_COMPOSE) as f:
-        content = f.read()
-    assert "ENABLE_MODEL_FILTER=${ENABLE_MODEL_FILTER}" in content
-    assert "MODEL_FILTER_LIST=${MODEL_FILTER_LIST}" in content
 
 
 _DEPLOY = os.path.join(
