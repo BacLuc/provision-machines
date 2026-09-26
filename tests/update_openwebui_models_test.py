@@ -150,43 +150,6 @@ def test_preset_system_prompts_non_empty_and_distinct() -> None:
     assert len(set(prompts)) == len(prompts)
 
 
-def test_parse_aisix_model_names_returns_eight_aliases() -> None:
-    with open(_RESOURCES) as f:
-        aliases = mod.parse_aisix_model_names(f.read())
-    assert [name for name, _ in aliases] == [
-        "router-chat",
-        "router-chat-thinking",
-        "router-web-research",
-        "router-translate-de",
-        "router-translate-en",
-        "router-fix-grammar-en",
-        "router-fix-grammar-de",
-        "router-linux-cli",
-    ]
-    for _, targets in aliases:
-        assert targets == ["zen-chat", "ollama-chat"]
-
-
-def test_parse_aisix_model_names_rejects_tabs() -> None:
-    with pytest.raises(ValueError):
-        mod.parse_aisix_model_names("models:\n\t- display_name: x\n")
-
-
-def test_parse_aisix_model_names_rejects_flow_style() -> None:
-    with pytest.raises(ValueError):
-        mod.parse_aisix_model_names("models: [{display_name: x}]\n")
-
-
-def test_parse_aisix_model_names_rejects_duplicate_keys() -> None:
-    with pytest.raises(ValueError):
-        mod.parse_aisix_model_names("models:\n  - display_name: a\n    display_name: b\n")
-
-
-def test_parse_aisix_model_names_rejects_missing_models() -> None:
-    with pytest.raises(ValueError):
-        mod.parse_aisix_model_names("api_keys:\n  - display_name: k\n")
-
-
 def test_read_env_file_parses_values(tmp_path: Path) -> None:
     env_file = tmp_path / ".env"
     env_file.write_text("# comment\n\nOPENCODE_API_KEY=sk-test\nOLLAMA_API_KEY=\nOPENWEBUI_CALLER_KEY=caller\n")
@@ -1000,7 +963,7 @@ def test_main_rejects_resources_missing_model_map_alias(monkeypatch: pytest.Monk
     with open(_RESOURCES) as f:
         real = f.read()
     minimal = real[: real.index("  - display_name: router-linux-cli")] + real[real.index("\napi_keys:") :]
-    assert [name for name, _ in mod.parse_aisix_model_names(minimal)] == list(MODEL_MAP.values())[:-1]
+    assert sorted(set(MODEL_MAP.values()) - mod.aisix_display_names(minimal)) == ["router-linux-cli"]
     config_path, resources_path = _write_main_inputs(tmp_path, minimal)
     with pytest.raises(RuntimeError, match="router-linux-cli"):
         _run_main(monkeypatch, config_path, resources_path)
@@ -1018,7 +981,8 @@ def test_main_accepts_extra_router_aliases(monkeypatch: pytest.MonkeyPatch, tmp_
         "          priority: 100\n"
     )
     spliced = real.replace("\napi_keys:", f"\n{extra}api_keys:")
-    assert [name for name, _ in mod.parse_aisix_model_names(spliced)] == list(MODEL_MAP.values()) + ["router-extra"]
+    assert not set(MODEL_MAP.values()) - mod.aisix_display_names(spliced)
+    assert "router-extra" in mod.aisix_display_names(spliced)
     config_path, resources_path = _write_main_inputs(tmp_path, spliced)
     with pytest.raises(RuntimeError, match="reached the network"):
         _run_main(monkeypatch, config_path, resources_path)

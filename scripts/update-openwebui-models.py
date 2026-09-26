@@ -64,8 +64,8 @@ RETRY_TIMEOUT_SECONDS = 60
 RETRY_INTERVAL_SECONDS = 2
 
 
-class YamlParseError(ValueError):
-    pass
+def aisix_display_names(content: str) -> set[str]:
+    return set(re.findall(r"^\s*-\s*display_name:\s*(\S+)", content, re.M))
 
 
 def read_env_file(path: str) -> dict[str, str]:
@@ -80,192 +80,6 @@ def read_env_file(path: str) -> dict[str, str]:
                 continue
             key, value = stripped.split("=", 1)
             result[key.strip()] = value.strip()
-    return result
-
-
-def _strip_comment(line: str) -> str:
-    in_quote = False
-    for i, ch in enumerate(line):
-        if ch == '"':
-            in_quote = not in_quote
-        elif ch == "#" and not in_quote and (i == 0 or line[i - 1].isspace()):
-            return line[:i]
-    return line
-
-
-def _indent_of(line: str) -> int:
-    return len(line) - len(line.lstrip(" "))
-
-
-def _parse_scalar(text: str) -> Any:
-    text = text.strip()
-    if not text:
-        return None
-    if len(text) >= 2 and text.startswith('"') and text.endswith('"'):
-        return text[1:-1]
-    if text == "true":
-        return True
-    if text == "false":
-        return False
-    if text == "null":
-        return None
-    try:
-        return int(text)
-    except ValueError:
-        pass
-    try:
-        return float(text)
-    except ValueError:
-        pass
-    return text
-
-
-def _split_key_value(text: str) -> tuple[str, str]:
-    if ":" not in text:
-        raise YamlParseError(f"expected ':' in {text!r}")
-    key, value = text.split(":", 1)
-    return key.strip(), value.strip()
-
-
-class _BlockParser:
-    """Narrow block-style YAML parser for the AISIX resources file shape."""
-
-    def __init__(self, lines: list[str]) -> None:
-        self.lines = lines
-        self.index = 0
-
-    def parse(self) -> Any:
-        value = self._parse_block(0)
-        if self.index != len(self.lines):
-            raise YamlParseError("unexpected content after top-level block")
-        return value
-
-    def _parse_block(self, indent: int) -> Any:
-        if self.index >= len(self.lines):
-            return None
-        line = self.lines[self.index]
-        if _indent_of(line) < indent:
-            return None
-        if line.lstrip().startswith("- "):
-            return self._parse_sequence(indent)
-        return self._parse_mapping(indent)
-
-    def _parse_mapping(self, indent: int) -> dict[str, Any]:
-        result: dict[str, Any] = {}
-        while self.index < len(self.lines):
-            line = self.lines[self.index]
-            line_indent = _indent_of(line)
-            if line_indent < indent:
-                break
-            if line_indent > indent:
-                raise YamlParseError("unexpected indentation")
-            stripped = line.lstrip()
-            if stripped.startswith("- "):
-                break
-            key, value_text = _split_key_value(stripped)
-            if key in result:
-                raise YamlParseError(f"duplicate key {key!r}")
-            self.index += 1
-            if value_text:
-                result[key] = _parse_scalar(value_text)
-            else:
-                result[key] = self._parse_block(indent + 2)
-        return result
-
-    def _parse_sequence(self, indent: int) -> list[Any]:
-        items: list[Any] = []
-        while self.index < len(self.lines):
-            line = self.lines[self.index]
-            line_indent = _indent_of(line)
-            if line_indent < indent:
-                break
-            if line_indent > indent:
-                raise YamlParseError("unexpected indentation")
-            stripped = line.lstrip()
-            if not stripped.startswith("- "):
-                break
-            rest = stripped[2:]
-            self.index += 1
-            if not rest:
-                items.append(self._parse_block(indent + 2))
-            elif ":" in rest:
-                key, value_text = _split_key_value(rest)
-                item: dict[str, Any] = {}
-                if key in item:
-                    raise YamlParseError(f"duplicate key {key!r}")
-                if value_text:
-                    item[key] = _parse_scalar(value_text)
-                else:
-                    item[key] = self._parse_block(indent + 4)
-                while self.index < len(self.lines):
-                    nxt = self.lines[self.index]
-                    nxt_indent = _indent_of(nxt)
-                    if nxt_indent < indent + 2:
-                        break
-                    if nxt_indent > indent + 2:
-                        raise YamlParseError("unexpected indentation")
-                    nxt_stripped = nxt.lstrip()
-                    if nxt_stripped.startswith("- "):
-                        break
-                    k2, v2 = _split_key_value(nxt_stripped)
-                    if k2 in item:
-                        raise YamlParseError(f"duplicate key {k2!r}")
-                    self.index += 1
-                    if v2:
-                        item[k2] = _parse_scalar(v2)
-                    else:
-                        item[k2] = self._parse_block(indent + 4)
-                items.append(item)
-            else:
-                items.append(_parse_scalar(rest))
-        return items
-
-
-def parse_aisix_model_names(content: str) -> list[tuple[str, list[str]]]:
-    """Return ordered (display_name, [target model names]) for routing models.
-
-    Rejects tabs, flow-style brackets, and duplicate keys at the same
-    level. Never returns or logs provider/API secret values.
-    """
-    lines: list[str] = []
-    for raw in content.splitlines():
-        if "\t" in raw:
-            raise YamlParseError("tabs are not supported")
-        line = _strip_comment(raw).rstrip()
-        if not line.strip():
-            continue
-        no_interp = re.sub(r"\$\{[^}]*\}", "", line)
-        if "[" in no_interp or "{" in no_interp:
-            raise YamlParseError("flow style is not supported")
-        lines.append(line)
-    tree = _BlockParser(lines).parse()
-    if not isinstance(tree, dict):
-        raise YamlParseError("top level must be a mapping")
-    models = tree.get("models")
-    if not isinstance(models, list):
-        raise YamlParseError("missing models list")
-    result: list[tuple[str, list[str]]] = []
-    for model in models:
-        if not isinstance(model, dict):
-            raise YamlParseError("model entry must be a mapping")
-        routing = model.get("routing")
-        if not isinstance(routing, dict):
-            continue
-        display_name = model.get("display_name")
-        if not isinstance(display_name, str):
-            raise YamlParseError("routing model missing display_name")
-        targets = routing.get("targets")
-        if not isinstance(targets, list):
-            raise YamlParseError(f"routing model {display_name!r} missing targets")
-        target_names: list[str] = []
-        for target in targets:
-            if not isinstance(target, dict):
-                raise YamlParseError("routing target must be a mapping")
-            name = target.get("model")
-            if not isinstance(name, str):
-                raise YamlParseError(f"routing target of {display_name!r} missing model")
-            target_names.append(name)
-        result.append((display_name, target_names))
     return result
 
 
@@ -483,8 +297,7 @@ def main() -> None:
     env = read_env_file(env_path)
     if args.resources:
         with open(args.resources) as f:
-            aliases = parse_aisix_model_names(f.read())
-        alias_names = {name for name, _ in aliases}
+            alias_names = aisix_display_names(f.read())
         missing = sorted(set(model_map.values()) - alias_names)
         if missing:
             raise RuntimeError(f"model_map aliases missing from the router: {missing}")
