@@ -6,6 +6,8 @@ provider_keys:
     adapter: openai
     api_base: ${OPENCODE_BASE_URL}
     api_key: ${OPENCODE_API_KEY}
+    apis:
+      responses: null
     request:
       default_headers:
         x-opencode-session: openwebui
@@ -15,6 +17,8 @@ provider_keys:
     adapter: openai
     api_base: ${OPENCODE_BASE_URL}
     api_key: ${OPENCODE_API_KEY_2}
+    apis:
+      responses: null
     request:
       default_headers:
         x-opencode-session: openwebui
@@ -24,6 +28,8 @@ provider_keys:
     adapter: openai
     api_base: ${OPENCODE_BASE_URL}
     api_key: ${OPENCODE_API_KEY_3}
+    apis:
+      responses: null
     request:
       default_headers:
         x-opencode-session: openwebui
@@ -33,12 +39,16 @@ provider_keys:
     adapter: openai
     api_base: ${REQUESTY_BASE_URL}
     api_key: ${REQUESTY_API_KEY}
+    apis:
+      responses: null
 
   - display_name: cortecs
     provider: cortecs
     adapter: openai
     api_base: ${CORTECS_BASE_URL}
     api_key: ${CORTECS_API_KEY}
+    apis:
+      responses: null
 
 models:
   - display_name: opencode-chat
@@ -109,6 +119,21 @@ models:
   - display_name: cortecs-chat
     provider: cortecs
     model_name: ${CORTECS_MODEL_CHAT}
+    provider_key: cortecs
+
+  - display_name: opencode/*
+    provider: opencode
+    model_name: "*"
+    provider_key: opencode
+
+  - display_name: requesty/*
+    provider: requesty
+    model_name: "*"
+    provider_key: requesty
+
+  - display_name: cortecs/*
+    provider: cortecs
+    model_name: "*"
     provider_key: cortecs
 
   - display_name: chat
