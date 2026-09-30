@@ -530,17 +530,11 @@
         "subscription.deepseek-v4-flash": {
           "name": "deepseek-v4-flash",
         },
-        "subscription.gpt-5.6-luna": {
-          "name": "gpt-5.6-luna",
-        },
         "subscription.longcat-2.0": {
           "name": "subscription.longcat-2.0",
         },
         "subscription.qwen3.8-flash": {
           "name": "subscription.qwen3.8-flash",
-        },
-        "subscription.qwen3.8-max": {
-          "name": "qwen3.8-max",
         },
       },
     },
