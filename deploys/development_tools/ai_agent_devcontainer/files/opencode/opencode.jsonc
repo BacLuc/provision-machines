@@ -149,6 +149,12 @@
             "npm": "@ai-sdk/openai",
           },
         },
+        "gpt-6-luna": {
+          "name": "gpt-6-luna",
+          "provider": {
+            "npm": "@ai-sdk/openai",
+          },
+        },
         "grok-4.5": {
           "name": "grok-4.5",
         },
@@ -294,6 +300,12 @@
         },
         "gpt-5.6-luna": {
           "name": "gpt-5.6-luna",
+          "provider": {
+            "npm": "@ai-sdk/openai",
+          },
+        },
+        "gpt-6-luna": {
+          "name": "gpt-6-luna",
           "provider": {
             "npm": "@ai-sdk/openai",
           },
