@@ -8,18 +8,16 @@ version = "0.1.0"
 description = "Pyinfra deployment scripts for provisioning development machines"
 requires-python = ">=3.10"
 
-dependencies = [
-    "pyinfra==3.10.0",
-]
+dependencies = ["pyinfra==3.10.0"]
 
 [project.optional-dependencies]
 dev = [
-    "mypy==2.3.1",
-    "pytest-cov==7.1.0",
-    "pytest-mock==3.15.1",
-    "pytest==9.1.1",
-    "ruff==0.16.8",
-    "types-requests==2.33.0.20260906",
+  "mypy==2.3.1",
+  "pytest-cov==7.1.0",
+  "pytest-mock==3.15.1",
+  "pytest==9.1.1",
+  "ruff==0.16.8",
+  "types-requests==2.33.0.20260906",
 ]
 
 [tool.black]
@@ -59,7 +57,12 @@ testpaths = ["."]
 python_files = ["*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = ["--strict-markers", "--strict-config", "--cov=.", "--cov-report=term-missing"]
+addopts = [
+  "--strict-markers",
+  "--strict-config",
+  "--cov=.",
+  "--cov-report=term-missing",
+]
 
 [tool.coverage.run]
 source = ["."]
@@ -67,14 +70,14 @@ omit = ["*/tests/*", "*/test_*", "*/__pycache__/*"]
 
 [tool.coverage.report]
 exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:",
+  "pragma: no cover",
+  "def __repr__",
+  "if self.debug:",
+  "if settings.DEBUG",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "if 0:",
+  "if __name__ == .__main__.:",
 ]
 
 [tool.hatch.build.targets.wheel]
