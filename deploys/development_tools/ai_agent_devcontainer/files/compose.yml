@@ -44,6 +44,11 @@ services:
       - GEMINI_API_KEY
       - GOOGLE_GEMINI_BASE_URL
       - OPENAI_API_KEY
+      - GITHUB_TOKEN
+      - BACLUC_AGENT_GITHUB_TOKEN
+      - ISSUE_REPOSITORY
+      - MODEL
+      - AGENT_LOOPS_PROMPT_FILE
       - BRAVE_API_KEY
     env_file:
       - path: .tokens

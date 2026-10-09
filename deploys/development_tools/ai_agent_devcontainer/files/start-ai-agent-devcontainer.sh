@@ -2,6 +2,29 @@
 
 set -e
 
+NO_OPEN=false
+DOWN=false
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --workspace-dir)
+      WORKSPACE_DIR="$2"
+      shift 2
+      ;;
+    --no-open)
+      NO_OPEN=true
+      shift
+      ;;
+    --down)
+      DOWN=true
+      shift
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      exit 2
+      ;;
+  esac
+done
+
 CONFIG_DIR="$HOME/${PROVISION_MACHINES_DIR:-projects/provision-machines}/deploys/development_tools/ai_agent_devcontainer/files"
 
 PORT_MAP_DIR="$HOME/.config/ai-agent-devcontainer"
@@ -40,7 +63,8 @@ save_port() {
   } | grep -v '^$' | sort > "$PORT_MAP_FILE"
 }
 
-WORKSPACE_DIR=$(pwd)
+WORKSPACE_DIR=${WORKSPACE_DIR:-$(pwd)}
+WORKSPACE_DIR=$(realpath "$WORKSPACE_DIR")
 export WORKSPACE_DIR
 WORKSPACE_BASENAME=$(basename "$WORKSPACE_DIR")
 
@@ -87,12 +111,17 @@ if [[ -f $WORKSPACE_DIR/.git ]]; then
   fi
 fi
 
-devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" &
+if [[ "$DOWN" == true ]]; then
+  devcontainer down --workspace-folder "$WORKSPACE_DIR"
+  exit 0
+fi
+
+devcontainer up --workspace-folder "$WORKSPACE_DIR" --config "$CONFIG_DIR/devcontainer.json" &
 
 encoded_path=$(echo -n "${WORKING_DIR}" | base64 -w0)
 opencode_url="http://localhost:${OPENCODE_PORT}/${encoded_path}"
 echo "Waiting for ${opencode_url} to respond..."
-if [[ "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
+if [[ "$NO_OPEN" == false && "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
   open "$opencode_url"
 fi
 until curl -s -f "${opencode_url}" > /dev/null; do
