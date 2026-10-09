@@ -7,6 +7,8 @@ CONFIG_DIR="$HOME/${PROVISION_MACHINES_DIR:-projects/provision-machines}/deploys
 PORT_MAP_DIR="$HOME/.config/ai-agent-devcontainer"
 PORT_MAP_FILE="$PORT_MAP_DIR/port_map"
 
+export BUILDX_BAKE_ENTITLEMENTS_FS=0
+
 find_free_port() {
   local port=4096
   local mapped_ports
