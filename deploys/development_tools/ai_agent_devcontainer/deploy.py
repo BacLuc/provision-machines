@@ -62,5 +62,5 @@ if host.data.ai_agent_devcontainer["enabled"]:
         dest=f"/home/{user_name}/bin/agent-loops",
         user=user_name,
         group=user_name,
-        mode="775",
+        mode="755",
     )
