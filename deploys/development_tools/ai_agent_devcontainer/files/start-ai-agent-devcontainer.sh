@@ -2,6 +2,32 @@
 
 set -e
 
+DEVCONTAINER_PID=""
+WORKSPACE_DIR=""
+cleaned_up=false
+
+cleanup() {
+  if [[ "$cleaned_up" == true ]]; then
+    return
+  fi
+  cleaned_up=true
+  if [[ -n "$DEVCONTAINER_PID" ]] && kill -0 "$DEVCONTAINER_PID" 2>/dev/null; then
+    kill "$DEVCONTAINER_PID" 2>/dev/null || true
+    wait "$DEVCONTAINER_PID" 2>/dev/null || true
+  fi
+  if [[ -n "$WORKSPACE_DIR" ]]; then
+    devcontainer down --workspace-folder "$WORKSPACE_DIR" 2>/dev/null || true
+  fi
+}
+
+handle_signal() {
+  cleanup
+  exit "$1"
+}
+
+trap 'handle_signal 130' INT
+trap 'handle_signal 143' TERM
+
 NO_OPEN=false
 DOWN=false
 while [[ $# -gt 0 ]]; do
@@ -113,10 +139,12 @@ fi
 
 if [[ "$DOWN" == true ]]; then
   devcontainer down --workspace-folder "$WORKSPACE_DIR"
+  cleaned_up=true
   exit 0
 fi
 
 devcontainer up --workspace-folder "$WORKSPACE_DIR" --config "$CONFIG_DIR/devcontainer.json" &
+DEVCONTAINER_PID=$!
 
 encoded_path=$(echo -n "${WORKING_DIR}" | base64 -w0)
 opencode_url="http://localhost:${OPENCODE_PORT}/${encoded_path}"

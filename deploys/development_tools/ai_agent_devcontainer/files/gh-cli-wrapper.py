@@ -57,43 +57,189 @@ def validate_pr(args):
             prefix.append(value)
     if not args or args[0].startswith("-"):
         deny("use gh pr SUBCOMMAND followed by options")
+    if args[0] in {"merge", "revert"}:
+        validate_pr_mutation(prefix, args)
+        return
     if args[0] not in {"create", "new"}:
         return
     values = dict.fromkeys(("-R", "--repo"), "repo")
-    values.update({key: key for key in ("-B", "--base", "-b", "--body", "-F", "--body-file", "-H", "--head", "-t", "--title")})
-    positional, parsed = options(prefix + args[1:], values, {"-d", "--draft", "--dry-run", "--help"})
+    values.update(
+        {
+            key: key
+            for key in (
+                "-a",
+                "--assignee",
+                "--attach",
+                "-B",
+                "--base",
+                "-b",
+                "--body",
+                "-F",
+                "--body-file",
+                "-H",
+                "--head",
+                "-l",
+                "--label",
+                "-m",
+                "--milestone",
+                "-p",
+                "--project",
+                "--recover",
+                "-r",
+                "--reviewer",
+                "-T",
+                "--template",
+                "-t",
+                "--title",
+            )
+        }
+    )
+    positional, parsed = options(
+        prefix + args[1:],
+        values,
+        {
+            "-d",
+            "--draft",
+            "--dry-run",
+            "-e",
+            "--editor",
+            "-f",
+            "--fill",
+            "--fill-first",
+            "--fill-verbose",
+            "--no-maintainer-edit",
+            "-w",
+            "--web",
+            "--help",
+        },
+    )
     if positional or len(parsed.get("repo", [])) != 1:
         deny("PR creation requires exactly one explicit -R/--repo destination")
     owned_repo(parsed["repo"][0])
 
 
-def validate_api(args):
-    values = {key: key for key in ("--jq", "-p", "--preview", "-t", "--template")}
-    for name, flags in {"method": ("-X", "--method"), "host": ("--hostname",), "body": ("-f", "--raw-field", "-F", "--field", "--input"), "header": ("-H", "--header")}.items():
-        values.update(dict.fromkeys(flags, name))
-    positional, parsed = options(args, values, {"-i", "--include", "--paginate", "--silent", "--slurp", "--help"})
+def validate_pr_mutation(prefix, args):
+    values = dict.fromkeys(("-R", "--repo"), "repo")
+    positional, parsed = options(prefix + args[1:], values, {"--admin", "--auto", "--delete-branch", "--help"})
     if len(positional) != 1:
-        deny("API calls require one unambiguous endpoint")
+        deny(f"PR {args[0]} requires exactly one PR number or github.com PR URL")
+    repos = parsed.get("repo", [])
+    if len(repos) > 1:
+        deny(f"PR {args[0]} requires exactly one explicit -R/--repo destination")
+    match = re.fullmatch(r"https?://github\.com/([^/]+/[^/]+)/pull/[0-9]+", positional[0], flags=re.IGNORECASE)
+    if repos:
+        owned_repo(repos[0])
+    if match:
+        owned_repo(match.group(1))
+    if not repos and not match:
+        deny(f"PR {args[0]} requires an explicit -R/--repo destination or a github.com PR URL")
+
+
+def validate_api(args):
+    values = {key: key for key in ("--cache", "-q", "--jq", "-p", "--preview", "-t", "--template")}
+    for name, flags in {
+        "method": ("-X", "--method"),
+        "host": ("--hostname",),
+        "body": ("-f", "--raw-field", "-F", "--field", "--input"),
+        "header": ("-H", "--header"),
+    }.items():
+        values.update(dict.fromkeys(flags, name))
+    positional, parsed = options(
+        args,
+        values,
+        {
+            "-i",
+            "--include",
+            "--paginate",
+            "--silent",
+            "--slurp",
+            "--verbose",
+            "--help",
+            "--allow-escape-sequences",
+        },
+    )
+    if len(positional) != 1 or len(parsed.get("method", [])) > 1 or len(parsed.get("host", [])) > 1:
+        deny("API calls require one unambiguous endpoint, method and host")
     if parsed.get("host", ["github.com"])[0].lower() != "github.com":
         deny("only github.com is supported")
-    endpoint = positional[0].removeprefix("https://api.github.com/").lstrip("/")
-    path = endpoint.partition("?")[0].rstrip("/")
+    for header in parsed.get("header", []):
+        if header.partition(":")[0].lower() not in {
+            "accept",
+            "authorization",
+            "content-type",
+            "x-github-api-version",
+            "user-agent",
+        }:
+            deny("unsupported API header; routing overrides are not allowed")
+    method = parsed.get("method", ["POST" if parsed.get("body") else "GET"])[0].upper()
+    if method not in {"GET", "HEAD", "OPTIONS", "POST", "PATCH", "PUT", "DELETE"}:
+        deny("unsupported HTTP method")
+    endpoint = positional[0]
+    if endpoint.startswith("https://api.github.com/"):
+        endpoint = endpoint.removeprefix("https://api.github.com/")
+    else:
+        endpoint = endpoint.removeprefix("/")
+    path, query, _ = endpoint.partition("?")
+    path = path.rstrip("/")
     if path.lower() == "graphql":
-        deny("direct GraphQL is disabled; use REST instead")
-    if not re.fullmatch(r"[A-Za-z0-9_.{}-]+(?:/[A-Za-z0-9_.{}-]+)*", path):
-        deny("use a canonical github.com REST path")
+        deny("direct GraphQL is disabled; use guarded gh pr create -R or REST instead")
+    if not re.fullmatch(r"[A-Za-z0-9_{}.-]+(?:/[A-Za-z0-9_{}.-]+)*", path) or any(
+        part in {".", ".."} for part in path.split("/")
+    ):
+        deny("use a canonical github.com REST path without encoding or routing overrides")
+    if method not in {"GET", "HEAD", "OPTIONS"}:
+        if query:
+            deny("put mutation parameters in fields, not the endpoint URL")
+        parts = path.split("/")
+        if len(parts) >= 3 and parts[0] == "repos":
+            owned_repo("/".join(parts[1:3]))
 
 
 def main():
     backend = Path(__file__).resolve().with_name("real-gh").read_text().strip()
+    if (
+        not os.path.isabs(backend)
+        or not os.access(backend, os.X_OK)
+        or Path(backend).resolve() == Path(__file__).resolve()
+    ):
+        deny("real gh backend is missing or recursive; reinstall the guard")
     args = sys.argv[1:]
-    if not args or args[0] not in {"api", "auth", "issue", "label", "pr", "repo", "run", "search", "workflow", "version", "--version", "--help"}:
-        deny("only builtin commands are supported")
+    if not args or args[0] not in {
+        "api",
+        "auth",
+        "browse",
+        "cache",
+        "codespace",
+        "completion",
+        "config",
+        "gist",
+        "gpg-key",
+        "help",
+        "issue",
+        "label",
+        "org",
+        "pr",
+        "project",
+        "release",
+        "repo",
+        "ruleset",
+        "run",
+        "search",
+        "secret",
+        "ssh-key",
+        "status",
+        "variable",
+        "workflow",
+        "version",
+        "--version",
+        "--help",
+    }:
+        deny("only builtin commands are supported; aliases and extensions are disabled")
     aliases = subprocess.run([backend, "alias", "list"], capture_output=True, text=True)
     if aliases.returncode:
         deny("cannot check configured gh aliases")
     if any(line.split(":", 1)[0].strip() == args[0] for line in aliases.stdout.splitlines()):
-        deny("configured alias execution is disabled")
+        deny("configured alias execution is disabled; use the builtin command explicitly")
     if os.environ.get("GH_HOST", "github.com").lower() != "github.com":
         deny("only github.com is supported")
     if args[0] == "pr":
