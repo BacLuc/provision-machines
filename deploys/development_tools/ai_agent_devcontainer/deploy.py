@@ -55,3 +55,12 @@ if host.data.ai_agent_devcontainer["enabled"]:
         group=user_name,
         mode="775",
     )
+
+    files.put(
+        name="Copy agent loops launcher",
+        src=os.path.join(files_dir, "agent-loops.sh"),
+        dest=f"/home/{user_name}/bin/agent-loops",
+        user=user_name,
+        group=user_name,
+        mode="775",
+    )
