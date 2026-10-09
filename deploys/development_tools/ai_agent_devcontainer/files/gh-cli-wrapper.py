@@ -191,8 +191,9 @@ def validate_api(args):
         if query:
             deny("put mutation parameters in fields, not the endpoint URL")
         parts = path.split("/")
-        if len(parts) >= 3 and parts[0] == "repos":
-            owned_repo("/".join(parts[1:3]))
+        if len(parts) < 3 or parts[0].lower() != "repos":
+            deny("REST mutations require an owned repos/OWNER/REPO endpoint")
+        owned_repo("/".join(parts[1:3]))
 
 
 def main():
