@@ -11,6 +11,7 @@
   "jesseduffield/lazygit",
   "jlandowner/helm-chartsnap",
   "jsonnet-bundler/jsonnet-bundler",
+  "leoafarias/fvm",
   "mcr.microsoft.com/devcontainers/universal",
   "netcat-openbsd",
   "nodejs/node",
