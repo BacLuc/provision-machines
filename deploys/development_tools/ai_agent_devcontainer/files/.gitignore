@@ -15,3 +15,5 @@
 !start-ai-agent-devcontainer.sh
 !shell-ai-agent-devcontainer.sh
 !init-home.sh
+!gh-cli-wrapper.py
+!agent-loops.sh

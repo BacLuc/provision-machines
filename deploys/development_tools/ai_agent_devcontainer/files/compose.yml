@@ -13,6 +13,10 @@ services:
         target: ${GIT_WORKTREE_TARGET:-/tmp/noworktree}/.git
         consistency: cached
       - type: bind
+        source: ${GIT_ASKPASS_SOURCE:-/tmp/agent-loops-git-askpass}
+        target: ${GIT_ASKPASS_TARGET:-/tmp/agent-loops-git-askpass}
+        read_only: true
+      - type: bind
         source: ${HOME}/${PROVISION_MACHINES_DIR:-projects/provision-machines}/deploys/development_tools/ai_agent_devcontainer/files/opencode
         target: /home/codespace/.config/opencode
         consistency: cached
@@ -44,6 +48,14 @@ services:
       - GEMINI_API_KEY
       - GOOGLE_GEMINI_BASE_URL
       - OPENAI_API_KEY
+      - GITHUB_TOKEN
+      - BACLUC_AGENT_GITHUB_TOKEN
+      - AGENT_LOOPS_GIT_TOKEN
+      - GIT_TERMINAL_PROMPT
+      - GIT_ASKPASS=${GIT_ASKPASS_TARGET:-/tmp/agent-loops-git-askpass}
+      - ISSUE_REPOSITORY
+      - MODEL
+      - AGENT_LOOPS_PROMPT_FILE
       - BRAVE_API_KEY
     env_file:
       - path: .tokens
