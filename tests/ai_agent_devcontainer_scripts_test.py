@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import json
 import os
@@ -236,7 +237,7 @@ def test_temporary_workspace_start_and_down_use_same_identity_and_remove_mapping
     env = environment(tmp_path, bin_dir, log)
     workspace = tmp_path / "clone" / "workspace"
     workspace.mkdir(parents=True)
-    env["OPENCODE_PORT"] = ""
+    env.update(OPENCODE_PORT="", SERVICE_RUNNING="1", CURL_SUCCEEDS="1", UP_SLEEP="0.05")
 
     process = subprocess.Popen(
         ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
@@ -262,11 +263,12 @@ def test_temporary_workspace_start_and_down_use_same_identity_and_remove_mapping
     )
     down = next(call for call in calls(log) if call["command"][-1:] == ["down"])
     up = next(call for call in calls(log) if call["command"][:1] == ["up"])
+    readiness = next(call for call in calls(log) if call["command"][:1] == ["-s"])
     assert down["project"] == project
     assert up["working_dir"] == f"/workspaces/workspace_{hashlib.sha256(str(workspace.resolve()).encode()).hexdigest()[:8]}"
+    assert base64.b64decode(readiness["command"][-1].rsplit("/", 1)[1]).decode() == up["working_dir"]
     assert not mapping.read_text().strip()
     assert port.isdigit()
-    process.send_signal(signal.SIGTERM)
     process.communicate(timeout=5)
 
 
