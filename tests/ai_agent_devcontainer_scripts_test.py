@@ -23,6 +23,24 @@ def project_name(workspace: Path) -> str:
     return f"ai_devcontainer_workspaces_workspace_{suffix}"
 
 
+def test_persistent_workspace_keeps_existing_project_name(tmp_path: Path) -> None:
+    bin_dir, log = fake_commands(tmp_path)
+    env = environment(tmp_path, bin_dir, log)
+    workspace = tmp_path / "projects" / "my-repo"
+    workspace.mkdir(parents=True)
+
+    subprocess.run(
+        ["bash", str(START), "--workspace-dir", str(workspace), "--down"],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    compose = next(call for call in calls(log) if call["command"][:1] == ["compose"])
+    assert compose["command"][2] == "ai_devcontainer_workspaces_my-repo"
+
+
 def fake_commands(tmp_path: Path) -> tuple[Path, Path]:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
