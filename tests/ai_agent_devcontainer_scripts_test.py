@@ -121,9 +121,7 @@ def test_signal_cleanup_uses_same_compose_project_without_volume_removal(
     )
     deadline = time.monotonic() + 5
     while time.monotonic() < deadline:
-        if log.exists() and any(
-            call["command"][:1] == ["up"] for call in calls(log)
-        ):
+        if log.exists() and any(call["command"][:1] == ["up"] for call in calls(log)):
             break
         time.sleep(0.02)
     else:
