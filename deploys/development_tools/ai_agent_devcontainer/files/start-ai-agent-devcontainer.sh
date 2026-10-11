@@ -35,17 +35,12 @@ handle_signal() {
 trap 'handle_signal 130' INT
 trap 'handle_signal 143' TERM
 
-NO_OPEN=false
 DOWN=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --workspace-dir)
       WORKSPACE_DIR="$2"
       shift 2
-      ;;
-    --no-open)
-      NO_OPEN=true
-      shift
       ;;
     --down)
       DOWN=true
@@ -188,7 +183,7 @@ DEVCONTAINER_PID=$!
 encoded_path=$(echo -n "${WORKING_DIR}" | base64 -w0)
 opencode_url="http://localhost:${OPENCODE_PORT}/${encoded_path}"
 echo "Waiting for ${opencode_url} to respond..."
-if [[ "$NO_OPEN" == false && "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
+if [[ "${ai_agent_devcontainer_open_url:-true}" == "true" ]]; then
   open "$opencode_url"
 fi
 deadline=$((SECONDS + ${DEVCONTAINER_START_TIMEOUT:-120}))

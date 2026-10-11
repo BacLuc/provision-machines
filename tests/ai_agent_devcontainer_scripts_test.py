@@ -101,6 +101,7 @@ def environment(tmp_path: Path, bin_dir: Path, log: Path) -> dict[str, str]:
         "HOME": str(home),
         "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
         "CALL_LOG": str(log),
+        "ai_agent_devcontainer_open_url": "false",
     }
 
 
@@ -145,7 +146,7 @@ def test_signal_cleanup_uses_same_compose_project_without_volume_removal(
     workspace = tmp_path / "checkout" / "workspace"
     workspace.mkdir(parents=True)
     process = subprocess.Popen(
-        ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
+        ["bash", str(START), "--workspace-dir", str(workspace)],
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -186,7 +187,7 @@ def test_same_basename_workspaces_have_distinct_projects_and_helper_lookup(
         workspace.mkdir(parents=True)
         processes.append(
             subprocess.Popen(
-                ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
+                ["bash", str(START), "--workspace-dir", str(workspace)],
                 env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -240,7 +241,7 @@ def test_temporary_workspace_start_and_down_use_same_identity_and_remove_mapping
     env.update(OPENCODE_PORT="", SERVICE_RUNNING="1", CURL_SUCCEEDS="1", UP_SLEEP="0.05")
 
     process = subprocess.Popen(
-        ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
+        ["bash", str(START), "--workspace-dir", str(workspace)],
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -286,7 +287,7 @@ def test_persistent_workspace_mount_and_working_directory_stay_at_basename(tmp_p
     env.update(OPENCODE_PORT="4097", CURL_SUCCEEDS="1", SERVICE_RUNNING="1", UP_SLEEP="2")
 
     subprocess.run(
-        ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
+        ["bash", str(START), "--workspace-dir", str(workspace)],
         check=True,
         env=env,
         capture_output=True,
@@ -305,7 +306,7 @@ def test_readiness_requires_own_running_service_and_response(tmp_path: Path) -> 
     workspace.mkdir(parents=True)
     env.update(OPENCODE_PORT="4097", CURL_SUCCEEDS="1", SERVICE_RUNNING="1", UP_SLEEP="2")
     result = subprocess.run(
-        ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
+        ["bash", str(START), "--workspace-dir", str(workspace)],
         env=env,
         capture_output=True,
         text=True,
@@ -331,7 +332,7 @@ def test_same_basename_temporary_workspaces_have_distinct_readiness_urls(tmp_pat
     for workspace in (tmp_path / "one" / "workspace", tmp_path / "two" / "workspace"):
         workspace.mkdir(parents=True)
         process = subprocess.Popen(
-            ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
+            ["bash", str(START), "--workspace-dir", str(workspace)],
             env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -360,7 +361,7 @@ def test_startup_timeout_is_bounded_and_reports_project(tmp_path: Path) -> None:
     workspace.mkdir(parents=True)
     env.update(DEVCONTAINER_START_TIMEOUT="0", CURL_SUCCEEDS="1", SERVICE_RUNNING="")
     result = subprocess.run(
-        ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
+        ["bash", str(START), "--workspace-dir", str(workspace)],
         env=env,
         capture_output=True,
         text=True,
