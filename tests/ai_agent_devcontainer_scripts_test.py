@@ -16,6 +16,7 @@ SHELL = FILES / "shell-ai-agent-devcontainer.sh"
 class CommandCall(TypedDict):
     command: list[str]
     project: str | None
+    working_dir: str | None
 
 
 def project_name(workspace: Path) -> str:
@@ -51,7 +52,7 @@ def fake_commands(tmp_path: Path) -> tuple[Path, Path]:
         "#!/usr/bin/env python3\n"
         "import json, os, sys\n"
         "with open(os.environ['CALL_LOG'], 'a') as log:\n"
-        "    log.write(json.dumps({'command': sys.argv[1:], 'project': os.environ.get('COMPOSE_PROJECT_NAME')}) + '\\n')\n"
+        "    log.write(json.dumps({'command': sys.argv[1:], 'project': os.environ.get('COMPOSE_PROJECT_NAME'), 'working_dir': os.environ.get('WORKING_DIR')}) + '\\n')\n"
         "if 'ps' in sys.argv and sys.argv[1] in ('ps', 'compose'):\n"
         "    if '--status' in sys.argv:\n"
         "        print('devcontainer' if os.environ.get('SERVICE_RUNNING') == '1' else '')\n"
@@ -64,7 +65,7 @@ def fake_commands(tmp_path: Path) -> tuple[Path, Path]:
         "#!/usr/bin/env python3\n"
         "import json, os, sys, time\n"
         "with open(os.environ['CALL_LOG'], 'a') as log:\n"
-        "    log.write(json.dumps({'command': sys.argv[1:], 'project': os.environ.get('COMPOSE_PROJECT_NAME')}) + '\\n')\n"
+        "    log.write(json.dumps({'command': sys.argv[1:], 'project': os.environ.get('COMPOSE_PROJECT_NAME'), 'working_dir': os.environ.get('WORKING_DIR')}) + '\\n')\n"
         "if sys.argv[1:2] == ['up']:\n"
         "    time.sleep(float(os.environ.get('UP_SLEEP', '30')))\n"
     )
@@ -260,11 +261,39 @@ def test_temporary_workspace_start_and_down_use_same_identity_and_remove_mapping
         text=True,
     )
     down = next(call for call in calls(log) if call["command"][-1:] == ["down"])
+    up = next(call for call in calls(log) if call["command"][:1] == ["up"])
     assert down["project"] == project
+    assert up["working_dir"] == f"/workspaces/workspace_{hashlib.sha256(str(workspace.resolve()).encode()).hexdigest()[:8]}"
     assert not mapping.read_text().strip()
     assert port.isdigit()
     process.send_signal(signal.SIGTERM)
     process.communicate(timeout=5)
+
+
+def test_temporary_workspace_mount_matches_readiness_path_and_persistent_default() -> None:
+    compose = (FILES / "compose.yml").read_text()
+    assert "target: ${WORKING_DIR:-/workspaces/${WORKSPACE_BASENAME}}" in compose
+    assert "working_dir: ${WORKING_DIR:-/workspaces}" in compose
+
+
+def test_persistent_workspace_mount_and_working_directory_stay_at_basename(tmp_path: Path) -> None:
+    bin_dir, log = fake_commands(tmp_path)
+    env = environment(tmp_path, bin_dir, log)
+    workspace = tmp_path / "projects" / "my-repo"
+    workspace.mkdir(parents=True)
+    env.update(OPENCODE_PORT="4097", CURL_SUCCEEDS="1", SERVICE_RUNNING="1", UP_SLEEP="2")
+
+    subprocess.run(
+        ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+
+    up = next(call for call in calls(log) if call["command"][:1] == ["up"])
+    assert up["working_dir"] == "/workspaces/my-repo"
 
 
 def test_readiness_requires_own_running_service_and_response(tmp_path: Path) -> None:

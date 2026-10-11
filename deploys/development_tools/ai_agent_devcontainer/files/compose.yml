@@ -6,7 +6,7 @@ services:
     volumes:
       - type: bind
         source: ${WORKSPACE_DIR}
-        target: /workspaces/${WORKSPACE_BASENAME}
+        target: ${WORKING_DIR:-/workspaces/${WORKSPACE_BASENAME}}
         consistency: cached
       - type: bind
         source: ${GIT_WORKTREE_SOURCE:-/tmp/noworktree}/.git
