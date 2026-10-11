@@ -4,6 +4,8 @@ set -e
 
 DEVCONTAINER_PID=""
 WORKSPACE_DIR=""
+COMPOSE_PROJECT_NAME=""
+CONFIG_DIR=""
 cleaned_up=false
 
 cleanup() {
@@ -16,7 +18,7 @@ cleanup() {
     wait "$DEVCONTAINER_PID" 2>/dev/null || true
   fi
   if [[ -n "$WORKSPACE_DIR" ]]; then
-    devcontainer down --workspace-folder "$WORKSPACE_DIR" 2>/dev/null || true
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" down 2>/dev/null || true
   fi
 }
 
@@ -118,6 +120,10 @@ export OPENCODE_PORT
 # This allows running multiple devcontainers simultaneously
 SANITIZED_PATH=$(echo "$WORKING_DIR" | tr '/' '_' | sed 's/^_//' | sed 's/_$//')
 COMPOSE_PROJECT_NAME="ai_devcontainer_${SANITIZED_PATH}"
+if [[ "$WORKSPACE_BASENAME" == "workspace" ]]; then
+  WORKSPACE_PROJECT_SUFFIX=$(printf '%s' "$WORKSPACE_DIR" | sha256sum | cut -c1-8)
+  COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}_${WORKSPACE_PROJECT_SUFFIX}"
+fi
 export COMPOSE_PROJECT_NAME
 
 export GIT_AUTHOR_NAME=$(git config user.name)
@@ -140,7 +146,7 @@ if [[ -f $WORKSPACE_DIR/.git ]]; then
 fi
 
 if [[ "$DOWN" == true ]]; then
-  devcontainer down --workspace-folder "$WORKSPACE_DIR"
+  docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" down
   cleaned_up=true
   exit 0
 fi
