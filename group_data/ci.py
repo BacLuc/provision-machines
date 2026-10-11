@@ -23,6 +23,7 @@ zsh = {
 
 basic_utils = {
     "enable_go": True,
+    "enable_openvpn_config_import_network_manager": False,
     "python": {
         "venvs": ["test-env"],
     },
