@@ -71,7 +71,11 @@ def fake_commands(tmp_path: Path) -> tuple[Path, Path]:
     devcontainer.chmod(0o755)
     curl = bin_dir / "curl"
     curl.write_text(
-        "#!/usr/bin/env python3\nimport os\nraise SystemExit(0 if os.environ.get('CURL_SUCCEEDS') == '1' else 1)\n"
+        "#!/usr/bin/env python3\n"
+        "import json, os, sys\n"
+        "with open(os.environ['CALL_LOG'], 'a') as log:\n"
+        "    log.write(json.dumps({'command': sys.argv[1:], 'project': None}) + '\\n')\n"
+        "raise SystemExit(0 if os.environ.get('CURL_SUCCEEDS') == '1' else 1)\n"
     )
     nc = bin_dir / "nc"
     nc.write_text("#!/usr/bin/env bash\nexit 1\n")
@@ -286,6 +290,36 @@ def test_readiness_requires_own_running_service_and_response(tmp_path: Path) -> 
         capture_output=True,
         text=True,
     )
+
+
+def test_same_basename_temporary_workspaces_have_distinct_readiness_urls(tmp_path: Path) -> None:
+    bin_dir, log = fake_commands(tmp_path)
+    env = environment(tmp_path, bin_dir, log)
+    env["SERVICE_RUNNING"] = "1"
+    urls: list[str] = []
+    for workspace in (tmp_path / "one" / "workspace", tmp_path / "two" / "workspace"):
+        workspace.mkdir(parents=True)
+        process = subprocess.Popen(
+            ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            curl_calls = [call for call in calls(log) if call["command"][:1] == ["-s"]] if log.exists() else []
+            if len(curl_calls) > len(urls):
+                urls.append(curl_calls[-1]["command"][-1])
+                break
+            time.sleep(0.01)
+        else:
+            process.kill()
+            raise AssertionError("readiness URL was not checked")
+        process.send_signal(signal.SIGTERM)
+        process.communicate(timeout=5)
+
+    assert len(set(urls)) == 2
 
 
 def test_startup_timeout_is_bounded_and_reports_project(tmp_path: Path) -> None:
