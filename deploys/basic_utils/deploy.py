@@ -379,8 +379,6 @@ if basic_utils["enable_zoom"]:
     flatpak.packages(packages=["us.zoom.Zoom"])
 
 if basic_utils["enable_go"]:
-    """
-    TODO
     goenv_bin = f"{homebrew_binaries_path}/goenv"
 
     server.shell(
@@ -388,7 +386,6 @@ if basic_utils["enable_go"]:
         commands=[f"/home/{user}/bin/brew install goenv"],
         _if=lambda: host.get_fact(File, goenv_bin) is None,
     )
-    """
 
     files.block(
         name="Setup goenv for bash",
