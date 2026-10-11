@@ -22,8 +22,7 @@ cleanup() {
   if [[ -n "$WORKSPACE_DIR" ]]; then
     docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" down 2>/dev/null || true
     if [[ "$TEMP_WORKSPACE" == true && -f "$PORT_MAP_FILE" ]]; then
-      awk -v d="$PORT_MAP_KEY" '$1 != d' "$PORT_MAP_FILE" > "$PORT_MAP_FILE.tmp"
-      mv "$PORT_MAP_FILE.tmp" "$PORT_MAP_FILE"
+      remove_port
     fi
   fi
 }
@@ -99,6 +98,13 @@ save_port() {
   } | grep -v '^$' | sort > "$PORT_MAP_FILE"
 }
 
+remove_port() {
+  flock -x 9
+  awk -v d="$PORT_MAP_KEY" '$1 != d' "$PORT_MAP_FILE" > "$PORT_MAP_FILE.tmp"
+  mv "$PORT_MAP_FILE.tmp" "$PORT_MAP_FILE"
+  flock -u 9
+}
+
 WORKSPACE_DIR=${WORKSPACE_DIR:-$(pwd)}
 WORKSPACE_DIR=$(realpath "$WORKSPACE_DIR")
 export WORKSPACE_DIR
@@ -114,6 +120,10 @@ WORKING_DIR="/workspaces/${WORKSPACE_BASENAME}"
 export WORKING_DIR
 export WORKSPACE_BASENAME
 
+mkdir -p "$PORT_MAP_DIR"
+exec 9>"$PORT_MAP_FILE.lock"
+flock -x 9
+
 if [[ -n "$OPENCODE_PORT" ]]; then
   if ! [[ "$OPENCODE_PORT" =~ ^[0-9]+$ ]] || [[ "$OPENCODE_PORT" -lt 1024 ]] || [[ "$OPENCODE_PORT" -gt 65535 ]]; then
     echo "Error: OPENCODE_PORT must be a valid port number (1024-65535)" >&2
@@ -126,6 +136,7 @@ else
   fi
 fi
 save_port "$PORT_MAP_KEY" "$OPENCODE_PORT"
+flock -u 9
 export OPENCODE_PORT
 
 # Generate a unique compose project name based on the workspace path
@@ -160,8 +171,7 @@ fi
 if [[ "$DOWN" == true ]]; then
   docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" down
   if [[ "$TEMP_WORKSPACE" == true && -f "$PORT_MAP_FILE" ]]; then
-    awk -v d="$PORT_MAP_KEY" '$1 != d' "$PORT_MAP_FILE" > "$PORT_MAP_FILE.tmp"
-    mv "$PORT_MAP_FILE.tmp" "$PORT_MAP_FILE"
+    remove_port
   fi
   cleaned_up=true
   exit 0
