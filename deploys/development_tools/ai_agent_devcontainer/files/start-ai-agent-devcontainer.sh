@@ -6,6 +6,8 @@ DEVCONTAINER_PID=""
 WORKSPACE_DIR=""
 COMPOSE_PROJECT_NAME=""
 CONFIG_DIR=""
+PORT_MAP_KEY=""
+TEMP_WORKSPACE=false
 cleaned_up=false
 
 cleanup() {
@@ -19,6 +21,10 @@ cleanup() {
   fi
   if [[ -n "$WORKSPACE_DIR" ]]; then
     docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" down 2>/dev/null || true
+    if [[ "$TEMP_WORKSPACE" == true && -f "$PORT_MAP_FILE" ]]; then
+      awk -v d="$PORT_MAP_KEY" '$1 != d' "$PORT_MAP_FILE" > "$PORT_MAP_FILE.tmp"
+      mv "$PORT_MAP_FILE.tmp" "$PORT_MAP_FILE"
+    fi
   fi
 }
 
@@ -97,6 +103,12 @@ WORKSPACE_DIR=${WORKSPACE_DIR:-$(pwd)}
 WORKSPACE_DIR=$(realpath "$WORKSPACE_DIR")
 export WORKSPACE_DIR
 WORKSPACE_BASENAME=$(basename "$WORKSPACE_DIR")
+if [[ "$WORKSPACE_BASENAME" == "workspace" ]]; then
+  TEMP_WORKSPACE=true
+  PORT_MAP_KEY="$WORKSPACE_DIR"
+else
+  PORT_MAP_KEY="/workspaces/$WORKSPACE_BASENAME"
+fi
 
 WORKING_DIR="/workspaces/${WORKSPACE_BASENAME}"
 export WORKING_DIR
@@ -108,12 +120,12 @@ if [[ -n "$OPENCODE_PORT" ]]; then
     exit 1
   fi
 else
-  OPENCODE_PORT=$(lookup_port "$WORKING_DIR")
+  OPENCODE_PORT=$(lookup_port "$PORT_MAP_KEY")
   if [[ -z "$OPENCODE_PORT" ]]; then
     OPENCODE_PORT=$(find_free_port)
   fi
 fi
-save_port "$WORKING_DIR" "$OPENCODE_PORT"
+save_port "$PORT_MAP_KEY" "$OPENCODE_PORT"
 export OPENCODE_PORT
 
 # Generate a unique compose project name based on the workspace path
@@ -147,6 +159,10 @@ fi
 
 if [[ "$DOWN" == true ]]; then
   docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" down
+  if [[ "$TEMP_WORKSPACE" == true && -f "$PORT_MAP_FILE" ]]; then
+    awk -v d="$PORT_MAP_KEY" '$1 != d' "$PORT_MAP_FILE" > "$PORT_MAP_FILE.tmp"
+    mv "$PORT_MAP_FILE.tmp" "$PORT_MAP_FILE"
+  fi
   cleaned_up=true
   exit 0
 fi
@@ -160,7 +176,22 @@ echo "Waiting for ${opencode_url} to respond..."
 if [[ "$NO_OPEN" == false && "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
   open "$opencode_url"
 fi
-until curl -s -f "${opencode_url}" > /dev/null; do
+deadline=$((SECONDS + ${DEVCONTAINER_START_TIMEOUT:-120}))
+until [[ -n "$(docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" ps --status running --services devcontainer 2>/dev/null)" ]] && curl -s -f "${opencode_url}" > /dev/null; do
+  if (( SECONDS >= deadline )); then
+    echo "Timed out waiting for devcontainer service in Compose project ${COMPOSE_PROJECT_NAME} at ${opencode_url}" >&2
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" ps -a >&2 || true
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" logs --no-color --tail=100 devcontainer >&2 || true
+    cleanup
+    exit 1
+  fi
+  if ! kill -0 "$DEVCONTAINER_PID" 2>/dev/null; then
+    echo "devcontainer up exited before ${COMPOSE_PROJECT_NAME}/devcontainer became ready" >&2
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" ps -a >&2 || true
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" logs --no-color --tail=100 devcontainer >&2 || true
+    cleanup
+    exit 1
+  fi
   sleep 1
 done
 
