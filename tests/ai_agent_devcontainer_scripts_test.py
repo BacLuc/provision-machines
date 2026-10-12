@@ -90,6 +90,14 @@ def fake_commands(tmp_path: Path) -> tuple[Path, Path]:
         "print({'name': 'user.name', 'email': 'user.email'}.get(sys.argv[-1], ''))\n"
     )
     git.chmod(0o755)
+    open_command = bin_dir / "open"
+    open_command.write_text(
+        "#!/usr/bin/env python3\n"
+        "import json, os, sys\n"
+        "with open(os.environ['CALL_LOG'], 'a') as log:\n"
+        "    log.write(json.dumps({'command': ['open', *sys.argv[1:]], 'project': None}) + '\\n')\n"
+    )
+    open_command.chmod(0o755)
     return bin_dir, log
 
 
@@ -370,3 +378,39 @@ def test_startup_timeout_is_bounded_and_reports_project(tmp_path: Path) -> None:
     assert result.returncode != 0
     assert project_name(workspace) in result.stderr
     assert "Timed out waiting" in result.stderr
+
+
+def test_no_open_flag_suppresses_open_while_enabled_setting_opens(tmp_path: Path) -> None:
+    bin_dir, log = fake_commands(tmp_path)
+    env = environment(tmp_path, bin_dir, log)
+    workspace = tmp_path / "clone" / "workspace"
+    workspace.mkdir(parents=True)
+    env.update(
+        OPENCODE_PORT="4097",
+        CURL_SUCCEEDS="1",
+        SERVICE_RUNNING="1",
+        UP_SLEEP="0.05",
+        ai_agent_devcontainer_open_url="true",
+    )
+
+    subprocess.run(
+        ["bash", str(START), "--workspace-dir", str(workspace), "--no-open"],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+    assert not any(call["command"][:1] == ["open"] for call in calls(log))
+
+    subprocess.run(
+        ["bash", str(START), "--workspace-dir", str(workspace)],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+    opened = [call for call in calls(log) if call["command"][:1] == ["open"]]
+    assert len(opened) == 1
+    assert opened[0]["command"][1].startswith("http://localhost:4097/")

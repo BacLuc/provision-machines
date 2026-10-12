@@ -46,6 +46,10 @@ while [[ $# -gt 0 ]]; do
       DOWN=true
       shift
       ;;
+    --no-open)
+      ai_agent_devcontainer_open_url=false
+      shift
+      ;;
     *)
       echo "Unknown option: $1" >&2
       exit 2
