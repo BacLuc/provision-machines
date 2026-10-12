@@ -48,6 +48,16 @@ jobs:
       - name: "run pyinfra"
         run: uv run scripts/run_pyinfra_local.py
 
+      - name: "verify goenv in interactive shell"
+        run: |
+          bash -ic "set -e; command -v goenv; goenv --version; goenv root; goenv init -"
+          bash -ic true 2> /tmp/goenv-init.err
+          if grep -q '.goenv/bin/goenv' /tmp/goenv-init.err; then
+            echo 'interactive shell still references missing $HOME/.goenv/bin/goenv' >&2
+            cat /tmp/goenv-init.err >&2
+            exit 1
+          fi
+
       - name: "run update-script"
         run: sudo update-script
 

@@ -392,9 +392,9 @@ if basic_utils["enable_go"]:
         name="Setup goenv for bash",
         path=f"/home/{user}/.bashrc",
         marker="# {mark} ANSIBLE MANAGED BLOCK: add goenv",
-        content="""\
+        content=f"""\
 export GOENV_ROOT="$HOME/.goenv"
-eval "$($HOME/.goenv/bin/goenv init -)"\
+eval "$({HOMEBREW_BIN}/goenv init -)"\
 """,
         try_prevent_shell_expansion=True,
     )
@@ -404,10 +404,10 @@ eval "$($HOME/.goenv/bin/goenv init -)"\
             name="Setup goenv for zsh",
             path=f"/home/{user}/.zshrc",
             marker="# {mark} ANSIBLE MANAGED BLOCK: add goenv",
-            content="""\
+            content=f"""\
 export GOENV_ROOT="$HOME/.goenv"
 export PATH="$GOENV_ROOT/bin:$PATH"
-eval "$($HOME/.goenv/bin/goenv init -)"\
+eval "$({HOMEBREW_BIN}/goenv init -)"\
 """,
             try_prevent_shell_expansion=True,
         )
