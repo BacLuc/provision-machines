@@ -17,6 +17,7 @@ Colocation is preferred to separating all templates out of the main script.
 You are running in a development container, you only brick the container if your code is wrong.
 You must test the scripts, the systemctl service files and the deploy you write.
 Do not stop until all use cases are tested.
+Do not add workflow steps for every change. For deploy changes, run the deploy as the agent, verify the result, and share the logs.
 
 uv and pyinfra are already installed.
 If you need another tool, set it up with pyinfra and install it with pyinfra.
