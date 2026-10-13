@@ -9,7 +9,7 @@ from pyinfra.operations import (
 )
 
 from operations.filesystem import DEPLOYS_DIR, dirname_of
-from operations.homebrew import HOMEBREW_BIN
+from operations.homebrew import HOMEBREW_BIN, user_brew_bin
 from operations.user import get_user_name
 
 user = get_user_name()
@@ -384,7 +384,7 @@ if basic_utils["enable_go"]:
 
     server.shell(
         name="Install goenv via brew",
-        commands=[f"/home/{user}/bin/brew install goenv"],
+        commands=[user_brew_bin(user) + " install goenv"],
         _if=lambda: host.get_fact(File, goenv_bin) is None,
     )
 
