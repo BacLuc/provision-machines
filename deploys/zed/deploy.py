@@ -3,6 +3,7 @@ import json
 
 from pyinfra import host
 from pyinfra.facts.files import Directory, File, Link
+from pyinfra.facts.server import Command
 from pyinfra.operations import crontab, files, flatpak, server, systemd
 
 from operations.homebrew import HOMEBREW_CELLAR, user_brew_bin
@@ -19,6 +20,8 @@ flatpak.packages(
 
 if zed["enabled"]:
     zed_version = "v0.204.5"
+    # renovate: datasource=github-releases depName=zed-industries/delta-nix
+    delta_version = "0.19.2"
 
     zed_config = {
         "language_models": {
@@ -129,6 +132,19 @@ if zed["enabled"]:
             f"curl -f https://raw.githubusercontent.com/zed-industries/zed/refs/tags/{zed_version}/script/install.sh | sh"
         ],
         _if=lambda: host.get_fact(File, f"/home/{user}/.local/bin/zed") is None,
+    )
+
+    installed_delta_version = (
+        host.get_fact(Command, f"/home/{user}/.local/delta.app/bin/delta-app --version 2>/dev/null || true") or ""
+    ).strip()
+
+    server.shell(
+        name="Install delta",
+        commands=[
+            f"curl -fL https://releases.delta.dev/releases/stable/{delta_version}/delta-linux-x86_64.tar.gz | tar -xz -C /tmp",
+            "bash /tmp/Delta/install.sh",
+        ],
+        _if=lambda: installed_delta_version != f"delta {delta_version}",
     )
 
     if host.get_fact(Link, f"/home/{user}/bin/zed") is None:

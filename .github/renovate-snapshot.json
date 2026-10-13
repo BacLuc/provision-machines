@@ -26,5 +26,6 @@
   "robscott/kube-capacity",
   "vshn/appcat-cli",
   "vshn/k8ify",
-  "vshn/kharon"
+  "vshn/kharon",
+  "zed-industries/delta-nix"
 ]
