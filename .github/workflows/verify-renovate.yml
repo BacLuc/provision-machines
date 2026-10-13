@@ -13,6 +13,9 @@ on:
 
 jobs:
   verify-renovate:
+    if: ${{ !inputs.update_snapshot }}
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -23,7 +26,6 @@ jobs:
           chmod a+x /usr/local/bin/yq
 
       - name: Check dependencies against snapshot
-        if: ${{ !inputs.update_snapshot }}
         run: |
           ./scripts/update-renovate-snapshot.sh --check
 
@@ -32,10 +34,21 @@ jobs:
         run: |
           cat /tmp/renovate-err.log
 
-      - name: Update snapshot (manual trigger)
-        if: ${{ inputs.update_snapshot }}
+  update-renovate-snapshot:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.update_snapshot }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install yq
         run: |
-          echo "Updating snapshot..."
+          wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          chmod a+x /usr/local/bin/yq
+
+      - name: Update snapshot
+        run: |
           ./scripts/update-renovate-snapshot.sh --update
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
