@@ -36,8 +36,8 @@ github_release_binary(
 )
 
 # renovate: datasource=github-releases depName=vshn/kharon
-kharon_version = "1.8.0"
-kharon_checksum = "6c1ff7997774d53ceab132480512dfb77c2b0f3899ad19298af4f96b42d65931"
+kharon_version = "2.0.1"
+kharon_checksum = "974258e7da542dde94f0490e96f8e85f0738826d980ea465544826eb959cded6"
 
 if enabled:
     github_release_binary(
@@ -70,7 +70,7 @@ if enabled:
         name="Add kharon alias",
         path=f"/home/{user_name}/.bash_aliases",
         line="^alias kl=",
-        replace="alias kl='kharon oc-web-login'",
+        replace="alias kl='kharon switch'",
         present=True,
     )
 
