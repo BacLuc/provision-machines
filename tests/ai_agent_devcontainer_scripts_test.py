@@ -2,6 +2,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import signal
 import subprocess
 import time
@@ -274,7 +275,10 @@ def test_temporary_workspace_start_and_down_use_same_identity_and_remove_mapping
     up = next(call for call in calls(log) if call["command"][:1] == ["up"])
     readiness = next(call for call in calls(log) if call["command"][:1] == ["-s"])
     assert down["project"] == project
-    assert up["working_dir"] == f"/workspaces/workspace_{hashlib.sha256(str(workspace.resolve()).encode()).hexdigest()[:8]}"
+    assert (
+        up["working_dir"]
+        == f"/workspaces/workspace_{hashlib.sha256(str(workspace.resolve()).encode()).hexdigest()[:8]}"
+    )
     assert base64.b64decode(readiness["command"][-1].rsplit("/", 1)[1]).decode() == up["working_dir"]
     assert not mapping.read_text().strip()
     assert port.isdigit()
@@ -414,3 +418,20 @@ def test_no_open_flag_suppresses_open_while_enabled_setting_opens(tmp_path: Path
     opened = [call for call in calls(log) if call["command"][:1] == ["open"]]
     assert len(opened) == 1
     assert opened[0]["command"][1].startswith("http://localhost:4097/")
+
+
+def test_open_url_is_controlled_by_a_single_setting_variable() -> None:
+    variables = set(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*open_url[A-Za-z0-9_]*\b", START.read_text()))
+    assert variables == {"ai_agent_devcontainer_open_url"}
+
+
+def test_gh_wrapper_is_not_duplicated_and_comes_from_one_pinned_source() -> None:
+    assert not (FILES / "gh-cli-wrapper.py").exists()
+    dockerfile = (FILES / "Dockerfile").read_text()
+    sources = re.findall(
+        r"https://raw\.githubusercontent\.com/[^/\s]+/[^/\s]+/[0-9a-f]{40}/scripts/gh_cli_wrapper\.py",
+        dockerfile,
+    )
+    assert len(sources) == 1
+    assert "real-gh" in dockerfile
+    assert "ln -sf" in dockerfile
