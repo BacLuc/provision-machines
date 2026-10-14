@@ -4,7 +4,7 @@ import json
 from pyinfra import host
 from pyinfra.facts.files import Directory, File, Link
 from pyinfra.facts.server import Command
-from pyinfra.operations import crontab, files, flatpak, server, systemd
+from pyinfra.operations import files, flatpak, server
 
 from operations.homebrew import HOMEBREW_CELLAR, user_brew_bin
 from operations.user import get_user_name
@@ -126,6 +126,76 @@ if zed["enabled"]:
 
     zed_keymap = [{"context": "Editor", "bindings": {"ctrl-k": None}}]
 
+    zed_tasks = [
+        {"label": "Cherry-Pick", "command": "git", "args": ["cherry-pick", "$ZED_GIT_SHA"], "tags": ["git-command"]},
+        {
+            "label": "Create Branch from Here",
+            "command": "bash",
+            "args": [
+                "-lc",
+                'read -r -p "Branch name: " branch || exit; [ -n "$branch" ] || exit 1; git switch -c "$branch" "$ZED_GIT_SHA"',
+            ],
+            "tags": ["git-command"],
+        },
+        {"label": "Checkout Revision", "command": "git", "args": ["checkout", "$ZED_GIT_SHA"], "tags": ["git-command"]},
+        {
+            "label": "Compare with Local",
+            "command": "git",
+            "args": ["diff", "$ZED_GIT_SHA", "HEAD"],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Show Commit Details",
+            "command": "git",
+            "args": ["show", "--format=fuller", "--stat", "$ZED_GIT_SHA"],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Reset Current Branch to Here (hard)",
+            "command": "git",
+            "args": ["reset", "--hard", "$ZED_GIT_SHA"],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Reset Current Branch to Here (soft)",
+            "command": "git",
+            "args": ["reset", "--soft", "$ZED_GIT_SHA"],
+            "tags": ["git-command"],
+        },
+        {"label": "Revert Commit", "command": "git", "args": ["revert", "$ZED_GIT_SHA"], "tags": ["git-command"]},
+        {"label": "Undo Commit", "command": "git", "args": ["reset", "--soft", "HEAD~1"], "tags": ["git-command"]},
+        {"label": "Fixup", "command": "git", "args": ["commit", "--fixup", "$ZED_GIT_SHA"], "tags": ["git-command"]},
+        {
+            "label": "Squash Into",
+            "command": "bash",
+            "args": [
+                "-lc",
+                'selected=$(git rev-parse --short "$ZED_GIT_SHA") && git rev-parse --verify "$ZED_GIT_SHA^" >/dev/null 2>&1 && export GIT_EDITOR=true GIT_SEQUENCE_EDITOR="sed -i \'/^pick $selected /s/^pick/squash/\'" && if git rev-parse --verify "$ZED_GIT_SHA^^" >/dev/null 2>&1; then git rebase -i "$ZED_GIT_SHA^^"; else git rebase -i --root; fi',
+            ],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Drop Commit",
+            "command": "git",
+            "args": ["rebase", "--onto", "$ZED_GIT_SHA^", "$ZED_GIT_SHA"],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Interactively Rebase from Here",
+            "command": "git",
+            "args": ["rebase", "-i", "$ZED_GIT_SHA^"],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Push All up to Here",
+            "command": "bash",
+            "args": ["-lc", 'git push origin "$ZED_GIT_SHA:refs/heads/$(git branch --show-current)"'],
+            "tags": ["git-command"],
+        },
+    ]
+    for task in zed_tasks:
+        task["hide"] = "on_success"
+
     server.shell(
         name="Install zed",
         commands=[
@@ -177,6 +247,15 @@ if zed["enabled"]:
         name="Provision zed keymap",
         src=io.StringIO(json.dumps(zed_keymap, indent=4)),
         dest=f"/home/{user}/.config/zed/keymap.json",
+        user=user,
+        group=user,
+        mode="755",
+    )
+
+    files.put(
+        name="Provision zed tasks",
+        src=io.StringIO(json.dumps(zed_tasks, indent=4)),
+        dest=f"/home/{user}/.config/zed/tasks.json",
         user=user,
         group=user,
         mode="755",
