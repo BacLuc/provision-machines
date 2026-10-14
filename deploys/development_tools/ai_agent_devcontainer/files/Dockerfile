@@ -23,8 +23,8 @@ ENV CLAUDE_CODE_VERSION=2.1.281
 ENV GEMINI_CLI_VERSION=0.56.0
 # renovate: datasource=npm depName=@openai/codex
 ENV CODEX_VERSION=0.156.1
-# renovate: datasource=npm depName=opencode-ai
-ENV OPENCODE_VERSION=1.18.32
+# renovate: datasource=npm depName=@opencode/cli
+ENV OPENCODE_VERSION=2.0.29
 # renovate: datasource=npm depName=t3
 ENV T3_CODE_VERSION=0.0.31
 
@@ -32,7 +32,7 @@ RUN . $NVM_DIR/nvm.sh && \
     nvm install ${NODE_VERSION} && \
     nvm alias default ${NODE_VERSION} && \
     npm install -g \
-      opencode-ai@${OPENCODE_VERSION} \
+      @opencode/cli@${OPENCODE_VERSION} \
       @anthropic-ai/claude-code --allow-scripts=@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} \
       @google/gemini-cli@${GEMINI_CLI_VERSION} \
       @openai/codex@${CODEX_VERSION} \
