@@ -421,8 +421,11 @@ def test_no_open_flag_suppresses_open_while_enabled_setting_opens(tmp_path: Path
 
 
 def test_open_url_is_controlled_by_a_single_setting_variable() -> None:
-    variables = set(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*open_url[A-Za-z0-9_]*\b", START.read_text()))
+    text = START.read_text()
+    variables = set(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*open_url[A-Za-z0-9_]*\b", text))
     assert variables == {"ai_agent_devcontainer_open_url"}
+    condition = next(line for line in text.splitlines() if line.startswith("if [[") and "open_url" in line)
+    assert re.findall(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)", condition) == ["ai_agent_devcontainer_open_url"]
 
 
 def test_gh_wrapper_is_not_duplicated_and_comes_from_one_pinned_source() -> None:
@@ -433,5 +436,6 @@ def test_gh_wrapper_is_not_duplicated_and_comes_from_one_pinned_source() -> None
         dockerfile,
     )
     assert len(sources) == 1
+    assert len(re.findall(r"https://raw\.githubusercontent\.com/\S*gh_cli_wrapper\.py", dockerfile)) == 1
     assert "real-gh" in dockerfile
     assert "ln -sf" in dockerfile
