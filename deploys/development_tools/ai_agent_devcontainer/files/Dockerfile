@@ -49,7 +49,6 @@ USER root
 COPY init-home.sh /usr/local/bin/init-ai-devcontainer-home
 RUN chmod +x /usr/local/bin/init-ai-devcontainer-home
 
-# Single source of truth: the gh guard wrapper lives in bacluc-agent/agent-runner.
 RUN mkdir -p /usr/local/lib/gh-cli-wrapper \
     && curl -fsSL https://raw.githubusercontent.com/bacluc-agent/agent-runner/9857579fc6f42d5b8c9f1bdd5eba900b823152fb/scripts/gh_cli_wrapper.py -o /usr/local/lib/gh-cli-wrapper/gh \
     && chmod 755 /usr/local/lib/gh-cli-wrapper/gh \
