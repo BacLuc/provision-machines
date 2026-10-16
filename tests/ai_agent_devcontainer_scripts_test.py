@@ -275,10 +275,7 @@ def test_temporary_workspace_start_and_down_use_same_identity_and_remove_mapping
     up = next(call for call in calls(log) if call["command"][:1] == ["up"])
     readiness = next(call for call in calls(log) if call["command"][:1] == ["-s"])
     assert down["project"] == project
-    assert (
-        up["working_dir"]
-        == f"/workspaces/workspace_{hashlib.sha256(str(workspace.resolve()).encode()).hexdigest()[:8]}"
-    )
+    assert up["working_dir"] == "/workspaces/workspace"
     assert base64.b64decode(readiness["command"][-1].rsplit("/", 1)[1]).decode() == up["working_dir"]
     assert not mapping.read_text().strip()
     assert port.isdigit()
@@ -287,8 +284,19 @@ def test_temporary_workspace_start_and_down_use_same_identity_and_remove_mapping
 
 def test_temporary_workspace_mount_matches_readiness_path_and_persistent_default() -> None:
     compose = (FILES / "compose.yml").read_text()
-    assert "target: ${WORKING_DIR:-/workspaces/${WORKSPACE_BASENAME}}" in compose
+    assert "target: /workspaces/${WORKSPACE_BASENAME}" in compose
     assert "working_dir: ${WORKING_DIR:-/workspaces}" in compose
+
+
+def test_workspace_path_agrees_across_compose_devcontainer_json_and_start_script() -> None:
+    compose = (FILES / "compose.yml").read_text()
+    devcontainer = json.loads((FILES / "devcontainer.json").read_text())
+    script = START.read_text()
+
+    assert "target: /workspaces/${WORKSPACE_BASENAME}" in compose
+    assert devcontainer["workspaceFolder"] == "/workspaces/${localWorkspaceFolderBasename}"
+    assert 'WORKING_DIR="/workspaces/${WORKSPACE_BASENAME}"' in script
+    assert '_${WORKSPACE_ID}"' not in script
 
 
 def test_persistent_workspace_mount_and_working_directory_stay_at_basename(tmp_path: Path) -> None:
@@ -340,30 +348,50 @@ def test_same_basename_temporary_workspaces_have_distinct_readiness_urls(tmp_pat
     bin_dir, log = fake_commands(tmp_path)
     env = environment(tmp_path, bin_dir, log)
     env["SERVICE_RUNNING"] = "1"
+    mapping = Path(env["HOME"], ".config/ai-agent-devcontainer/port_map")
     urls: list[str] = []
+    processes = []
     for workspace in (tmp_path / "one" / "workspace", tmp_path / "two" / "workspace"):
         workspace.mkdir(parents=True)
-        process = subprocess.Popen(
-            ["bash", str(START), "--workspace-dir", str(workspace)],
-            env=env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
+        processes.append(
+            subprocess.Popen(
+                ["bash", str(START), "--workspace-dir", str(workspace)],
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
         )
         deadline = time.monotonic() + 5
+        while time.monotonic() < deadline and (
+            not mapping.exists()
+            or not any(line.startswith(str(workspace) + " ") for line in mapping.read_text().splitlines())
+        ):
+            time.sleep(0.01)
+        assert mapping.exists()
+        port = next(line.split()[1] for line in mapping.read_text().splitlines() if line.startswith(str(workspace) + " "))
+        readiness = ""
         while time.monotonic() < deadline:
-            curl_calls = [call for call in calls(log) if call["command"][:1] == ["-s"]] if log.exists() else []
-            if len(curl_calls) > len(urls):
-                urls.append(curl_calls[-1]["command"][-1])
+            checked = [
+                call["command"][-1]
+                for call in (calls(log) if log.exists() else [])
+                if call["command"][:1] == ["-s"] and f":{port}/" in call["command"][-1]
+            ]
+            if checked:
+                readiness = checked[0]
                 break
             time.sleep(0.01)
-        else:
-            process.kill()
+        if not readiness:
+            for process in processes:
+                process.kill()
+                process.communicate(timeout=5)
             raise AssertionError("readiness URL was not checked")
-        process.send_signal(signal.SIGTERM)
-        process.communicate(timeout=5)
+        urls.append(readiness)
 
     assert len(set(urls)) == 2
+    for process in processes:
+        process.send_signal(signal.SIGTERM)
+        process.communicate(timeout=5)
 
 
 def test_startup_timeout_is_bounded_and_reports_project(tmp_path: Path) -> None:

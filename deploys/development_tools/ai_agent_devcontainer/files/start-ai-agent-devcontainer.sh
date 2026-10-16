@@ -116,11 +116,6 @@ else
 fi
 
 WORKING_DIR="/workspaces/${WORKSPACE_BASENAME}"
-COMPOSE_WORKING_DIR="$WORKING_DIR"
-if [[ "$TEMP_WORKSPACE" == true ]]; then
-  WORKSPACE_ID=$(printf '%s' "$WORKSPACE_DIR" | sha256sum | cut -c1-8)
-  WORKING_DIR="${WORKING_DIR}_${WORKSPACE_ID}"
-fi
 export WORKING_DIR
 export WORKSPACE_BASENAME
 
@@ -143,9 +138,7 @@ save_port "$PORT_MAP_KEY" "$OPENCODE_PORT"
 flock -u 9
 export OPENCODE_PORT
 
-# Generate a unique compose project name based on the workspace path
-# This allows running multiple devcontainers simultaneously
-SANITIZED_PATH=$(echo "$COMPOSE_WORKING_DIR" | tr '/' '_' | sed 's/^_//' | sed 's/_$//')
+SANITIZED_PATH=$(echo "$WORKING_DIR" | tr '/' '_' | sed 's/^_//' | sed 's/_$//')
 COMPOSE_PROJECT_NAME="ai_devcontainer_${SANITIZED_PATH}"
 if [[ "$WORKSPACE_BASENAME" == "workspace" ]]; then
   WORKSPACE_PROJECT_SUFFIX=$(printf '%s' "$WORKSPACE_DIR" | sha256sum | cut -c1-8)
