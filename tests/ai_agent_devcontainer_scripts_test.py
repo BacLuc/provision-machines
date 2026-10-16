@@ -452,8 +452,12 @@ def test_open_url_is_controlled_by_a_single_setting_variable() -> None:
     text = START.read_text()
     variables = set(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*open_url[A-Za-z0-9_]*\b", text))
     assert variables == {"ai_agent_devcontainer_open_url"}
-    condition = next(line for line in text.splitlines() if line.startswith("if [[") and "open_url" in line)
-    assert re.findall(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)", condition) == ["ai_agent_devcontainer_open_url"]
+    guards = [line.strip() for line in text.splitlines() if line.strip().startswith("if [[")]
+    guards = [line for line in guards if re.search(r"open_url|no_open", line, re.IGNORECASE)]
+    assert len(guards) == 1
+    assert re.findall(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)", guards[0]) == ["ai_agent_devcontainer_open_url"]
+    branch = text.split("--no-open)", 1)[1].split(";;", 1)[0]
+    assert re.findall(r"^\s*([A-Za-z_][A-Za-z0-9_]*)=", branch, re.MULTILINE) == ["ai_agent_devcontainer_open_url"]
 
 
 def test_gh_wrapper_is_not_duplicated_and_comes_from_one_pinned_source() -> None:
