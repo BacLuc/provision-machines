@@ -26,7 +26,7 @@ ENV CODEX_VERSION=0.156.1
 # renovate: datasource=npm depName=@opencode/cli
 ENV OPENCODE_VERSION=2.0.29
 # renovate: datasource=npm depName=t3
-ENV T3_CODE_VERSION=0.0.31
+ENV T3_CODE_VERSION=0.1.0
 
 RUN . $NVM_DIR/nvm.sh && \
     nvm install ${NODE_VERSION} && \
