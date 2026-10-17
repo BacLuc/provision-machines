@@ -1,27 +1,27 @@
 import io
 
-from pyinfra import host, local
-from pyinfra.facts.files import File
-from pyinfra.operations import files, server
+from pyinfra import host
+from pyinfra.operations import files
 
-from operations.homebrew import HOMEBREW_BIN, user_brew_bin
+from operations.github_release_binary import github_release_binary
 from operations.user import get_user_name
 
 user = get_user_name()
+fzf = host.data.fzf
+fzf_bin = f"/home/{user}/bin/fzf"
 
-if host.data.fzf["enabled"]:
-    local.include("deploys/homebrew/deploy.py")
-    if host.get_fact(File, f"{HOMEBREW_BIN}/fzf") is None:
-        server.shell(
-            name="Install fzf via brew",
-            commands=[user_brew_bin(user) + " install fzf"],
-        )
+if fzf["enabled"]:
+    github_release_binary(
+        url=f"https://github.com/junegunn/fzf/releases/download/v{fzf['fzf_version']}/fzf-{fzf['fzf_version']}-linux_amd64.tar.gz",
+        binary_name="fzf",
+        checksum=fzf["fzf_checksum"],
+    )
 
     files.put(
         name="Add fzf completion for bash",
         src=io.StringIO(f"""\
 FZF_DEFAULT_OPTS="--tmux"
-eval $({HOMEBREW_BIN}/fzf --bash)
+eval $({fzf_bin} --bash)
 """),
         dest=f"/home/{user}/.bashrc.d/fzf-completion.sh",
         user=user,
@@ -34,7 +34,7 @@ eval $({HOMEBREW_BIN}/fzf --bash)
             name="Add fzf completion for zsh",
             src=io.StringIO(f"""\
 FZF_DEFAULT_OPTS="--tmux"
-source <({HOMEBREW_BIN}/fzf --zsh)
+source <({fzf_bin} --zsh)
 """),
             dest=f"/home/{user}/.zshrc.d/fzf-completion.zsh",
             user=user,
