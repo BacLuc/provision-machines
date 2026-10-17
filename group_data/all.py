@@ -159,6 +159,9 @@ fluxcd = {
 
 fzf = {
     "enabled": True,
+    # renovate: datasource=github-releases depName=junegunn/fzf
+    "fzf_version": "0.74.5",
+    "fzf_checksum": "c8d3ac08594f271a108528beb15338c42be113d392816b10bf5955cd139293e8",
 }
 
 git_lfs = {
