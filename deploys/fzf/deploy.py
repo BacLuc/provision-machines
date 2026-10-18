@@ -5,7 +5,7 @@ from pyinfra.facts.files import File
 from pyinfra.operations import files, server
 
 from operations.github_release_binary import github_release_binary
-from operations.homebrew import HOMEBREW_BIN
+from operations.homebrew import HOMEBREW_BIN, user_brew_bin
 from operations.user import get_user_name
 
 user = get_user_name()
@@ -16,12 +16,12 @@ fzf_bin = f"/home/{user}/bin/fzf"
 fzf_version = "0.74.5"
 fzf_checksum = "c8d3ac08594f271a108528beb15338c42be113d392816b10bf5955cd139293e8"
 
-server.shell(
-    name="Remove fzf installed by homebrew",
-    commands=[f"rm -f {HOMEBREW_BIN}/fzf"],
-    _sudo=True,
-    _if=lambda: host.get_fact(File, f"{HOMEBREW_BIN}/fzf") is not None,
-)
+if host.data.homebrew["enabled"]:
+    server.shell(
+        name="Uninstall fzf installed by homebrew",
+        commands=[user_brew_bin(user) + " uninstall fzf"],
+        _if=lambda: host.get_fact(File, f"{HOMEBREW_BIN}/fzf") is not None,
+    )
 
 if fzf["enabled"]:
     github_release_binary(
