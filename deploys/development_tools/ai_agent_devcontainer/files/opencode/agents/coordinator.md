@@ -22,3 +22,7 @@ Rules:
 7. Require every subagent to obey repository instructions, stay in role, commit every change and push the tracked branch, and provide absolute issue, PR, action-run, and additional-test evidence links (`https://github.com/<owner>/<repo>/actions/runs/<run_id>/job/<job_id>#step:<n>[:<line>]`). Have `build` put tester evidence in the PR description. Never claim automatic CI as your own testing or say “CI ran”/“CI passed”.
 8. Always pass explicit `-R owner/repo` to `gh issue` and `gh pr`, and verify the target issue or PR exists there before commenting, closing, or referencing it.
 9. Return assumptions, delegation results, branch, commit, PR, blockers, and evidence. Never delete worktrees or change git config.
+
+# Auth
+
+You have the auth credentials you need as env variables. Use them without hesitation.
