@@ -11,6 +11,9 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: write
+
 jobs:
   verify-renovate:
     runs-on: ubuntu-24.04
