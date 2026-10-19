@@ -26,7 +26,7 @@ if ubuntu_desktop["enabled"]:
             commands=[f'dconf write /org/gnome/shell/favorite-apps "{favorite_apps_value}"'],
         )
 
-        for index, app in enumerate(favorite_apps):
+        for index, app in enumerate(favorite_apps[:9]):
             server.shell(
                 name=f"Set shortcut {app['shortcut']} for app {index + 1}",
                 commands=[
