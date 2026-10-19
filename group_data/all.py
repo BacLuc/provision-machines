@@ -147,6 +147,10 @@ firefox = {
     "enabled": True,
 }
 
+firefox_taskbar_tabs = {
+    "enabled": True,
+}
+
 flatpak = {
     "enabled": True,
 }
