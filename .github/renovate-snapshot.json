@@ -5,6 +5,7 @@
   "astral-sh/setup-uv",
   "astral-sh/uv",
   "autojump",
+  "cli/cli",
   "curl",
   "databus23/helm-diff",
   "direnv",
