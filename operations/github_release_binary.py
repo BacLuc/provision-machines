@@ -14,6 +14,7 @@ def github_release_binary(
     checksum: str,
     strip_components: int = 0,
     is_tar: bool = True,
+    tar_member: Union[str, None] = None,
     _if: Union[bool, Callable[[], bool]] = True,
 ) -> None:
     if not url:
@@ -71,11 +72,12 @@ def github_release_binary(
                 return
 
             strip_components_arg = f" --strip-components={strip_components}" if strip_components > 0 else ""
+            tar_member_arg = f" {tar_member}" if tar_member else ""
             shell(
                 name=f"Extract binary file {binary_name} from tar {tmp_file_name}",
                 commands=[
                     f"rm -f {dest_file_path}",
-                    f"tar -xf {tmp_file_name} {strip_components_arg} -C /home/{user_name}/bin",
+                    f"tar -xf {tmp_file_name} {strip_components_arg} -C /home/{user_name}/bin{tar_member_arg}",
                 ],
             )
     finally:
