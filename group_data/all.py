@@ -161,6 +161,13 @@ fzf = {
     "enabled": True,
 }
 
+gh = {
+    "enabled": True,
+    # renovate: datasource=github-releases depName=cli/cli
+    "gh_version": "2.103.0",
+    "gh_checksum": "011adf6809c50c89a70f2e367f2658a2fd7c2fcf7dfc705bfe8049e6e4c731b2",
+}
+
 git_lfs = {
     "enabled": True,
     # renovate: datasource=github-releases depName=git-lfs/git-lfs

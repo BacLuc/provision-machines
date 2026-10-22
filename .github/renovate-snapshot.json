@@ -3,6 +3,7 @@
   "ansible",
   "astral-sh/setup-uv",
   "astral-sh/uv",
+  "cli/cli",
   "curl",
   "databus23/helm-diff",
   "git",
