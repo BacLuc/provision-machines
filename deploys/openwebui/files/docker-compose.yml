@@ -14,7 +14,7 @@ services:
     environment:
       - "WEBUI_AUTH=False"
   aisix:
-    image: "ghcr.io/api7/aisix:1.4.0"
+    image: "ghcr.io/api7/aisix:1.7.0"
     restart: "unless-stopped"
     volumes:
       - "./aisix-config.yaml:/etc/aisix/config.yaml:ro"
