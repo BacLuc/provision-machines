@@ -72,7 +72,7 @@ if host.data.firefox["enabled"]:
                 },
                 "PasswordManagerEnabled": False,
                 "GenerativeAI": {"Enabled": False},
-                "Preferences": {},
+                "Preferences": {"browser.taskbarTabs.enabled": True},
             },
         },
     }
