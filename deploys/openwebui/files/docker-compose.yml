@@ -1,7 +1,7 @@
 ---
 services:
   open-webui:
-    image: "ghcr.io/open-webui/open-webui:v0.11.4"
+    image: "ghcr.io/open-webui/open-webui:v0.12.3"
     ports:
       - "127.0.0.1:13307:8080"
     extra_hosts:
