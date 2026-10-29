@@ -21,7 +21,7 @@ flatpak.packages(
 if zed["enabled"]:
     zed_version = "v0.204.5"
     # renovate: datasource=github-releases depName=zed-industries/delta-nix
-    delta_version = "0.22.0"
+    delta_version = "0.23.0"
 
     zed_config = {
         "language_models": {
