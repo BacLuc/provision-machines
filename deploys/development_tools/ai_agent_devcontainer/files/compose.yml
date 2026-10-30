@@ -44,6 +44,7 @@ services:
       - GEMINI_API_KEY
       - GOOGLE_GEMINI_BASE_URL
       - OPENAI_API_KEY
+      - VSHN_LLM_ROUTER_API_KEY
     ports:
       - "127.0.0.1:${OPENCODE_PORT:-4096}:4096"
 

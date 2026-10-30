@@ -1367,6 +1367,351 @@
         }
       },
       "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-beam-free": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/beam-free",
+      "description": "Carrier relay using vshn-llm-router opencode/beam-free.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-claude-haiku-5-5": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/claude-haiku-5-5",
+      "description": "Carrier relay using vshn-llm-router opencode/claude-haiku-5-5.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-deepseek-v4-pro": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/deepseek-v4-pro",
+      "description": "Carrier relay using vshn-llm-router opencode/deepseek-v4-pro.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-deepseek-v4-1-flash": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/deepseek-v4.1-flash",
+      "description": "Carrier relay using vshn-llm-router opencode/deepseek-v4.1-flash.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-glm-5-2": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/glm-5.2",
+      "description": "Carrier relay using vshn-llm-router opencode/glm-5.2.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-glm-5-3": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/glm-5.3",
+      "description": "Carrier relay using vshn-llm-router opencode/glm-5.3.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-glm-5-3-flash": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/glm-5.3-flash",
+      "description": "Carrier relay using vshn-llm-router opencode/glm-5.3-flash.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-hy3": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/hy3",
+      "description": "Carrier relay using vshn-llm-router opencode/hy3.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-hy4-preview": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/hy4-preview",
+      "description": "Carrier relay using vshn-llm-router opencode/hy4-preview.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-kimi-k2-7-code": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/kimi-k2.7-code",
+      "description": "Carrier relay using vshn-llm-router opencode/kimi-k2.7-code.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-kimi-k3": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/kimi-k3",
+      "description": "Carrier relay using vshn-llm-router opencode/kimi-k3.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-kimi-k3-1-pro": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/kimi-k3.1-pro",
+      "description": "Carrier relay using vshn-llm-router opencode/kimi-k3.1-pro.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-longcat-2-0": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/longcat-2.0",
+      "description": "Carrier relay using vshn-llm-router opencode/longcat-2.0.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-mimo-v2-5": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/mimo-v2.5",
+      "description": "Carrier relay using vshn-llm-router opencode/mimo-v2.5.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-mimo-v2-5-pro": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/mimo-v2.5-pro",
+      "description": "Carrier relay using vshn-llm-router opencode/mimo-v2.5-pro.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-mimo-v2-6-flash": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/mimo-v2.6-flash",
+      "description": "Carrier relay using vshn-llm-router opencode/mimo-v2.6-flash.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-mimo-v2-6-pro": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/mimo-v2.6-pro",
+      "description": "Carrier relay using vshn-llm-router opencode/mimo-v2.6-pro.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-minimax-m3": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/minimax-m3",
+      "description": "Carrier relay using vshn-llm-router opencode/minimax-m3.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-minimax-m3-1-flash": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/minimax-m3.1-flash",
+      "description": "Carrier relay using vshn-llm-router opencode/minimax-m3.1-flash.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-qwen3-7-plus": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/qwen3.7-plus",
+      "description": "Carrier relay using vshn-llm-router opencode/qwen3.7-plus.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-qwen3-8-flash": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/qwen3.8-flash",
+      "description": "Carrier relay using vshn-llm-router opencode/qwen3.8-flash.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-qwen3-8-max": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/qwen3.8-max",
+      "description": "Carrier relay using vshn-llm-router opencode/qwen3.8-max.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
+    },
+    "carrier-vshn-opencode-step-5-preview": {
+      "mode": "subagent",
+      "hidden": true,
+      "model": "vshn-llm-router/opencode/step-5-preview",
+      "description": "Carrier relay using vshn-llm-router opencode/step-5-preview.",
+      "temperature": 0.1,
+      "steps": 8,
+      "permission": {
+        "*": "allow",
+        "task": {
+          "*": "allow"
+        }
+      },
+      "prompt": "{file:./agents/relay.txt}"
     }
   },
   "provider": {
@@ -1688,6 +2033,85 @@
         },
         "subscription.qwen3.8-max": {
           "name": "qwen3.8-max"
+        }
+      }
+    },
+    "vshn-llm-router": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "VSHN LLM Router",
+      "options": {
+        "baseURL": "https://llm-proxy.apps.c-managed-talos-lab-rma-0.vshnmanaged.net/v1",
+        "apiKey": "{env:VSHN_LLM_ROUTER_API_KEY}"
+      },
+      "models": {
+        "opencode/beam-free": {
+          "name": "beam-free"
+        },
+        "opencode/claude-haiku-5-5": {
+          "name": "claude-haiku-5-5"
+        },
+        "opencode/deepseek-v4-pro": {
+          "name": "deepseek-v4-pro"
+        },
+        "opencode/deepseek-v4.1-flash": {
+          "name": "deepseek-v4.1-flash"
+        },
+        "opencode/glm-5.2": {
+          "name": "glm-5.2"
+        },
+        "opencode/glm-5.3": {
+          "name": "glm-5.3"
+        },
+        "opencode/glm-5.3-flash": {
+          "name": "glm-5.3-flash"
+        },
+        "opencode/hy3": {
+          "name": "hy3"
+        },
+        "opencode/hy4-preview": {
+          "name": "hy4-preview"
+        },
+        "opencode/kimi-k2.7-code": {
+          "name": "kimi-k2.7-code"
+        },
+        "opencode/kimi-k3": {
+          "name": "kimi-k3"
+        },
+        "opencode/kimi-k3.1-pro": {
+          "name": "kimi-k3.1-pro"
+        },
+        "opencode/longcat-2.0": {
+          "name": "longcat-2.0"
+        },
+        "opencode/mimo-v2.5": {
+          "name": "mimo-v2.5"
+        },
+        "opencode/mimo-v2.5-pro": {
+          "name": "mimo-v2.5-pro"
+        },
+        "opencode/mimo-v2.6-flash": {
+          "name": "mimo-v2.6-flash"
+        },
+        "opencode/mimo-v2.6-pro": {
+          "name": "mimo-v2.6-pro"
+        },
+        "opencode/minimax-m3": {
+          "name": "minimax-m3"
+        },
+        "opencode/minimax-m3.1-flash": {
+          "name": "minimax-m3.1-flash"
+        },
+        "opencode/qwen3.7-plus": {
+          "name": "qwen3.7-plus"
+        },
+        "opencode/qwen3.8-flash": {
+          "name": "qwen3.8-flash"
+        },
+        "opencode/qwen3.8-max": {
+          "name": "qwen3.8-max"
+        },
+        "opencode/step-5-preview": {
+          "name": "step-5-preview"
         }
       }
     }

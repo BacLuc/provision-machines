@@ -129,6 +129,29 @@ Anything else is **involved**. When in doubt, treat the task as involved - the c
    carrier-zen-muse-spark-1-3-contributor-free
    carrier-zen-nemotron-3-ultra-free
    carrier-zen-nemotron-3-5-lightning-free
+   carrier-vshn-opencode-beam-free
+   carrier-vshn-opencode-claude-haiku-5-5
+   carrier-vshn-opencode-deepseek-v4-pro
+   carrier-vshn-opencode-deepseek-v4-1-flash
+   carrier-vshn-opencode-glm-5-2
+   carrier-vshn-opencode-glm-5-3
+   carrier-vshn-opencode-glm-5-3-flash
+   carrier-vshn-opencode-hy3
+   carrier-vshn-opencode-hy4-preview
+   carrier-vshn-opencode-kimi-k2-7-code
+   carrier-vshn-opencode-kimi-k3
+   carrier-vshn-opencode-kimi-k3-1-pro
+   carrier-vshn-opencode-longcat-2-0
+   carrier-vshn-opencode-mimo-v2-5
+   carrier-vshn-opencode-mimo-v2-5-pro
+   carrier-vshn-opencode-mimo-v2-6-flash
+   carrier-vshn-opencode-mimo-v2-6-pro
+   carrier-vshn-opencode-minimax-m3
+   carrier-vshn-opencode-minimax-m3-1-flash
+   carrier-vshn-opencode-qwen3-7-plus
+   carrier-vshn-opencode-qwen3-8-flash
+   carrier-vshn-opencode-qwen3-8-max
+   carrier-vshn-opencode-step-5-preview
    ```
 
    Keep this roster in sync with the `carrier-*` entries of `opencode.jsonc` whenever carriers change. It returns `CARRIERS:` followed by ordered usable carrier names.
