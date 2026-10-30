@@ -205,6 +205,13 @@ lazygit = {
     "lazygit_checksum": "971bc18be3ddd75f67462016eeda9bc5581644f90e5e961ec11b450ef60be894",
 }
 
+syft = {
+    "enabled": True,
+    # renovate: datasource=github-releases depName=anchore/syft
+    "syft_version": "1.55.0",
+    "syft_checksum": "64c9631c3560336c55c549df0de08cd577d02399c9de807ac390960a4ed5c351",
+}
+
 ollama = {
     "enabled": False,
     # renovate: datasource=github-releases depName=ollama/ollama
