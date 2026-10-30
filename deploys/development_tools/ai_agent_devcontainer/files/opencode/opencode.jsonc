@@ -554,7 +554,7 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "VSHN LLM Router",
       "options": {
-        "baseURL": "https://llm-proxy.apps.c-managed-talos-lab-rma-0.vshnmanaged.net/v1",
+        "baseURL": "{env:VSHN_LLM_ROUTER_BASE_URL}",
         "apiKey": "{env:VSHN_LLM_ROUTER_API_KEY}",
       },
       "models": {
