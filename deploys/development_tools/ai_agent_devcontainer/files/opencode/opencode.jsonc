@@ -11,7 +11,7 @@
     // renovate: datasource=npm depName=opencode-gemini-auth
     "opencode-gemini-auth@2.0.1",
     // renovate: datasource=npm depName=bacluc-opencode-completion-check-command
-    "bacluc-opencode-completion-check-command@0.12.0",
+    "bacluc-opencode-completion-check-command@0.12.6",
     // renovate: datasource=npm depName=opencode-auto-resume
     "opencode-auto-resume@1.2.0",
     // renovate: datasource=github-tags depName=obra/superpowers
