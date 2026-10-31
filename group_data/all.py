@@ -207,9 +207,6 @@ lazygit = {
 
 syft = {
     "enabled": True,
-    # renovate: datasource=github-releases depName=anchore/syft
-    "syft_version": "1.55.0",
-    "syft_checksum": "64c9631c3560336c55c549df0de08cd577d02399c9de807ac390960a4ed5c351",
 }
 
 ollama = {

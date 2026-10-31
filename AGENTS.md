@@ -41,6 +41,8 @@ Also don't use unnecessary functions, keep the style as it was, simple and under
 Renovate must be able to update all dependencies.
 For that we use a regex pattern where we have the renovate instructions in a comment above, and all versions
 are assigned to a python variable or a dict entry, and have a renovate comment on top.
+Dependency versions and checksums belong in the deploy that uses them (for example `deploys/fzf/deploy.py`),
+not in `group_data`; the renovate comment stays directly above the version variable.
 
 ```json
 {
