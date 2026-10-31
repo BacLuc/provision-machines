@@ -205,6 +205,10 @@ lazygit = {
     "lazygit_checksum": "971bc18be3ddd75f67462016eeda9bc5581644f90e5e961ec11b450ef60be894",
 }
 
+syft = {
+    "enabled": True,
+}
+
 ollama = {
     "enabled": False,
     # renovate: datasource=github-releases depName=ollama/ollama
