@@ -550,5 +550,84 @@
         },
       },
     },
+    "vshn-llm-router": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "VSHN LLM Router",
+      "options": {
+        "baseURL": "{env:VSHN_LLM_ROUTER_BASE_URL}",
+        "apiKey": "{env:VSHN_LLM_ROUTER_API_KEY}",
+      },
+      "models": {
+        "opencode/beam-free": {
+          "name": "beam-free",
+        },
+        "opencode/claude-haiku-5-5": {
+          "name": "claude-haiku-5-5",
+        },
+        "opencode/deepseek-v4-pro": {
+          "name": "deepseek-v4-pro",
+        },
+        "opencode/deepseek-v4.1-flash": {
+          "name": "deepseek-v4.1-flash",
+        },
+        "opencode/glm-5.2": {
+          "name": "glm-5.2",
+        },
+        "opencode/glm-5.3": {
+          "name": "glm-5.3",
+        },
+        "opencode/glm-5.3-flash": {
+          "name": "glm-5.3-flash",
+        },
+        "opencode/hy3": {
+          "name": "hy3",
+        },
+        "opencode/hy4-preview": {
+          "name": "hy4-preview",
+        },
+        "opencode/kimi-k2.7-code": {
+          "name": "kimi-k2.7-code",
+        },
+        "opencode/kimi-k3": {
+          "name": "kimi-k3",
+        },
+        "opencode/kimi-k3.1-pro": {
+          "name": "kimi-k3.1-pro",
+        },
+        "opencode/longcat-2.0": {
+          "name": "longcat-2.0",
+        },
+        "opencode/mimo-v2.5": {
+          "name": "mimo-v2.5",
+        },
+        "opencode/mimo-v2.5-pro": {
+          "name": "mimo-v2.5-pro",
+        },
+        "opencode/mimo-v2.6-flash": {
+          "name": "mimo-v2.6-flash",
+        },
+        "opencode/mimo-v2.6-pro": {
+          "name": "mimo-v2.6-pro",
+        },
+        "opencode/minimax-m3": {
+          "name": "minimax-m3",
+        },
+        "opencode/minimax-m3.1-flash": {
+          "name": "minimax-m3.1-flash",
+        },
+        "opencode/qwen3.7-plus": {
+          "name": "qwen3.7-plus",
+        },
+        "opencode/qwen3.8-flash": {
+          "name": "qwen3.8-flash",
+        },
+        "opencode/qwen3.8-max": {
+          "name": "qwen3.8-max",
+        },
+        "opencode/step-5-preview": {
+          "name": "step-5-preview",
+        },
+      },
+    },
   },
 }

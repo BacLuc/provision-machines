@@ -48,5 +48,11 @@
         "apiKey": "apikey",
       },
     },
+    "vshn-llm-router": {
+      "options": {
+        "baseURL": "baseurl",
+        "apiKey": "apikey",
+      },
+    },
   },
 }
