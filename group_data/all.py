@@ -164,7 +164,7 @@ fzf = {
 git_lfs = {
     "enabled": True,
     # renovate: datasource=github-releases depName=git-lfs/git-lfs
-    "git_lfs_version": "3.7.1",
+    "git_lfs_version": "3.8.1",
     "git_lfs_checksum": "6b92b05c4588b4a5373b2b4102dbb302757d8ec6671da67cf9e4f9ccb01cd349",
 }
 
