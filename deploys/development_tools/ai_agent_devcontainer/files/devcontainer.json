@@ -6,7 +6,7 @@
   },
   "dockerComposeFile": "./compose.yml",
   "name": "AI Agent DevContainer",
-  "postStartCommand": "bash -c 'init-ai-devcontainer-home && (git lfs uninstall || true) && echo OpenCode starting on port ${OPENCODE_PORT:-4096}... && cd /workspaces/${localWorkspaceFolderBasename} && opencode serve --hostname 0.0.0.0 --port 4096'",
+  "postStartCommand": "bash -c 'init-ai-devcontainer-home && (git lfs uninstall || true) && echo OpenCode starting on port ${OPENCODE_PORT:-4096}... && cd /workspaces/${localWorkspaceFolderBasename} && (nc -z localhost 4096 >/dev/null 2>&1 && echo already running || opencode serve --hostname 0.0.0.0 --port 4096)'",
   "remoteUser": "codespace",
   "service": "devcontainer",
   "updateRemoteUserUID": false,

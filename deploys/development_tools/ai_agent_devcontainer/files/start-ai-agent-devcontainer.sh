@@ -64,8 +64,14 @@ fi
 save_port "$WORKING_DIR" "$OPENCODE_PORT"
 export OPENCODE_PORT
 
-# Generate a unique compose project name based on the workspace path
-# This allows running multiple devcontainers simultaneously
+if [[ -z "${OPENCODE_SERVER_PASSWORD:-}" ]]; then
+  mkdir -p "$PORT_MAP_DIR"
+  [[ -s "$PORT_MAP_DIR/password" ]] || openssl rand -hex 16 > "$PORT_MAP_DIR/password"
+  chmod 600 "$PORT_MAP_DIR/password"
+  OPENCODE_SERVER_PASSWORD=$(<"$PORT_MAP_DIR/password")
+fi
+export OPENCODE_SERVER_PASSWORD
+
 SANITIZED_PATH=$(echo "$WORKING_DIR" | tr '/' '_' | sed 's/^_//' | sed 's/_$//')
 COMPOSE_PROJECT_NAME="ai_devcontainer_${SANITIZED_PATH}"
 export COMPOSE_PROJECT_NAME
@@ -90,15 +96,27 @@ if [[ -f $WORKSPACE_DIR/.git ]]; then
 fi
 
 devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" &
+devcontainer_pid=$!
 
-encoded_path=$(echo -n "${WORKING_DIR}" | base64 -w0)
-opencode_url="http://localhost:${OPENCODE_PORT}/${encoded_path}"
-echo "Waiting for ${opencode_url} to respond..."
-if [[ "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
-  open "$opencode_url"
-fi
-until curl -s -f "${opencode_url}" > /dev/null; do
+base_url="http://localhost:${OPENCODE_PORT}"
+echo "Waiting for ${base_url} to respond..."
+until curl -sf -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" > /dev/null; do
   sleep 1
 done
 
-echo "${opencode_url}"
+response=$(curl -sf -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair")
+code=$(printf %s "$response" | sed 's/.*"code":"\([^"]*\)".*/\1/')
+if [[ -z "$code" ]]; then
+  echo "Error: could not extract pairing code from: $response" >&2
+  echo "Fallback: use the password from ~/.config/ai-agent-devcontainer/password to log in at ${base_url}" >&2
+  exit 1
+fi
+opencode_url="${base_url}/auth/connect/${code}"
+
+printf %s "$opencode_url" | (xclip -selection clipboard 2>/dev/null || wl-copy 2>/dev/null || pbcopy 2>/dev/null || true)
+
+if [[ "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
+  open "$opencode_url"
+fi
+
+echo "$opencode_url"

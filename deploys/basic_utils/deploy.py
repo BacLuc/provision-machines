@@ -303,7 +303,7 @@ if basic_utils["enable_flutter"]:
     fvm_flutter_dir = host.get_fact(Directory, f"/home/{user}/.fvm_flutter")
 
     # renovate: datasource=github-releases depName=leoafarias/fvm
-    fvm_version = "3.2.1"
+    fvm_version = "4.3.2"
 
     server.shell(
         name="Install fvm",
