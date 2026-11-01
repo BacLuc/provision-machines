@@ -1,4 +1,5 @@
 from pyinfra import host, local
+from pyinfra.facts.server import Command
 from pyinfra.operations import (
     apt,
     files,
@@ -41,7 +42,9 @@ if host.data.flatpak["enabled"]:
         mode="755",
     )
 else:
+    flatpak_cli = host.get_fact(Command, "command -v flatpak || true")
     server.shell(
         name="Remove Flatpak cursor theme override",
         commands=["flatpak override --user --unset-env=XCURSOR_THEME"],
+        _if=lambda: bool(flatpak_cli),
     )
