@@ -54,7 +54,7 @@ set -e
 user="{user}"
 nvm_version={nvm["nvm_version"]}
 
-su "$user" -c "git -C /home/{user}/.nvm fetch --tags"
+su "$user" -c "git -C /home/{user}/.nvm fetch --no-recurse-submodules --tags"
 su "$user" -c "git -C /home/{user}/.nvm reset --hard $nvm_version"
 """
     files.put(
