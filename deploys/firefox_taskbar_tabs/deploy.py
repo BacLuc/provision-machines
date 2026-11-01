@@ -147,7 +147,7 @@ Icon={icon_name}
 Terminal=false
 Categories=Network;WebBrowser;
 StartupNotify=true
-StartupWMClass=firefox_firefox.{key}
+StartupWMClass=firefox_firefox.{tab_id}
 """
         files.put(
             name=f"Install {name} taskbar tab .desktop entry",
