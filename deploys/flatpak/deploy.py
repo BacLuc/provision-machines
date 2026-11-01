@@ -40,3 +40,8 @@ if host.data.flatpak["enabled"]:
         _sudo=True,
         mode="755",
     )
+else:
+    server.shell(
+        name="Remove Flatpak cursor theme override",
+        commands=["flatpak override --user --unset-env=XCURSOR_THEME"],
+    )
