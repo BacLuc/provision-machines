@@ -56,3 +56,36 @@ The full variable set is in `deploys/openwebui/files/env.example`; a new variabl
 needs a group-data key and an `env.example` line, not a compose edit. The one
 compose-only literal is `WEBUI_AUTH=False` — a pin in `environment:`, which
 deliberately wins over `.env`.
+
+## Firefox taskbar tabs
+
+The created taskbar tab PWAs come from `group_data/local.py`; the defaults live in
+`deploys/firefox_taskbar_tabs/deploy.py`. Icons for every supported app are committed
+in `deploys/firefox_taskbar_tabs/files/icons/<key>-256.png`.
+
+```python
+firefox_taskbar_tabs = {
+    "enabled": True,
+    "tabs": {
+        "vshn-gitlab": {
+            "name": "VSHN GitLab",
+            "url": "https://git.vshn.net/",
+            "tab_id": "44f1788e-8889-4097-8d8d-da60a1c68a06",
+            "keywords": ["gitlab"],
+        },
+    },
+}
+```
+
+`tab_id` is a stable UUID per app (`python3 -c "import uuid; print(uuid.uuid4())"`). The app
+grid search always matches the `name` and the tab key; extra `keywords` add more terms.
+Removing an entry from `local.py` or setting `"enabled": False` on it removes its taskbar tab
+from the Firefox registries and its app grid entry on the next deploy run; re-enabling or
+re-adding restores it (the profile directories stay around).
+
+`url_prefixes` optionally lists https URL prefixes that open in the taskbar tab instead of
+the browser: a wrapper script (default handler for `x-scheme-handler/https`) routes matching
+URLs, e.g. `"url_prefixes": ["https://vshn.zoom.us/j/"]` sends meeting links into the Zoom
+window. Unmatched URLs open in the browser as usual. Removing all `url_prefixes` deletes the
+wrapper and its handler .desktop file but leaves the scheme registration; reset it manually
+with `xdg-mime default firefox_firefox.desktop x-scheme-handler/https`.

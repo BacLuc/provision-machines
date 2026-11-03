@@ -1,6 +1,7 @@
 import io
 import json
 import os
+from typing import Any
 from urllib.parse import urlparse
 
 from pyinfra import host
@@ -12,37 +13,61 @@ from operations.user import get_user_name
 
 user = get_user_name()
 
-firefox_taskbar_tabs = host.data.firefox_taskbar_tabs
-
-taskbar_tabs = {
-    "teams": (
-        "Teams",
-        "https://teams.microsoft.com/",
-        "5b4e9bd5-8cd1-47ea-8945-66f73dd85fe8",
-    ),
-    "jira": (
-        "Jira",
-        "https://vshnticket.atlassian.net/",
-        "05c3722e-4f98-4056-910b-d15d58628b22",
-    ),
-    "customer-service-board": (
-        "CS Board",
-        "https://vshnticket.atlassian.net/jira/software/c/projects/VSHNOPS/boards/95?quickFilter=660",
-        "35699144-8592-4b92-8806-4a651d52b1f4",
-    ),
-    "confluence": (
-        "Confluence",
-        "https://vshnwiki.atlassian.net/",
-        "40b8fc34-4f39-4a3a-927b-98eb493aed1a",
-    ),
-    "vshn-gitlab": (
-        "VSHN GitLab",
-        "https://git.vshn.net/",
-        "44f1788e-8889-4097-8d8d-da60a1c68a06",
-    ),
+taskbar_tab_defaults = {
+    "enabled": True,
+    "tabs": {
+        "teams": {
+            "enabled": False,
+            "name": "Teams",
+            "url": "https://teams.microsoft.com/",
+            "tab_id": "5b4e9bd5-8cd1-47ea-8945-66f73dd85fe8",
+        },
+        "jira": {
+            "enabled": False,
+            "name": "Jira",
+            "url": "https://vshnticket.atlassian.net/",
+            "tab_id": "05c3722e-4f98-4056-910b-d15d58628b22",
+        },
+        "customer-service-board": {
+            "enabled": False,
+            "name": "Customer Service Board",
+            "url": "https://vshnticket.atlassian.net/jira/software/c/projects/VSHNOPS/boards/95?quickFilter=660",
+            "tab_id": "35699144-8592-4b92-8806-4a651d52b1f4",
+            "keywords": ["customer board", "cs board", "CS Board"],
+        },
+        "confluence": {
+            "enabled": False,
+            "name": "Confluence",
+            "url": "https://vshnwiki.atlassian.net/",
+            "tab_id": "40b8fc34-4f39-4a3a-927b-98eb493aed1a",
+        },
+        "vshn-gitlab": {
+            "enabled": False,
+            "name": "VSHN GitLab",
+            "url": "https://git.vshn.net/",
+            "tab_id": "44f1788e-8889-4097-8d8d-da60a1c68a06",
+        },
+        "zoom": {
+            "enabled": False,
+            "name": "Zoom",
+            "url": "https://vshn.zoom.us",
+            "url_prefixes": ["https://vshn.zoom.us/j/"],
+            "tab_id": "235345df-e0f8-4875-9d5b-22afdac2f956",
+        },
+        "rocket-chat": {
+            "enabled": False,
+            "name": "RocketChat",
+            "url": "https://vshn.chat",
+            "tab_id": "0f35f5e3-a0da-454d-a334-e319bea4ed4d",
+        },
+    },
 }
 
-if firefox_taskbar_tabs["enabled"]:
+taskbar_tabs: dict[str, Any] = taskbar_tab_defaults.copy()
+taskbar_tabs.update(host.data.firefox_taskbar_tabs)
+
+if taskbar_tabs["enabled"]:
+    taskbar_tabs = {key: tab for key, tab in taskbar_tabs["tabs"].items() if tab.get("enabled", True)}
     icon_base = f"/home/{user}/.local/share/icons/hicolor"
     pixmaps_dir = f"/home/{user}/.local/share/pixmaps"
     applications_dir = f"/home/{user}/.local/share/applications"
@@ -94,13 +119,33 @@ if firefox_taskbar_tabs["enabled"]:
         )
         profiles = [f"{profile_dir}/prefs.js"]
 
-    managed_ids = {entry[2] for entry in taskbar_tabs.values()}
+    managed_desktops = {f"firefox_firefox.{key}.desktop" for key in taskbar_tabs}
+    profile_signature = f'--profile "{snap_profiles_root}/taskbar-tabs.'
+    own_orphans: set[str] = set()
+    for desktop_path in host.get_fact(FindFiles, path=applications_dir, fname="firefox_firefox.*.desktop", maxdepth=1):
+        desktop_name = os.path.basename(desktop_path)
+        if desktop_name in managed_desktops:
+            continue
+        contents = host.get_fact(FileContents, path=desktop_path)
+        if contents and profile_signature in "\n".join(contents):
+            own_orphans.add(desktop_name)
+            files.file(
+                name="Remove removed taskbar tab " + desktop_name,
+                path=desktop_path,
+                present=False,
+            )
+
+    managed_ids = {tab["tab_id"] for tab in taskbar_tabs.values()}
     registry_entries: list[dict[str, object]] = []
     favorite_desktops: list[str] = []
 
-    for key, (name, url, tab_id) in taskbar_tabs.items():
+    for key, tab in taskbar_tabs.items():
+        name = tab["name"]
+        url = tab["url"]
+        tab_id = tab["tab_id"]
         icon_name = f"firefox-taskbar-tab-{key}"
         desktop_name = f"firefox_firefox.{key}.desktop"
+        keyword_line = "Keywords={};\n".format(";".join([key, *tab.get("keywords", [])]))
         profile_dir = f"{snap_profiles_root}/taskbar-tabs.{key}"
         files.directory(
             name=f"Ensure {name} Firefox profile",
@@ -151,7 +196,7 @@ if firefox_taskbar_tabs["enabled"]:
 Version=1.0
 Type=Application
 Name={name}
-Exec=firefox --name=firefox_firefox.{key} --no-remote --profile "{profile_dir}" -taskbar-tab {tab_id} -new-window "{url}"
+{keyword_line}Exec=firefox --name=firefox_firefox.{key} --no-remote --profile "{profile_dir}" -taskbar-tab {tab_id} -new-window "{url}"
 Icon={icon_name}
 Terminal=false
 Categories=Network;WebBrowser;
@@ -185,6 +230,120 @@ StartupWMClass=firefox_firefox.{key}
         )
         favorite_desktops.append(desktop_name)
 
+    url_prefixes = {prefix: key for key, tab in taskbar_tabs.items() for prefix in tab.get("url_prefixes", [])}
+    handler_bin = f"/home/{user}/.local/bin"
+    handler_script = f"{handler_bin}/vshn-taskbar-tab-url-handler"
+    handler_desktop = "vshn-taskbar-tab-url-handler.desktop"
+    if url_prefixes:
+        url_prefix_tabs = json.dumps(
+            [
+                {
+                    "prefix": prefix,
+                    "key": key,
+                    "tab_id": taskbar_tabs[key]["tab_id"],
+                    "profile": f"{snap_profiles_root}/taskbar-tabs.{key}",
+                }
+                for key, tab in taskbar_tabs.items()
+                for prefix in tab.get("url_prefixes", [])
+            ],
+            indent=2,
+        )
+        files.directory(
+            name="Ensure directory " + handler_bin,
+            path=handler_bin,
+            user=user,
+            group=user,
+            mode="755",
+        )
+        files.put(
+            name="Install taskbar tab url handler wrapper script",
+            src=io.StringIO(
+                f"""#!/usr/bin/env python3
+import json
+import subprocess
+import sys
+from urllib.parse import urlparse
+
+url = sys.argv[1]
+tabs = {url_prefix_tabs}
+
+for tab in tabs:
+    if not url.startswith(tab["prefix"]):
+        continue
+    profile_dir = tab["profile"]
+    path = profile_dir + "/taskbartabs/taskbartabs.json"
+    try:
+        registry = json.load(open(path))
+    except (OSError, ValueError):
+        registry = None
+    if isinstance(registry, dict):
+        for entry in registry.get("taskbarTabs", []):
+            if entry.get("id") == tab["tab_id"]:
+                entry["startUrl"] = url
+                entry["scopes"] = [{{"hostname": urlparse(url).hostname}}]
+                with open(path, "w") as stream:
+                    json.dump(registry, stream, indent=2)
+    subprocess.run(
+        [
+            "firefox",
+            "--name=firefox_firefox." + tab["key"],
+            "--no-remote",
+            "--profile",
+            profile_dir,
+            "-taskbar-tab",
+            tab["tab_id"],
+            "-new-window",
+            url,
+        ],
+        check=False,
+    )
+    sys.exit()
+
+subprocess.run(["firefox", url], check=False)
+"""
+            ),
+            dest=handler_script,
+            user=user,
+            group=user,
+            mode="755",
+        )
+        files.put(
+            name="Install taskbar tab url handler .desktop entry",
+            src=io.StringIO(
+                f"""[Desktop Entry]
+Version=1.0
+Type=Application
+Name=VSHN taskbar tabs URL handler
+NoDisplay=true
+Exec={handler_script} %u
+Terminal=false
+MimeType=x-scheme-handler/https;
+StartupNotify=false
+"""
+            ),
+            dest=f"{applications_dir}/{handler_desktop}",
+            user=user,
+            group=user,
+            mode="644",
+        )
+        server.shell(
+            name="Register https scheme handler",
+            commands=[f"xdg-mime default {handler_desktop} x-scheme-handler/https 2>/dev/null || true"],
+        )
+    else:
+        files.file(
+            name="Remove taskbar tab url handler wrapper script",
+            path=handler_script,
+            present=False,
+        )
+        files.file(
+            name="Remove taskbar tab url handler .desktop entry",
+            path=f"{applications_dir}/{handler_desktop}",
+            present=False,
+        )
+        # The https scheme registration is left in place. Remove it manually with
+        # xdg-mime default firefox_firefox.desktop x-scheme-handler/https
+
     for prefs_js in profiles:
         registry_dir = f"{os.path.dirname(prefs_js)}/taskbartabs"
         registry_path = f"{registry_dir}/taskbartabs.json"
@@ -192,7 +351,11 @@ StartupWMClass=firefox_firefox.{key}
         existing = host.get_fact(FileContents, path=registry_path)
         kept: list[dict[str, object]] = []
         if existing:
-            kept = [tab for tab in json.loads("\n".join(existing))["taskbarTabs"] if tab["id"] not in managed_ids]
+            kept = [
+                tab
+                for tab in json.loads("\n".join(existing))["taskbarTabs"]
+                if tab.get("id") not in managed_ids and tab.get("shortcutRelativePath") not in own_orphans
+            ]
 
         files.directory(
             name="Ensure directory " + registry_dir,
