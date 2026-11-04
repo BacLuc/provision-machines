@@ -24,7 +24,7 @@ ENV NODE_VERSION=26.13.0
 # renovate: datasource=npm depName=@anthropic-ai/claude-code
 ENV CLAUDE_CODE_VERSION=2.1.319
 # renovate: datasource=npm depName=@google/gemini-cli
-ENV GEMINI_CLI_VERSION=0.56.0
+ENV GEMINI_CLI_VERSION=0.67.0
 # renovate: datasource=npm depName=@openai/codex
 ENV CODEX_VERSION=0.167.0
 # renovate: datasource=npm depName=@opencode/cli
