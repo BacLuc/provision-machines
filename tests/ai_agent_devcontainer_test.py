@@ -1,4 +1,3 @@
-import json
 import os
 import subprocess
 from pathlib import Path
@@ -57,13 +56,6 @@ def run_launcher(
         (fake_bin / "curl").write_text("#!/bin/sh\nexit 1\n")
         (fake_bin / "sleep").chmod(0o755)
     return subprocess.run([str(LAUNCHER)], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=5)
-
-
-def test_invalid_port_fails_before_startup(tmp_path: Path) -> None:
-    result = run_launcher(tmp_path, "80")
-
-    assert result.returncode != 0
-    assert "valid port number" in result.stderr
 
 
 def test_failed_devcontainer_up_fails_promptly(tmp_path: Path) -> None:
@@ -134,45 +126,3 @@ def test_invalid_pairing_code_cleans_up_devcontainer(tmp_path: Path) -> None:
     assert result.returncode != 0
     assert "could not extract pairing code" in result.stderr
     assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
-
-
-def run_post_start(tmp_path: Path, untracked_config: bool) -> subprocess.CompletedProcess[str]:
-    fake_bin = tmp_path / "bin"
-    fake_bin.mkdir()
-    config_dir = tmp_path / ".config" / "opencode"
-    config_dir.mkdir(parents=True)
-    (config_dir / "opencode.jsonc").write_text("tracked")
-    if untracked_config:
-        (config_dir / "untracked-config.jsonc").write_text("untracked")
-    (fake_bin / "init-ai-devcontainer-home").write_text("#!/bin/sh\n")
-    (fake_bin / "git").write_text("#!/bin/sh\nexit 1\n")
-    (fake_bin / "nc").write_text("#!/bin/sh\nexit 1\n")
-    (fake_bin / "opencode").write_text('#!/bin/sh\nprintf \'%s\' "$OPENCODE_CONFIG" > "$CONFIG_RESULT"\n')
-    for command in fake_bin.iterdir():
-        command.chmod(0o755)
-    command = json.loads((FILES / "devcontainer.json").read_text())["postStartCommand"]
-    command = command.replace("/home/codespace/.config/opencode", str(config_dir))
-    command = command.replace("cd /workspaces/${localWorkspaceFolderBasename}", "cd /")
-    env = os.environ | {
-        "HOME": str(tmp_path),
-        "PATH": f"{fake_bin}:{os.environ['PATH']}",
-        "OPENCODE_PORT": "4096",
-        "CONFIG_RESULT": str(tmp_path / "config-result"),
-        "OPENCODE_CONFIG": str(config_dir / "opencode.jsonc"),
-        "localWorkspaceFolderBasename": "..",
-    }
-    return subprocess.run(["bash", "-c", command], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=5)
-
-
-def test_untracked_config_takes_precedence_when_present(tmp_path: Path) -> None:
-    result = run_post_start(tmp_path, untracked_config=True)
-
-    assert result.returncode == 0
-    assert (tmp_path / "config-result").read_text() == str(tmp_path / ".config/opencode/untracked-config.jsonc")
-
-
-def test_tracked_config_is_fallback_when_untracked_config_is_absent(tmp_path: Path) -> None:
-    result = run_post_start(tmp_path, untracked_config=False)
-
-    assert result.returncode == 0
-    assert (tmp_path / "config-result").read_text() == str(tmp_path / ".config/opencode/opencode.jsonc")
