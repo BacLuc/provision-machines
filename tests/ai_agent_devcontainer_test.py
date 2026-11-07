@@ -6,14 +6,29 @@ FILES = Path(__file__).parents[1] / "deploys/development_tools/ai_agent_devconta
 LAUNCHER = FILES / "start-ai-agent-devcontainer.sh"
 
 
-def run_launcher(tmp_path: Path, port: str, devcontainer_exit: int = 0) -> subprocess.CompletedProcess[str]:
+def run_launcher(
+    tmp_path: Path,
+    port: str,
+    devcontainer_exit: int = 0,
+    curl_mode: str = "fail",
+) -> subprocess.CompletedProcess[str]:
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
+    devcontainer_log = tmp_path / "devcontainer.log"
     (fake_bin / "git").write_text('#!/bin/sh\ncase "$1" in config) echo test;; esac\n')
     (fake_bin / "openssl").write_text("#!/bin/sh\nprintf password\n")
     (fake_bin / "nc").write_text("#!/bin/sh\nexit 1\n")
-    (fake_bin / "curl").write_text("#!/bin/sh\nexit 1\n")
-    (fake_bin / "devcontainer").write_text(f"#!/bin/sh\nexit {devcontainer_exit}\n")
+    if curl_mode == "ready":
+        curl_result = "printf '{\"ok\":true}'\n"
+    elif curl_mode == "pair-fail":
+        curl_result = 'case "$*" in *api/config*) printf \'{"ok":true}\';; *) exit 1;; esac\n'
+    else:
+        curl_result = "exit 1\n"
+    (fake_bin / "curl").write_text(f"#!/bin/sh\n{curl_result}")
+    (fake_bin / "devcontainer").write_text(
+        '#!/bin/sh\nprintf \'%s\\n\' "$1" >> "$DEVCONTAINER_LOG"\n'
+        f'if [ "$1" = up ]; then if [ {devcontainer_exit} -ne 0 ]; then exit {devcontainer_exit}; fi; sleep 2; fi\n'
+    )
     for command in fake_bin.iterdir():
         command.chmod(0o755)
     env = os.environ | {
@@ -21,6 +36,7 @@ def run_launcher(tmp_path: Path, port: str, devcontainer_exit: int = 0) -> subpr
         "PATH": f"{fake_bin}:{os.environ['PATH']}",
         "OPENCODE_PORT": port,
         "ai_agent_devcontainer_open_url": "false",
+        "DEVCONTAINER_LOG": str(devcontainer_log),
     }
     return subprocess.run([str(LAUNCHER)], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=5)
 
@@ -34,6 +50,8 @@ def test_config_and_port_selection_are_consistent() -> None:
     assert "untracked-config.jsonc" in devcontainer
     assert "--port ${OPENCODE_PORT:-4096}" in devcontainer
     assert '"127.0.0.1:${OPENCODE_PORT:-4096}:${OPENCODE_PORT:-4096}"' in compose
+    launcher = LAUNCHER.read_text()
+    assert launcher.count("--connect-timeout 2 --max-time 5") == 2
 
 
 def test_invalid_port_fails_before_startup(tmp_path: Path) -> None:
@@ -48,3 +66,12 @@ def test_failed_devcontainer_up_fails_promptly(tmp_path: Path) -> None:
 
     assert result.returncode != 0
     assert "devcontainer failed to start" in result.stderr
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+
+
+def test_pairing_failure_cleans_up_devcontainer(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="pair-fail")
+
+    assert result.returncode != 0
+    assert "could not request pairing code" in result.stderr
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]

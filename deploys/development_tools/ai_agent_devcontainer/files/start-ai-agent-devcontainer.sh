@@ -96,7 +96,15 @@ if [[ -f $WORKSPACE_DIR/.git ]]; then
 fi
 
 startup_log=$(mktemp)
-trap 'rm -f "$startup_log"' EXIT
+cleanup() {
+  local status=$?
+  if [[ $status -ne 0 && -n "${devcontainer_pid:-}" ]]; then
+    devcontainer down --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >/dev/null 2>&1 || true
+  fi
+  rm -f "$startup_log"
+  exit "$status"
+}
+trap cleanup EXIT
 devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >"$startup_log" 2>&1 &
 devcontainer_pid=$!
 
@@ -110,7 +118,7 @@ for _ in {1..120}; do
     echo "Error: devcontainer failed to start" >&2
     exit 1
   fi
-  if response=$(curl -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; json.load(sys.stdin)' 2>/dev/null; then
+  if response=$(curl --connect-timeout 2 --max-time 5 -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; json.load(sys.stdin)' 2>/dev/null; then
     ready=true
     break
   fi
@@ -122,7 +130,11 @@ if [[ "$ready" != true ]]; then
   exit 1
 fi
 
-response=$(curl -fsS -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair")
+if ! response=$(curl --connect-timeout 2 --max-time 5 -fsS -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair"); then
+  echo "Error: could not request pairing code" >&2
+  echo "Fallback: use the password from ~/.config/ai-agent-devcontainer/password to log in at ${base_url}" >&2
+  exit 1
+fi
 code=$(printf %s "$response" | python3 -c 'import json, sys; value = json.load(sys.stdin).get("code", ""); print(value if isinstance(value, str) else "")')
 if [[ -z "$code" ]] || [[ ! "$code" =~ ^[A-Za-z0-9_-]+$ ]]; then
   echo "Error: could not extract pairing code from: $response" >&2
