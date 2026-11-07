@@ -99,6 +99,10 @@ startup_log=$(mktemp)
 cleanup() {
   local status=$?
   if [[ $status -ne 0 && -n "${devcontainer_pid:-}" ]]; then
+    if kill -0 "$devcontainer_pid" 2>/dev/null; then
+      kill "$devcontainer_pid" 2>/dev/null || true
+    fi
+    wait "$devcontainer_pid" 2>/dev/null || true
     devcontainer down --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >/dev/null 2>&1 || true
   fi
   rm -f "$startup_log"
@@ -107,16 +111,23 @@ cleanup() {
 trap cleanup EXIT
 devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >"$startup_log" 2>&1 &
 devcontainer_pid=$!
+devcontainer_status=
 
 base_url="http://localhost:${OPENCODE_PORT}"
 echo "Waiting for ${base_url} to respond..."
 ready=false
 for _ in {1..120}; do
-  if ! kill -0 "$devcontainer_pid" 2>/dev/null; then
-    wait "$devcontainer_pid" || true
-    cat "$startup_log" >&2
-    echo "Error: devcontainer failed to start" >&2
-    exit 1
+  if [[ -z "$devcontainer_status" ]] && ! kill -0 "$devcontainer_pid" 2>/dev/null; then
+    if wait "$devcontainer_pid"; then
+      devcontainer_status=0
+    else
+      devcontainer_status=$?
+    fi
+    if [[ "$devcontainer_status" -ne 0 ]]; then
+      cat "$startup_log" >&2
+      echo "Error: devcontainer failed to start" >&2
+      exit 1
+    fi
   fi
   if response=$(curl --connect-timeout 2 --max-time 5 -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; json.load(sys.stdin)' 2>/dev/null; then
     ready=true

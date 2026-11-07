@@ -12,6 +12,7 @@ def run_launcher(
     port: str,
     devcontainer_exit: int = 0,
     curl_mode: str = "fail",
+    devcontainer_lifecycle: str = "running",
 ) -> subprocess.CompletedProcess[str]:
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
@@ -35,7 +36,9 @@ def run_launcher(
     (fake_bin / "curl").write_text(f"#!/bin/sh\n{curl_result}")
     (fake_bin / "devcontainer").write_text(
         '#!/bin/sh\nprintf \'%s\\n\' "$1" >> "$DEVCONTAINER_LOG"\n'
-        f'if [ "$1" = up ]; then if [ {devcontainer_exit} -ne 0 ]; then exit {devcontainer_exit}; fi; '
+        'if [ "$1" = up ]; then printf \'%s\\n\' "$$" > "$DEVCONTAINER_PID_FILE"; '
+        f'if [ {devcontainer_exit} -ne 0 ]; then exit {devcontainer_exit}; fi; '
+        f'if [ "{devcontainer_lifecycle}" = exits ]; then exit 0; fi; '
         f'if [ "{curl_mode}" = timeout ]; then while :; do :; done; else sleep 2; fi; fi\n'
     )
     for command in fake_bin.iterdir():
@@ -46,6 +49,7 @@ def run_launcher(
         "OPENCODE_PORT": port,
         "ai_agent_devcontainer_open_url": "false",
         "DEVCONTAINER_LOG": str(devcontainer_log),
+        "DEVCONTAINER_PID_FILE": str(tmp_path / "devcontainer.pid"),
         "CURL_LOG": str(tmp_path / "curl.log"),
     }
     if curl_mode == "timeout":
@@ -93,6 +97,27 @@ def test_readiness_timeout_cleans_up_devcontainer(tmp_path: Path) -> None:
     assert result.returncode != 0
     assert "timed out waiting" in result.stderr
     assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+
+
+def test_completed_devcontainer_up_waits_for_readiness(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="timeout", devcontainer_lifecycle="exits")
+
+    assert result.returncode != 0
+    assert "timed out waiting" in result.stderr
+    assert "devcontainer failed to start" not in result.stderr
+
+
+def test_readiness_timeout_reaps_running_devcontainer_up(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="timeout")
+
+    assert result.returncode != 0
+    pid = int((tmp_path / "devcontainer.pid").read_text())
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        pass
+    else:
+        raise AssertionError(f"devcontainer process {pid} is still running")
 
 
 def test_malformed_pairing_response_cleans_up_devcontainer(tmp_path: Path) -> None:
