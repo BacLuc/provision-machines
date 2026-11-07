@@ -6,7 +6,7 @@ AGE_THRESHOLD_DAYS=${AGE_THRESHOLD_DAYS:-60}
 case "$AGE_THRESHOLD_DAYS" in
   ''|*[!0-9]*) AGE_THRESHOLD_DAYS=60 ;;
 esac
-DRY_RUN=${DRY_RUN:-true}
+DRY_RUN=${DRY_RUN:-false}
 
 resolve_home() {
   local home_dir=""
