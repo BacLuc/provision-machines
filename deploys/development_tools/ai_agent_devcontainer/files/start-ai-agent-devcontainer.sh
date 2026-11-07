@@ -135,7 +135,7 @@ if ! response=$(curl --connect-timeout 2 --max-time 5 -fsS -X POST -u "opencode:
   echo "Fallback: use the password from ~/.config/ai-agent-devcontainer/password to log in at ${base_url}" >&2
   exit 1
 fi
-code=$(printf %s "$response" | python3 -c 'import json, sys; value = json.load(sys.stdin).get("code", ""); print(value if isinstance(value, str) else "")')
+code=$(printf %s "$response" | python3 -c 'import json, sys; value = json.load(sys.stdin) if sys.stdin.readable() else {}; print(value.get("code", "") if isinstance(value, dict) and isinstance(value.get("code", ""), str) else "")' 2>/dev/null || true)
 if [[ -z "$code" ]] || [[ ! "$code" =~ ^[A-Za-z0-9_-]+$ ]]; then
   echo "Error: could not extract pairing code from: $response" >&2
   echo "Fallback: use the password from ~/.config/ai-agent-devcontainer/password to log in at ${base_url}" >&2

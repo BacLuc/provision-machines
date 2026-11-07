@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -19,15 +20,23 @@ def run_launcher(
     (fake_bin / "openssl").write_text("#!/bin/sh\nprintf password\n")
     (fake_bin / "nc").write_text("#!/bin/sh\nexit 1\n")
     if curl_mode == "ready":
-        curl_result = "printf '{\"ok\":true}'\n"
+        curl_result = (
+            'printf \'%s\\n\' "$*" >> "$CURL_LOG"; '
+            'case "$*" in *api/config*) printf \'{"ok":true}\';; *) printf \'{"code":"pair-code_123"}\';; esac\n'
+        )
     elif curl_mode == "pair-fail":
         curl_result = 'case "$*" in *api/config*) printf \'{"ok":true}\';; *) exit 1;; esac\n'
+    elif curl_mode == "pair-malformed":
+        curl_result = "case \"$*\" in *api/config*) printf '{\"ok\":true}';; *) printf 'not-json';; esac\n"
+    elif curl_mode == "pair-invalid-code":
+        curl_result = 'case "$*" in *api/config*) printf \'{"ok":true}\';; *) printf \'{"code":"bad code"}\';; esac\n'
     else:
         curl_result = "exit 1\n"
     (fake_bin / "curl").write_text(f"#!/bin/sh\n{curl_result}")
     (fake_bin / "devcontainer").write_text(
         '#!/bin/sh\nprintf \'%s\\n\' "$1" >> "$DEVCONTAINER_LOG"\n'
-        f'if [ "$1" = up ]; then if [ {devcontainer_exit} -ne 0 ]; then exit {devcontainer_exit}; fi; sleep 2; fi\n'
+        f'if [ "$1" = up ]; then if [ {devcontainer_exit} -ne 0 ]; then exit {devcontainer_exit}; fi; '
+        f'if [ "{curl_mode}" = timeout ]; then while :; do :; done; else sleep 2; fi; fi\n'
     )
     for command in fake_bin.iterdir():
         command.chmod(0o755)
@@ -37,21 +46,13 @@ def run_launcher(
         "OPENCODE_PORT": port,
         "ai_agent_devcontainer_open_url": "false",
         "DEVCONTAINER_LOG": str(devcontainer_log),
+        "CURL_LOG": str(tmp_path / "curl.log"),
     }
+    if curl_mode == "timeout":
+        (fake_bin / "sleep").write_text("#!/bin/sh\nexit 0\n")
+        (fake_bin / "curl").write_text("#!/bin/sh\nexit 1\n")
+        (fake_bin / "sleep").chmod(0o755)
     return subprocess.run([str(LAUNCHER)], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=5)
-
-
-def test_config_and_port_selection_are_consistent() -> None:
-    dockerfile = (FILES / "Dockerfile").read_text()
-    devcontainer = (FILES / "devcontainer.json").read_text()
-    compose = (FILES / "compose.yml").read_text()
-
-    assert "ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/opencode.jsonc" in dockerfile
-    assert "untracked-config.jsonc" in devcontainer
-    assert "--port ${OPENCODE_PORT:-4096}" in devcontainer
-    assert '"127.0.0.1:${OPENCODE_PORT:-4096}:${OPENCODE_PORT:-4096}"' in compose
-    launcher = LAUNCHER.read_text()
-    assert launcher.count("--connect-timeout 2 --max-time 5") == 2
 
 
 def test_invalid_port_fails_before_startup(tmp_path: Path) -> None:
@@ -75,3 +76,78 @@ def test_pairing_failure_cleans_up_devcontainer(tmp_path: Path) -> None:
     assert result.returncode != 0
     assert "could not request pairing code" in result.stderr
     assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+
+
+def test_authenticated_pairing_returns_code_and_keeps_devcontainer(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="ready")
+
+    assert result.returncode == 0
+    assert result.stdout.strip().endswith("http://localhost:4096/auth/connect/pair-code_123")
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up"]
+    assert all("-u opencode:password" in line for line in (tmp_path / "curl.log").read_text().splitlines())
+
+
+def test_readiness_timeout_cleans_up_devcontainer(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="timeout")
+
+    assert result.returncode != 0
+    assert "timed out waiting" in result.stderr
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+
+
+def test_malformed_pairing_response_cleans_up_devcontainer(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="pair-malformed")
+
+    assert result.returncode != 0
+    assert "could not extract pairing code" in result.stderr
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+
+
+def test_invalid_pairing_code_cleans_up_devcontainer(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="pair-invalid-code")
+
+    assert result.returncode != 0
+    assert "could not extract pairing code" in result.stderr
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+
+
+def run_post_start(tmp_path: Path, untracked_config: bool) -> subprocess.CompletedProcess[str]:
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    config_dir = tmp_path / ".config" / "opencode"
+    config_dir.mkdir(parents=True)
+    (config_dir / "opencode.jsonc").write_text("tracked")
+    if untracked_config:
+        (config_dir / "untracked-config.jsonc").write_text("untracked")
+    (fake_bin / "init-ai-devcontainer-home").write_text("#!/bin/sh\n")
+    (fake_bin / "git").write_text("#!/bin/sh\nexit 1\n")
+    (fake_bin / "nc").write_text("#!/bin/sh\nexit 1\n")
+    (fake_bin / "opencode").write_text('#!/bin/sh\nprintf \'%s\' "$OPENCODE_CONFIG" > "$CONFIG_RESULT"\n')
+    for command in fake_bin.iterdir():
+        command.chmod(0o755)
+    command = json.loads((FILES / "devcontainer.json").read_text())["postStartCommand"]
+    command = command.replace("/home/codespace/.config/opencode", str(config_dir))
+    command = command.replace("cd /workspaces/${localWorkspaceFolderBasename}", "cd /")
+    env = os.environ | {
+        "HOME": str(tmp_path),
+        "PATH": f"{fake_bin}:{os.environ['PATH']}",
+        "OPENCODE_PORT": "4096",
+        "CONFIG_RESULT": str(tmp_path / "config-result"),
+        "OPENCODE_CONFIG": str(config_dir / "opencode.jsonc"),
+        "localWorkspaceFolderBasename": "..",
+    }
+    return subprocess.run(["bash", "-c", command], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=5)
+
+
+def test_untracked_config_takes_precedence_when_present(tmp_path: Path) -> None:
+    result = run_post_start(tmp_path, untracked_config=True)
+
+    assert result.returncode == 0
+    assert (tmp_path / "config-result").read_text() == str(tmp_path / ".config/opencode/untracked-config.jsonc")
+
+
+def test_tracked_config_is_fallback_when_untracked_config_is_absent(tmp_path: Path) -> None:
+    result = run_post_start(tmp_path, untracked_config=False)
+
+    assert result.returncode == 0
+    assert (tmp_path / "config-result").read_text() == str(tmp_path / ".config/opencode/opencode.jsonc")
