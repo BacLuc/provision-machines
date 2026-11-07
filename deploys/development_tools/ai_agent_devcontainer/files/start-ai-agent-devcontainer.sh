@@ -95,18 +95,36 @@ if [[ -f $WORKSPACE_DIR/.git ]]; then
   fi
 fi
 
-devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" &
+startup_log=$(mktemp)
+trap 'rm -f "$startup_log"' EXIT
+devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >"$startup_log" 2>&1 &
 devcontainer_pid=$!
 
 base_url="http://localhost:${OPENCODE_PORT}"
 echo "Waiting for ${base_url} to respond..."
-until curl -sf -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" > /dev/null; do
+ready=false
+for _ in {1..120}; do
+  if ! kill -0 "$devcontainer_pid" 2>/dev/null; then
+    wait "$devcontainer_pid" || true
+    cat "$startup_log" >&2
+    echo "Error: devcontainer failed to start" >&2
+    exit 1
+  fi
+  if response=$(curl -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; json.load(sys.stdin)' 2>/dev/null; then
+    ready=true
+    break
+  fi
   sleep 1
 done
+if [[ "$ready" != true ]]; then
+  cat "$startup_log" >&2
+  echo "Error: timed out waiting for ${base_url}/api/config" >&2
+  exit 1
+fi
 
-response=$(curl -sf -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair")
-code=$(printf %s "$response" | sed 's/.*"code":"\([^"]*\)".*/\1/')
-if [[ -z "$code" ]]; then
+response=$(curl -fsS -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair")
+code=$(printf %s "$response" | python3 -c 'import json, sys; value = json.load(sys.stdin).get("code", ""); print(value if isinstance(value, str) else "")')
+if [[ -z "$code" ]] || [[ ! "$code" =~ ^[A-Za-z0-9_-]+$ ]]; then
   echo "Error: could not extract pairing code from: $response" >&2
   echo "Fallback: use the password from ~/.config/ai-agent-devcontainer/password to log in at ${base_url}" >&2
   exit 1
@@ -116,7 +134,7 @@ opencode_url="${base_url}/auth/connect/${code}"
 printf %s "$opencode_url" | (xclip -selection clipboard 2>/dev/null || wl-copy 2>/dev/null || pbcopy 2>/dev/null || true)
 
 if [[ "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
-  open "$opencode_url"
+  open "$opencode_url" >/dev/null 2>&1 || true
 fi
 
 echo "$opencode_url"
