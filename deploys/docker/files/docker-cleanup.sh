@@ -156,4 +156,6 @@ done < <(
   done
 )
 
+docker system prune -f --volumes
+
 echo -e "${GREEN}Docker image cleanup complete!${NC}"
