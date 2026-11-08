@@ -3,6 +3,7 @@
 set -eu
 
 USER="@USER@"
+STATE_DIR="@STATE_DIR@"
 USER_ID="$(id -u "$USER")"
 RUNTIME_DIR="/run/user/$USER_ID"
 
@@ -15,4 +16,4 @@ runuser -u "$USER" -- env \
     DBUS_SESSION_BUS_ADDRESS="unix:path=$RUNTIME_DIR/bus" \
     notify-send \
     "Provisioning scheduled in two hours" \
-    "Run systemctl stop auto-provision.service to stop today's execution." || true
+    "Run sudo systemctl stop auto-provision.service; sudo sh -c 'printf \"%s\\n\" \"\$(date +%F)\" > $STATE_DIR/stopped-today' to stop today's execution." || true

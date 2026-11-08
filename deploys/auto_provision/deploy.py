@@ -47,7 +47,7 @@ if auto_provision["enabled"]:
     )
 
     notifier = open(f"{dirname_of(__file__)}/files/auto-provision-notify.sh").read()
-    notifier = notifier.replace("@USER@", user)
+    notifier = notifier.replace("@USER@", user).replace("@STATE_DIR@", state_dir)
     files.put(
         name="Install auto-provision notification script",
         src=io.StringIO(notifier),
