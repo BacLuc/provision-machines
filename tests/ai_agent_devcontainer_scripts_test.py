@@ -1,4 +1,3 @@
-import base64
 import hashlib
 import json
 import os
@@ -78,7 +77,9 @@ def fake_commands(tmp_path: Path) -> tuple[Path, Path]:
         "import json, os, sys\n"
         "with open(os.environ['CALL_LOG'], 'a') as log:\n"
         "    log.write(json.dumps({'command': sys.argv[1:], 'project': None}) + '\\n')\n"
-        "raise SystemExit(0 if os.environ.get('CURL_SUCCEEDS') == '1' else 1)\n"
+"if '-X' in sys.argv and 'POST' in sys.argv:\n"
+"    print('{\"code\":\"test-code\"}')\n"
+"raise SystemExit(0 if os.environ.get('CURL_SUCCEEDS') == '1' else 1)\n"
     )
     nc = bin_dir / "nc"
     nc.write_text("#!/usr/bin/env bash\nexit 1\n")
@@ -276,7 +277,7 @@ def test_temporary_workspace_start_and_down_use_same_identity_and_remove_mapping
     readiness = next(call for call in calls(log) if call["command"][:1] == ["-s"])
     assert down["project"] == project
     assert up["working_dir"] == "/workspaces/workspace"
-    assert base64.b64decode(readiness["command"][-1].rsplit("/", 1)[1]).decode() == up["working_dir"]
+    assert readiness["command"][-1].endswith("/api/config")
     assert not mapping.read_text().strip()
     assert port.isdigit()
     process.communicate(timeout=5)
@@ -375,7 +376,7 @@ def test_same_basename_temporary_workspaces_have_distinct_readiness_urls(tmp_pat
             checked = [
                 call["command"][-1]
                 for call in (calls(log) if log.exists() else [])
-                if call["command"][:1] == ["-s"] and f":{port}/" in call["command"][-1]
+                    if call["command"][:1] == ["-s"] and f":{port}/api/config" in call["command"][-1]
             ]
             if checked:
                 readiness = checked[0]
@@ -445,7 +446,7 @@ def test_no_open_flag_suppresses_open_while_enabled_setting_opens(tmp_path: Path
     )
     opened = [call for call in calls(log) if call["command"][:1] == ["open"]]
     assert len(opened) == 1
-    assert opened[0]["command"][1].startswith("http://localhost:4097/")
+    assert opened[0]["command"][1] == "http://localhost:4097/auth/connect/test-code"
 
 
 def test_open_url_is_controlled_by_a_single_setting_variable() -> None:

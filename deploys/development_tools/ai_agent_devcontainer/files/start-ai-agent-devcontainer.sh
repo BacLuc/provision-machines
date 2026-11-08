@@ -188,7 +188,7 @@ DEVCONTAINER_PID=$!
 base_url="http://localhost:${OPENCODE_PORT}"
 echo "Waiting for ${base_url} to respond..."
 deadline=$((SECONDS + ${DEVCONTAINER_START_TIMEOUT:-120}))
-until [[ -n "$(docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" ps --status running --services devcontainer 2>/dev/null)" ]] && curl -sf -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" > /dev/null; do
+until [[ -n "$(docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" ps --status running --services devcontainer 2>/dev/null)" ]] && curl -s -f -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" > /dev/null; do
   if (( SECONDS >= deadline )); then
     echo "Timed out waiting for devcontainer service in Compose project ${COMPOSE_PROJECT_NAME} at ${base_url}" >&2
     docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" ps -a >&2 || true
@@ -206,7 +206,7 @@ until [[ -n "$(docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose
   sleep 1
 done
 
-response=$(curl -sf -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair")
+response=$(curl -s -f -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair")
 code=$(printf %s "$response" | sed 's/.*"code":"\([^"]*\)".*/\1/')
 if [[ -z "$code" ]]; then
   echo "Error: could not extract pairing code from: $response" >&2
