@@ -104,11 +104,14 @@ cleanup() {
     fi
     wait "$devcontainer_pid" 2>/dev/null || true
     devcontainer down --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >/dev/null 2>&1 || true
+  elif [[ -n "${devcontainer_pid:-}" ]]; then
+    wait "$devcontainer_pid" 2>/dev/null || true
   fi
   rm -f "$startup_log"
   exit "$status"
 }
 trap cleanup EXIT
+
 devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >"$startup_log" 2>&1 &
 devcontainer_pid=$!
 devcontainer_status=
@@ -135,10 +138,23 @@ for _ in {1..120}; do
   fi
   sleep 1
 done
+
 if [[ "$ready" != true ]]; then
-  cat "$startup_log" >&2
-  echo "Error: timed out waiting for ${base_url}/api/config" >&2
+  echo "Error: timed out waiting for ${base_url} to respond" >&2
   exit 1
+fi
+
+if [[ -z "$devcontainer_status" ]]; then
+  if wait "$devcontainer_pid"; then
+    devcontainer_status=0
+  else
+    devcontainer_status=$?
+  fi
+  if [[ "$devcontainer_status" -ne 0 ]]; then
+    cat "$startup_log" >&2
+    echo "Error: devcontainer failed to start" >&2
+    exit 1
+  fi
 fi
 
 if ! response=$(curl --connect-timeout 2 --max-time 5 -fsS -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair"); then
@@ -146,7 +162,7 @@ if ! response=$(curl --connect-timeout 2 --max-time 5 -fsS -X POST -u "opencode:
   echo "Fallback: use the password from ~/.config/ai-agent-devcontainer/password to log in at ${base_url}" >&2
   exit 1
 fi
-code=$(printf %s "$response" | python3 -c 'import json, sys; value = json.load(sys.stdin) if sys.stdin.readable() else {}; print(value.get("code", "") if isinstance(value, dict) and isinstance(value.get("code", ""), str) else "")' 2>/dev/null || true)
+code=$(printf %s "$response" | python3 -c 'import json, sys; value = json.load(sys.stdin).get("code", ""); print(value if isinstance(value, str) else "")' 2>/dev/null || true)
 if [[ -z "$code" ]] || [[ ! "$code" =~ ^[A-Za-z0-9_-]+$ ]]; then
   echo "Error: could not extract pairing code from: $response" >&2
   echo "Fallback: use the password from ~/.config/ai-agent-devcontainer/password to log in at ${base_url}" >&2
@@ -157,7 +173,7 @@ opencode_url="${base_url}/auth/connect/${code}"
 printf %s "$opencode_url" | (xclip -selection clipboard 2>/dev/null || wl-copy 2>/dev/null || pbcopy 2>/dev/null || true)
 
 if [[ "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
-  open "$opencode_url" >/dev/null 2>&1 || true
+  open "$opencode_url"
 fi
 
 echo "$opencode_url"
