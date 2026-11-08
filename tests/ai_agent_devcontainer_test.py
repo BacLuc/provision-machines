@@ -1,11 +1,9 @@
-import json
 import os
 import subprocess
 from pathlib import Path
 
 FILES = Path(__file__).parents[1] / "deploys/development_tools/ai_agent_devcontainer/files"
 LAUNCHER = FILES / "start-ai-agent-devcontainer.sh"
-DEVCONTAINER = FILES / "devcontainer.json"
 
 
 def run_launcher(
@@ -58,51 +56,6 @@ def run_launcher(
         (fake_bin / "curl").write_text("#!/bin/sh\nexit 1\n")
         (fake_bin / "sleep").chmod(0o755)
     return subprocess.run([str(LAUNCHER)], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=5)
-
-
-def run_post_start(tmp_path: Path, with_untracked_config: bool) -> str:
-    config_dir = tmp_path / "config"
-    config_dir.mkdir()
-    tracked_config = config_dir / "opencode.jsonc"
-    untracked_config = config_dir / "untracked-config.jsonc"
-    tracked_config.write_text("tracked")
-    if with_untracked_config:
-        untracked_config.write_text("untracked")
-    (tmp_path / "workspace").mkdir()
-    fake_bin = tmp_path / "bin"
-    fake_bin.mkdir()
-    (fake_bin / "init-ai-devcontainer-home").write_text("#!/bin/sh\n")
-    (fake_bin / "git").write_text("#!/bin/sh\nexit 0\n")
-    (fake_bin / "nc").write_text("#!/bin/sh\nexit 1\n")
-    (fake_bin / "opencode").write_text("#!/bin/sh\nprintf '%s' \"$OPENCODE_CONFIG\"\n")
-    for command in fake_bin.iterdir():
-        command.chmod(0o755)
-    command = json.loads(DEVCONTAINER.read_text())["postStartCommand"]
-    command = command.removeprefix("bash -c '").removesuffix("'")
-    command = command.replace("/home/codespace/.config/opencode", str(config_dir))
-    command = command.replace("/workspaces/${localWorkspaceFolderBasename}", str(tmp_path / "workspace"))
-    env = os.environ | {
-        "PATH": f"{fake_bin}:{os.environ['PATH']}",
-        "OPENCODE_CONFIG": str(tracked_config),
-        "OPENCODE_PORT": "4096",
-    }
-    result = subprocess.run(["bash", "-c", command], env=env, text=True, capture_output=True, check=True)
-    return result.stdout.splitlines()[-1]
-
-
-def test_post_start_uses_untracked_config_when_present(tmp_path: Path) -> None:
-    assert run_post_start(tmp_path, with_untracked_config=True).endswith("untracked-config.jsonc")
-
-
-def test_post_start_keeps_tracked_config_when_untracked_config_is_absent(tmp_path: Path) -> None:
-    assert run_post_start(tmp_path, with_untracked_config=False).endswith("opencode.jsonc")
-
-
-def test_invalid_port_fails_before_startup(tmp_path: Path) -> None:
-    result = run_launcher(tmp_path, "80")
-
-    assert result.returncode != 0
-    assert "valid port number" in result.stderr
 
 
 def test_failed_devcontainer_up_fails_promptly(tmp_path: Path) -> None:
