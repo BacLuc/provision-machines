@@ -167,7 +167,7 @@ firefox_taskbar_tabs = {
             "name": "Customer Service Board",
             "url": "https://vshnticket.atlassian.net/jira/software/c/projects/VSHNOPS/boards/95?quickFilter=660",
             "tab_id": "35699144-8592-4b92-8806-4a651d52b1f4",
-            "keywords": ["customer board", "cs board", "CS Board"],
+            "keywords": ["customer board", "cs board", "CS Board", "customer", "cs", "service board", "board"],
         },
         "confluence": {
             "enabled": False,
@@ -193,6 +193,24 @@ firefox_taskbar_tabs = {
             "name": "RocketChat",
             "url": "https://vshn.chat",
             "tab_id": "0f35f5e3-a0da-454d-a334-e319bea4ed4d",
+        },
+        "github": {
+            "enabled": False,
+            "name": "GitHub",
+            "url": "https://github.com/",
+            "tab_id": "cb08b72e-f725-4922-9d98-71ec3c2e741c",
+        },
+        "google-meet": {
+            "enabled": False,
+            "name": "Google Meet",
+            "url": "https://meet.google.com/",
+            "tab_id": "d993bcb9-751f-4add-9194-ddcab64bf700",
+        },
+        "allquiet": {
+            "enabled": False,
+            "name": "AllQuiet",
+            "url": "https://allquiet.eu/app",
+            "tab_id": "b119239c-fbd1-45ee-8350-1a89bf262460",
         },
     },
 }
