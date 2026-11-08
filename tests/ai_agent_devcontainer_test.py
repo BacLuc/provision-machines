@@ -121,19 +121,15 @@ def test_readiness_timeout_cleans_up_and_reaps_devcontainer(tmp_path: Path) -> N
     assert "timed out waiting" in result.stderr
     assert "startup output" in result.stderr
     assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
-def test_post_readiness_timeout_logs_and_cleans_up_devcontainer(tmp_path: Path) -> None:
+
+
+def test_ready_long_lived_devcontainer_returns_without_cleanup(tmp_path: Path) -> None:
     result = run_launcher(tmp_path, "4096", curl_mode="ready", devcontainer_lifecycle="hangs")
 
-    assert result.returncode != 0
-    assert "timed out waiting for devcontainer to finish starting" in result.stderr
-    assert "up" in result.stderr
-    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
-    try:
-        os.kill(int((tmp_path / "devcontainer.pid").read_text()), 0)
-    except ProcessLookupError:
-        pass
-    else:
-        raise AssertionError("devcontainer process is still running")
+    assert result.returncode == 0
+    assert result.stdout.strip().endswith("http://localhost:4096/auth/connect/pair-code_123")
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up"]
+    os.kill(int((tmp_path / "devcontainer.pid").read_text()), 15)
 
 
 def test_completed_devcontainer_up_waits_for_readiness(tmp_path: Path) -> None:

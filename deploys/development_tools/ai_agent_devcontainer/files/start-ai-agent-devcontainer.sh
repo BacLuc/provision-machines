@@ -111,8 +111,6 @@ cleanup() {
     fi
     wait "$devcontainer_pid" 2>/dev/null || true
     devcontainer down --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >/dev/null 2>&1 || true
-  elif [[ -n "${devcontainer_pid:-}" ]]; then
-    wait "$devcontainer_pid" 2>/dev/null || true
   fi
   rm -f "$startup_log"
   exit "$status"
@@ -149,28 +147,6 @@ done
 if [[ "$ready" != true ]]; then
   cat "$startup_log" >&2
   echo "Error: timed out waiting for ${base_url} to respond" >&2
-  exit 1
-fi
-
-for ((seconds_waited = 0; seconds_waited < devcontainer_wait_timeout; seconds_waited++)); do
-  if ! kill -0 "$devcontainer_pid" 2>/dev/null; then
-    if wait "$devcontainer_pid"; then
-      devcontainer_status=0
-    else
-      devcontainer_status=$?
-    fi
-    if [[ "$devcontainer_status" -ne 0 ]]; then
-      cat "$startup_log" >&2
-      echo "Error: devcontainer failed to start" >&2
-      exit 1
-    fi
-    break
-  fi
-  sleep 1
-done
-if [[ -z "$devcontainer_status" ]]; then
-  cat "$startup_log" >&2
-  echo "Error: timed out waiting for devcontainer to finish starting" >&2
   exit 1
 fi
 
