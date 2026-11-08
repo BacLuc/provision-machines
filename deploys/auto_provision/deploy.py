@@ -1,4 +1,5 @@
 import io
+from datetime import datetime, timedelta
 
 from pyinfra import host
 from pyinfra.operations import apt, files, systemd
@@ -8,6 +9,13 @@ from operations.user import get_user_name
 
 user = get_user_name()
 auto_provision = host.data.auto_provision
+
+execution_day, execution_time = auto_provision["on_calendar"].rsplit(" ", 1)
+notification_day, notification_time = auto_provision["notify_on_calendar"].rsplit(" ", 1)
+assert execution_day == notification_day
+assert datetime.strptime(execution_time, "%H:%M:%S") - datetime.strptime(notification_time, "%H:%M:%S") == timedelta(
+    hours=2
+)
 
 if auto_provision["enabled"]:
     checkout_dir = auto_provision["checkout_dir"].format(user=user)
@@ -138,3 +146,24 @@ WantedBy=timers.target
         daemon_reload=False,
         _sudo=True,
     )
+else:
+    for service in (
+        "auto-provision.timer",
+        "auto-provision-notify.timer",
+        "auto-provision.service",
+        "auto-provision-notify.service",
+    ):
+        systemd.service(
+            name=f"Disable {service}",
+            service=service,
+            enabled=False,
+            running=False,
+            daemon_reload=service == "auto-provision.timer",
+            _sudo=True,
+        )
+        files.file(
+            name=f"Remove {service}",
+            path=f"/etc/systemd/system/{service}",
+            present=False,
+            _sudo=True,
+        )

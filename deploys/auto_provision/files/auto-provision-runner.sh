@@ -46,7 +46,7 @@ run_as_user git -C "$CHECKOUT_DIR" checkout --force "$BRANCH"
 run_as_user git -C "$CHECKOUT_DIR" reset --hard "origin/$BRANCH"
 
 /usr/local/bin/cleanup-script
-runuser -u "$USER" -- env HOME="$HOME_DIR" AUTO_PROVISION_CHECKOUT="$CHECKOUT_DIR" sh -c 'cd "$AUTO_PROVISION_CHECKOUT" && uv run scripts/run_pyinfra_local.py'
+runuser -u "$USER" -- env HOME="$HOME_DIR" AUTO_PROVISION_CHECKOUT="$CHECKOUT_DIR" sh -c 'cd "$AUTO_PROVISION_CHECKOUT" && "$HOME/bin/uv" run scripts/run_pyinfra_local.py'
 /usr/local/bin/update-script
 
 printf '%s\n' "$WEEK" > "$SUCCESS_FILE"
