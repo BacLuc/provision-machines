@@ -13,8 +13,8 @@ fzf = host.data.fzf
 fzf_bin = f"/home/{user}/bin/fzf"
 
 # renovate: datasource=github-releases depName=junegunn/fzf
-fzf_version = "0.74.5"
-fzf_checksum = "c8d3ac08594f271a108528beb15338c42be113d392816b10bf5955cd139293e8"
+fzf_version = "0.75.0"
+fzf_checksum = "2d70610518863239656b5cafdeea3c1af93e3a0bb8d584aeb1bb090157eec27b"
 
 if host.data.homebrew["enabled"]:
     server.shell(
