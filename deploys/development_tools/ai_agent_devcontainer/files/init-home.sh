@@ -46,4 +46,8 @@ touch "$GITIGNORE_FILE"
 grep -qxF '.completion-check-command' "$GITIGNORE_FILE" || printf '%s\n' '.completion-check-command' >> "$GITIGNORE_FILE"
 git config --global core.excludesfile "$GITIGNORE_FILE"
 
+if [ -n "${BACLUC_AGENT_GITHUB_TOKEN:-}" ]; then
+    GH_TOKEN="$BACLUC_AGENT_GITHUB_TOKEN" gh auth setup-git
+fi
+
 exit 0

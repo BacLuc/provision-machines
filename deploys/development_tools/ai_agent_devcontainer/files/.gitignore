@@ -16,3 +16,4 @@
 !shell-ai-agent-devcontainer.sh
 !init-home.sh
 !agent-loops.sh
+!/opencode/cli.json

@@ -1,5 +1,9 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "theme": {
+    "name": "opencode",
+    "mode": "dark",
+  },
   "disabled_providers": ["github-copilot"],
   "subagent_depth": 4,
   "permission": {
@@ -7,15 +11,15 @@
   },
   "plugin": [
     // renovate: datasource=npm depName=@dietrichgebert/ponytail
-    "@dietrichgebert/ponytail@4.10.3",
+    "@dietrichgebert/ponytail@5.3.3",
     // renovate: datasource=npm depName=opencode-gemini-auth
-    "opencode-gemini-auth@1.4.15",
+    "opencode-gemini-auth@2.0.1",
     // renovate: datasource=npm depName=bacluc-opencode-completion-check-command
-    "bacluc-opencode-completion-check-command@0.10.5",
+    "bacluc-opencode-completion-check-command@0.13.5",
     // renovate: datasource=npm depName=opencode-auto-resume
-    "opencode-auto-resume@1.1.19",
+    "opencode-auto-resume@1.2.5",
     // renovate: datasource=github-tags depName=obra/superpowers
-    "superpowers@git+https://github.com/obra/superpowers.git#v6.3.0",
+    "superpowers@git+https://github.com/obra/superpowers.git#v7.0.2",
   ],
   "default_agent": "coordinator",
   "mcp": {
@@ -547,6 +551,85 @@
         },
         "subscription.qwen3.8-flash": {
           "name": "subscription.qwen3.8-flash",
+        },
+      },
+    },
+    "vshn-llm-router": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "VSHN LLM Router",
+      "options": {
+        "baseURL": "{env:VSHN_LLM_ROUTER_BASE_URL}",
+        "apiKey": "{env:VSHN_LLM_ROUTER_API_KEY}",
+      },
+      "models": {
+        "opencode/beam-free": {
+          "name": "beam-free",
+        },
+        "opencode/claude-haiku-5-5": {
+          "name": "claude-haiku-5-5",
+        },
+        "opencode/deepseek-v4-pro": {
+          "name": "deepseek-v4-pro",
+        },
+        "opencode/deepseek-v4.1-flash": {
+          "name": "deepseek-v4.1-flash",
+        },
+        "opencode/glm-5.2": {
+          "name": "glm-5.2",
+        },
+        "opencode/glm-5.3": {
+          "name": "glm-5.3",
+        },
+        "opencode/glm-5.3-flash": {
+          "name": "glm-5.3-flash",
+        },
+        "opencode/hy3": {
+          "name": "hy3",
+        },
+        "opencode/hy4-preview": {
+          "name": "hy4-preview",
+        },
+        "opencode/kimi-k2.7-code": {
+          "name": "kimi-k2.7-code",
+        },
+        "opencode/kimi-k3": {
+          "name": "kimi-k3",
+        },
+        "opencode/kimi-k3.1-pro": {
+          "name": "kimi-k3.1-pro",
+        },
+        "opencode/longcat-2.0": {
+          "name": "longcat-2.0",
+        },
+        "opencode/mimo-v2.5": {
+          "name": "mimo-v2.5",
+        },
+        "opencode/mimo-v2.5-pro": {
+          "name": "mimo-v2.5-pro",
+        },
+        "opencode/mimo-v2.6-flash": {
+          "name": "mimo-v2.6-flash",
+        },
+        "opencode/mimo-v2.6-pro": {
+          "name": "mimo-v2.6-pro",
+        },
+        "opencode/minimax-m3": {
+          "name": "minimax-m3",
+        },
+        "opencode/minimax-m3.1-flash": {
+          "name": "minimax-m3.1-flash",
+        },
+        "opencode/qwen3.7-plus": {
+          "name": "qwen3.7-plus",
+        },
+        "opencode/qwen3.8-flash": {
+          "name": "qwen3.8-flash",
+        },
+        "opencode/qwen3.8-max": {
+          "name": "qwen3.8-max",
+        },
+        "opencode/step-5-preview": {
+          "name": "step-5-preview",
         },
       },
     },

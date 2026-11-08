@@ -17,6 +17,7 @@ Colocation is preferred to separating all templates out of the main script.
 You are running in a development container, you only brick the container if your code is wrong.
 You must test the scripts, the systemctl service files and the deploy you write.
 Do not stop until all use cases are tested.
+Do not add workflow steps for every change. For deploy changes, run the deploy as the agent, verify the result, and share the logs.
 
 uv and pyinfra are already installed.
 If you need another tool, set it up with pyinfra and install it with pyinfra.
@@ -40,6 +41,8 @@ Also don't use unnecessary functions, keep the style as it was, simple and under
 Renovate must be able to update all dependencies.
 For that we use a regex pattern where we have the renovate instructions in a comment above, and all versions
 are assigned to a python variable or a dict entry, and have a renovate comment on top.
+Dependency versions and checksums belong in the deploy that uses them (for example `deploys/fzf/deploy.py`),
+not in `group_data`; the renovate comment stays directly above the version variable.
 
 ```json
 {

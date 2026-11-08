@@ -138,6 +138,14 @@ save_port "$PORT_MAP_KEY" "$OPENCODE_PORT"
 flock -u 9
 export OPENCODE_PORT
 
+if [[ -z "${OPENCODE_SERVER_PASSWORD:-}" ]]; then
+  mkdir -p "$PORT_MAP_DIR"
+  [[ -s "$PORT_MAP_DIR/password" ]] || openssl rand -hex 16 > "$PORT_MAP_DIR/password"
+  chmod 600 "$PORT_MAP_DIR/password"
+  OPENCODE_SERVER_PASSWORD=$(<"$PORT_MAP_DIR/password")
+fi
+export OPENCODE_SERVER_PASSWORD
+
 SANITIZED_PATH=$(echo "$WORKING_DIR" | tr '/' '_' | sed 's/^_//' | sed 's/_$//')
 COMPOSE_PROJECT_NAME="ai_devcontainer_${SANITIZED_PATH}"
 if [[ "$WORKSPACE_BASENAME" == "workspace" ]]; then
@@ -177,16 +185,12 @@ fi
 devcontainer up --workspace-folder "$WORKSPACE_DIR" --config "$CONFIG_DIR/devcontainer.json" &
 DEVCONTAINER_PID=$!
 
-encoded_path=$(echo -n "${WORKING_DIR}" | base64 -w0)
-opencode_url="http://localhost:${OPENCODE_PORT}/${encoded_path}"
-echo "Waiting for ${opencode_url} to respond..."
-if [[ "${ai_agent_devcontainer_open_url:-true}" == "true" ]]; then
-  open "$opencode_url"
-fi
+base_url="http://localhost:${OPENCODE_PORT}"
+echo "Waiting for ${base_url} to respond..."
 deadline=$((SECONDS + ${DEVCONTAINER_START_TIMEOUT:-120}))
-until [[ -n "$(docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" ps --status running --services devcontainer 2>/dev/null)" ]] && curl -s -f "${opencode_url}" > /dev/null; do
+until [[ -n "$(docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" ps --status running --services devcontainer 2>/dev/null)" ]] && curl -sf -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" > /dev/null; do
   if (( SECONDS >= deadline )); then
-    echo "Timed out waiting for devcontainer service in Compose project ${COMPOSE_PROJECT_NAME} at ${opencode_url}" >&2
+    echo "Timed out waiting for devcontainer service in Compose project ${COMPOSE_PROJECT_NAME} at ${base_url}" >&2
     docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" ps -a >&2 || true
     docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose.yml" logs --no-color --tail=100 devcontainer >&2 || true
     cleanup
@@ -202,4 +206,20 @@ until [[ -n "$(docker compose -p "$COMPOSE_PROJECT_NAME" -f "$CONFIG_DIR/compose
   sleep 1
 done
 
-echo "${opencode_url}"
+response=$(curl -sf -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair")
+code=$(printf %s "$response" | sed 's/.*"code":"\([^"]*\)".*/\1/')
+if [[ -z "$code" ]]; then
+  echo "Error: could not extract pairing code from: $response" >&2
+  echo "Fallback: use the password from ~/.config/ai-agent-devcontainer/password to log in at ${base_url}" >&2
+  cleanup
+  exit 1
+fi
+opencode_url="${base_url}/auth/connect/${code}"
+
+printf %s "$opencode_url" | (xclip -selection clipboard 2>/dev/null || wl-copy 2>/dev/null || pbcopy 2>/dev/null || true)
+
+if [[ "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
+  open "$opencode_url"
+fi
+
+echo "$opencode_url"

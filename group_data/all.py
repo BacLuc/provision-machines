@@ -147,6 +147,56 @@ firefox = {
     "enabled": True,
 }
 
+firefox_taskbar_tabs = {
+    "enabled": True,
+    "tabs": {
+        "teams": {
+            "enabled": False,
+            "name": "Teams",
+            "url": "https://teams.microsoft.com/",
+            "tab_id": "5b4e9bd5-8cd1-47ea-8945-66f73dd85fe8",
+        },
+        "jira": {
+            "enabled": False,
+            "name": "Jira",
+            "url": "https://vshnticket.atlassian.net/",
+            "tab_id": "05c3722e-4f98-4056-910b-d15d58628b22",
+        },
+        "customer-service-board": {
+            "enabled": False,
+            "name": "Customer Service Board",
+            "url": "https://vshnticket.atlassian.net/jira/software/c/projects/VSHNOPS/boards/95?quickFilter=660",
+            "tab_id": "35699144-8592-4b92-8806-4a651d52b1f4",
+            "keywords": ["customer board", "cs board", "CS Board"],
+        },
+        "confluence": {
+            "enabled": False,
+            "name": "Confluence",
+            "url": "https://vshnwiki.atlassian.net/",
+            "tab_id": "40b8fc34-4f39-4a3a-927b-98eb493aed1a",
+        },
+        "vshn-gitlab": {
+            "enabled": False,
+            "name": "VSHN GitLab",
+            "url": "https://git.vshn.net/",
+            "tab_id": "44f1788e-8889-4097-8d8d-da60a1c68a06",
+        },
+        "zoom": {
+            "enabled": False,
+            "name": "Zoom",
+            "url": "https://vshn.zoom.us",
+            "url_prefixes": ["https://vshn.zoom.us/j/"],
+            "tab_id": "235345df-e0f8-4875-9d5b-22afdac2f956",
+        },
+        "rocket-chat": {
+            "enabled": False,
+            "name": "RocketChat",
+            "url": "https://vshn.chat",
+            "tab_id": "0f35f5e3-a0da-454d-a334-e319bea4ed4d",
+        },
+    },
+}
+
 flatpak = {
     "enabled": True,
 }
@@ -168,6 +218,10 @@ git_lfs = {
     "git_lfs_checksum": "6b92b05c4588b4a5373b2b4102dbb302757d8ec6671da67cf9e4f9ccb01cd349",
 }
 
+github_cli = {
+    "enabled": True,
+}
+
 gnome = {
     "enable_customize_gnome": False,
 }
@@ -175,7 +229,7 @@ gnome = {
 nvm = {
     "_sudo_for_global_install": False,
     # renovate: datasource=github-releases depName=nvm-sh/nvm
-    "nvm_version": "v0.40.8",
+    "nvm_version": "v0.41.0",
     "enabled": True,
 }
 
@@ -203,6 +257,10 @@ lazygit = {
     # renovate: datasource=github-releases depName=jesseduffield/lazygit
     "lazygit_version": "0.65.1",
     "lazygit_checksum": "971bc18be3ddd75f67462016eeda9bc5581644f90e5e961ec11b450ef60be894",
+}
+
+syft = {
+    "enabled": True,
 }
 
 ollama = {

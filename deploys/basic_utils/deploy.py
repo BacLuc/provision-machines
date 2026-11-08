@@ -9,6 +9,7 @@ from pyinfra.operations import (
 )
 
 from operations.filesystem import DEPLOYS_DIR, dirname_of
+from operations.homebrew import HOMEBREW_BIN, user_brew_bin
 from operations.user import get_user_name
 
 user = get_user_name()
@@ -302,7 +303,7 @@ if basic_utils["enable_flutter"]:
     fvm_flutter_dir = host.get_fact(Directory, f"/home/{user}/.fvm_flutter")
 
     # renovate: datasource=github-releases depName=leoafarias/fvm
-    fvm_version = "3.2.1"
+    fvm_version = "4.3.2"
 
     server.shell(
         name="Install fvm",
@@ -379,24 +380,21 @@ if basic_utils["enable_zoom"]:
     flatpak.packages(packages=["us.zoom.Zoom"])
 
 if basic_utils["enable_go"]:
-    """
-    TODO
-    goenv_bin = f"{homebrew_binaries_path}/goenv"
+    goenv_bin = f"{HOMEBREW_BIN}/goenv"
 
     server.shell(
         name="Install goenv via brew",
-        commands=[f"/home/{user}/bin/brew install goenv"],
+        commands=[user_brew_bin(user) + " install goenv"],
         _if=lambda: host.get_fact(File, goenv_bin) is None,
     )
-    """
 
     files.block(
         name="Setup goenv for bash",
         path=f"/home/{user}/.bashrc",
         marker="# {mark} ANSIBLE MANAGED BLOCK: add goenv",
-        content="""\
+        content=f"""\
 export GOENV_ROOT="$HOME/.goenv"
-eval "$($HOME/.goenv/bin/goenv init -)"\
+eval "$({HOMEBREW_BIN}/goenv init -)"\
 """,
         try_prevent_shell_expansion=True,
     )
@@ -406,10 +404,10 @@ eval "$($HOME/.goenv/bin/goenv init -)"\
             name="Setup goenv for zsh",
             path=f"/home/{user}/.zshrc",
             marker="# {mark} ANSIBLE MANAGED BLOCK: add goenv",
-            content="""\
+            content=f"""\
 export GOENV_ROOT="$HOME/.goenv"
 export PATH="$GOENV_ROOT/bin:$PATH"
-eval "$($HOME/.goenv/bin/goenv init -)"\
+eval "$({HOMEBREW_BIN}/goenv init -)"\
 """,
             try_prevent_shell_expansion=True,
         )

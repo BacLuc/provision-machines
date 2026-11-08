@@ -5,7 +5,7 @@ set -euo pipefail
 SIZE_THRESHOLD_MB="200"
 SIZE_THRESHOLD=$((SIZE_THRESHOLD_MB * 1024 * 1024))
 AGE_THRESHOLD_DAYS=60
-DRY_RUN=${DRY_RUN:-true}
+DRY_RUN=${DRY_RUN:-false}
 
 resolve_home() {
   local home_dir=""
@@ -155,5 +155,7 @@ done < <(
     echo "$id|$size_bytes|$repo_tag"
   done
 )
+
+docker system prune -f --volumes
 
 echo -e "${GREEN}Docker image cleanup complete!${NC}"

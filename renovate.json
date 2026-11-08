@@ -54,7 +54,11 @@
       "datasourceTemplate": "{{{datasource}}}"
     }
   ],
-  "extends": ["config:recommended", ":prHourlyLimitNone"],
+  "extends": [
+    "config:recommended",
+    ":prConcurrentLimitNone",
+    ":prHourlyLimitNone"
+  ],
   "ignorePaths": ["**/.ansible/**", "**/node_modules/**"],
   "lockFileMaintenance": {
     "enabled": true,

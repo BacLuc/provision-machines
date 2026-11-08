@@ -1,5 +1,5 @@
 # renovate: datasource=docker depName=mcr.microsoft.com/devcontainers/universal
-FROM mcr.microsoft.com/devcontainers/universal:6.1.7-noble@sha256:584e41561451c910dcd96221634be07545803aed9cd437a60288f06ddeaf5880
+FROM mcr.microsoft.com/devcontainers/universal:6.1.12-noble@sha256:7d644a3e845e78e2175c9c265a383436c93ab740e77947bbcaff9592e39f7205
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
@@ -9,6 +9,10 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     curl \
     git \
     netcat-openbsd \
+    autojump \
+    direnv \
+    tmux \
+    zsh-syntax-highlighting \
     && curl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/refs/tags/v1.5.9063/files/docker/systemctl3.py -o /usr/local/bin/systemctl \
     && chmod +x /usr/local/bin/systemctl
 
@@ -16,15 +20,15 @@ USER codespace
 
 ENV NVM_DIR=/usr/local/share/nvm
 # renovate: datasource=github-tags depName=nodejs/node
-ENV NODE_VERSION=26.7.0
+ENV NODE_VERSION=26.13.0
 # renovate: datasource=npm depName=@anthropic-ai/claude-code
-ENV CLAUDE_CODE_VERSION=2.1.281
+ENV CLAUDE_CODE_VERSION=2.1.319
 # renovate: datasource=npm depName=@google/gemini-cli
-ENV GEMINI_CLI_VERSION=0.56.0
+ENV GEMINI_CLI_VERSION=0.67.0
 # renovate: datasource=npm depName=@openai/codex
-ENV CODEX_VERSION=0.156.1
-# renovate: datasource=npm depName=opencode-ai
-ENV OPENCODE_VERSION=1.18.32
+ENV CODEX_VERSION=0.167.0
+# renovate: datasource=npm depName=@opencode/cli
+ENV OPENCODE_VERSION=2.2.6
 # renovate: datasource=npm depName=t3
 ENV T3_CODE_VERSION=0.0.31
 
@@ -32,7 +36,7 @@ RUN . $NVM_DIR/nvm.sh && \
     nvm install ${NODE_VERSION} && \
     nvm alias default ${NODE_VERSION} && \
     npm install -g \
-      opencode-ai@${OPENCODE_VERSION} \
+      @opencode/cli@${OPENCODE_VERSION} \
       @anthropic-ai/claude-code --allow-scripts=@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} \
       @google/gemini-cli@${GEMINI_CLI_VERSION} \
       @openai/codex@${CODEX_VERSION} \

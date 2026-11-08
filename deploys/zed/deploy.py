@@ -3,7 +3,8 @@ import json
 
 from pyinfra import host
 from pyinfra.facts.files import Directory, File, Link
-from pyinfra.operations import crontab, files, flatpak, server, systemd
+from pyinfra.facts.server import Command
+from pyinfra.operations import files, flatpak, server
 
 from operations.homebrew import HOMEBREW_CELLAR, user_brew_bin
 from operations.user import get_user_name
@@ -19,6 +20,8 @@ flatpak.packages(
 
 if zed["enabled"]:
     zed_version = "v0.204.5"
+    # renovate: datasource=github-releases depName=zed-industries/delta-nix
+    delta_version = "0.22.0"
 
     zed_config = {
         "language_models": {
@@ -123,12 +126,95 @@ if zed["enabled"]:
 
     zed_keymap = [{"context": "Editor", "bindings": {"ctrl-k": None}}]
 
+    zed_tasks = [
+        {"label": "Cherry-Pick", "command": "git", "args": ["cherry-pick", "$ZED_GIT_SHA"], "tags": ["git-command"]},
+        {
+            "label": "Create Branch from Here",
+            "command": "bash",
+            "args": [
+                "-lc",
+                'read -r -p "Branch name: " branch || exit; [ -n "$branch" ] || exit 1; git switch -c "$branch" "$ZED_GIT_SHA"',
+            ],
+            "tags": ["git-command"],
+        },
+        {"label": "Checkout Revision", "command": "git", "args": ["checkout", "$ZED_GIT_SHA"], "tags": ["git-command"]},
+        {
+            "label": "Compare with Local",
+            "command": "git",
+            "args": ["diff", "$ZED_GIT_SHA", "HEAD"],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Show Commit Details",
+            "command": "git",
+            "args": ["show", "--format=fuller", "--stat", "$ZED_GIT_SHA"],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Reset Current Branch to Here (hard)",
+            "command": "git",
+            "args": ["reset", "--hard", "$ZED_GIT_SHA"],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Reset Current Branch to Here (soft)",
+            "command": "git",
+            "args": ["reset", "--soft", "$ZED_GIT_SHA"],
+            "tags": ["git-command"],
+        },
+        {"label": "Revert Commit", "command": "git", "args": ["revert", "$ZED_GIT_SHA"], "tags": ["git-command"]},
+        {"label": "Undo Commit", "command": "git", "args": ["reset", "--soft", "HEAD~1"], "tags": ["git-command"]},
+        {"label": "Fixup", "command": "git", "args": ["commit", "--fixup", "$ZED_GIT_SHA"], "tags": ["git-command"]},
+        {
+            "label": "Squash Into",
+            "command": "bash",
+            "args": [
+                "-lc",
+                'selected=$(git rev-parse --short "$ZED_GIT_SHA") && git rev-parse --verify "$ZED_GIT_SHA^" >/dev/null 2>&1 && export GIT_EDITOR=true GIT_SEQUENCE_EDITOR="sed -i \'/^pick $selected /s/^pick/squash/\'" && if git rev-parse --verify "$ZED_GIT_SHA^^" >/dev/null 2>&1; then git rebase -i "$ZED_GIT_SHA^^"; else git rebase -i --root; fi',
+            ],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Drop Commit",
+            "command": "git",
+            "args": ["rebase", "--onto", "$ZED_GIT_SHA^", "$ZED_GIT_SHA"],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Interactively Rebase from Here",
+            "command": "git",
+            "args": ["rebase", "-i", "$ZED_GIT_SHA^"],
+            "tags": ["git-command"],
+        },
+        {
+            "label": "Push All up to Here",
+            "command": "bash",
+            "args": ["-lc", 'git push origin "$ZED_GIT_SHA:refs/heads/$(git branch --show-current)"'],
+            "tags": ["git-command"],
+        },
+    ]
+    for task in zed_tasks:
+        task["hide"] = "on_success"
+
     server.shell(
         name="Install zed",
         commands=[
             f"curl -f https://raw.githubusercontent.com/zed-industries/zed/refs/tags/{zed_version}/script/install.sh | sh"
         ],
         _if=lambda: host.get_fact(File, f"/home/{user}/.local/bin/zed") is None,
+    )
+
+    installed_delta_version = (
+        host.get_fact(Command, f"/home/{user}/.local/delta.app/bin/delta-app --version 2>/dev/null || true") or ""
+    ).strip()
+
+    server.shell(
+        name="Install delta",
+        commands=[
+            f"curl -fL https://releases.delta.dev/releases/stable/{delta_version}/delta-linux-x86_64.tar.gz | tar -xz -C /tmp",
+            "bash /tmp/Delta/install.sh",
+        ],
+        _if=lambda: installed_delta_version != f"delta {delta_version}",
     )
 
     if host.get_fact(Link, f"/home/{user}/bin/zed") is None:
@@ -167,80 +253,12 @@ if zed["enabled"]:
     )
 
     files.put(
-        name="Add launch zed script",
-        src=io.StringIO(
-            f"""#!/usr/bin/env zsh
-
-ZED_ENVIRONMENT=cli
-ZED_FORCE_CLI_MODE=
-ZED_TERM=true
-
-source /home/{user}/.zshrc
-exec zed "$@"
-"""
-        ),
-        dest=f"/home/{user}/bin/launch-zed-with-env",
+        name="Provision zed tasks",
+        src=io.StringIO(json.dumps(zed_tasks, indent=4)),
+        dest=f"/home/{user}/.config/zed/tasks.json",
         user=user,
         group=user,
         mode="755",
-    )
-
-    files.put(
-        name="Change zed desktop file to use environment",
-        src=io.StringIO(
-            f"""[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Zed
-GenericName=Text Editor
-Comment=A high-performance, multiplayer code editor.
-StartupNotify=true
-Terminal=true
-Exec=/home/{user}/bin/launch-zed-with-env %U
-Icon=/home/{user}/.local/zed.app/share/icons/hicolor/512x512/apps/zed.png
-Categories=Utility;TextEditor;Development;IDE;
-Keywords=zed;
-MimeType=text/plain;application/x-zerosize;x-scheme-handler/zed;
-Actions=NewWorkspace;
-X-Desktop-File-Install-Version=0.28
-
-[Desktop Action NewWorkspace]
-Exec=/home/{user}/bin/launch-zed-with-env --new %U
-Name=Open a new workspace
-"""
-        ),
-        dest=f"/home/{user}/.local/share/applications/dev.zed.Zed.desktop",
-        user=user,
-        group=user,
-        mode="644",
-    )
-
-    files.file(
-        name="Remove the Zed memory monitoring script",
-        path="/usr/local/bin/monitor-zed-memory",
-        present=False,
-        _sudo=True,
-    )
-
-    crontab.crontab(
-        name="Remove the cron job for Zed memory monitoring",
-        command="/usr/local/bin/monitor-zed-memory",
-        present=False,
-        user=user,
-        _sudo=True,
-    )
-
-    zed_resource_limits = files.directory(
-        name="Remove drop in dir for flatpak-system-helper",
-        path="/etc/systemd/system/flatpak-system-helper.service.d",
-        present=False,
-        _sudo=True,
-    )
-
-    systemd.daemon_reload(
-        name="Reload daemons",
-        _sudo=True,
-        _if=lambda: zed_resource_limits.changed,
     )
 
     if zed["enable_helm_support"] and host.get_fact(Directory, f"{HOMEBREW_CELLAR}/helm-ls") is None:

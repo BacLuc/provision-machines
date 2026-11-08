@@ -1,16 +1,21 @@
 [
   "actions/checkout",
+  "anchore/syft",
   "ansible",
   "astral-sh/setup-uv",
   "astral-sh/uv",
+  "autojump",
+  "cli/cli",
   "curl",
   "databus23/helm-diff",
+  "direnv",
   "git",
   "git-lfs/git-lfs",
   "itaysk/kubectl-neat",
   "jesseduffield/lazygit",
   "jlandowner/helm-chartsnap",
   "jsonnet-bundler/jsonnet-bundler",
+  "junegunn/fzf",
   "leoafarias/fvm",
   "mcr.microsoft.com/devcontainers/universal",
   "netcat-openbsd",
@@ -24,7 +29,10 @@
   "python3-pip",
   "rajatjindal/kubectl-modify-secret",
   "robscott/kube-capacity",
+  "tmux",
   "vshn/appcat-cli",
   "vshn/k8ify",
-  "vshn/kharon"
+  "vshn/kharon",
+  "zed-industries/delta-nix",
+  "zsh-syntax-highlighting"
 ]
