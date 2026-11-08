@@ -11,7 +11,8 @@ def run_launcher(
     port: str,
     devcontainer_exit: int = 0,
     curl_mode: str = "fail",
-    devcontainer_lifecycle: str = "running",
+    devcontainer_lifecycle: str = "exits",
+    open_exit: int = 0,
 ) -> subprocess.CompletedProcess[str]:
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
@@ -19,6 +20,7 @@ def run_launcher(
     (fake_bin / "git").write_text('#!/bin/sh\ncase "$1" in config) echo test;; esac\n')
     (fake_bin / "openssl").write_text("#!/bin/sh\nprintf password\n")
     (fake_bin / "nc").write_text("#!/bin/sh\nexit 1\n")
+    (fake_bin / "open").write_text(f"#!/bin/sh\nexit {open_exit}\n")
     if curl_mode == "ready":
         curl_result = (
             'printf \'%s\\n\' "$*" >> "$CURL_LOG"; '
@@ -36,8 +38,10 @@ def run_launcher(
     (fake_bin / "devcontainer").write_text(
         '#!/bin/sh\nprintf \'%s\\n\' "$1" >> "$DEVCONTAINER_LOG"\n'
         'if [ "$1" = up ]; then printf \'%s\\n\' "$$" > "$DEVCONTAINER_PID_FILE"; '
+        'printf \'startup output\\n\'; '
         f'if [ {devcontainer_exit} -ne 0 ]; then exit {devcontainer_exit}; fi; '
         f'if [ "{devcontainer_lifecycle}" = exits ]; then exit 0; fi; '
+        f'if [ "{devcontainer_lifecycle}" = hangs ]; then while :; do :; done; fi; '
         f'if [ "{curl_mode}" = timeout ]; then while :; do :; done; else sleep 2; fi; fi\n'
     )
     for command in fake_bin.iterdir():
@@ -50,6 +54,7 @@ def run_launcher(
         "DEVCONTAINER_LOG": str(devcontainer_log),
         "DEVCONTAINER_PID_FILE": str(tmp_path / "devcontainer.pid"),
         "CURL_LOG": str(tmp_path / "curl.log"),
+        "DEVCONTAINER_WAIT_TIMEOUT": "1",
     }
     if curl_mode == "timeout":
         (fake_bin / "sleep").write_text("#!/bin/sh\nexit 0\n")
@@ -90,12 +95,47 @@ def test_authenticated_pairing_returns_code_and_keeps_devcontainer(tmp_path: Pat
     assert all("-u opencode:password" in line for line in (tmp_path / "curl.log").read_text().splitlines())
 
 
+def test_open_failure_does_not_fail_startup(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="ready", open_exit=1)
+
+    assert result.returncode == 0
+    assert result.stdout.strip().endswith("http://localhost:4096/auth/connect/pair-code_123")
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up"]
+
+
 def test_readiness_timeout_cleans_up_and_reaps_devcontainer(tmp_path: Path) -> None:
     result = run_launcher(tmp_path, "4096", curl_mode="timeout")
 
     assert result.returncode != 0
     assert "timed out waiting" in result.stderr
     assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+def test_post_readiness_timeout_logs_and_cleans_up_devcontainer(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="ready", devcontainer_lifecycle="hangs")
+
+    assert result.returncode != 0
+    assert "timed out waiting for devcontainer to finish starting" in result.stderr
+    assert "up" in result.stderr
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+    try:
+        os.kill(int((tmp_path / "devcontainer.pid").read_text()), 0)
+    except ProcessLookupError:
+        pass
+    else:
+        raise AssertionError("devcontainer process is still running")
+
+
+def test_completed_devcontainer_up_waits_for_readiness(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="timeout", devcontainer_lifecycle="exits")
+
+    assert result.returncode != 0
+    assert "timed out waiting" in result.stderr
+    assert "devcontainer failed to start" not in result.stderr
+
+
+def test_readiness_timeout_reaps_running_devcontainer_up(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="timeout")
+
+    assert result.returncode != 0
     pid = int((tmp_path / "devcontainer.pid").read_text())
     try:
         os.kill(pid, 0)

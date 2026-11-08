@@ -96,6 +96,7 @@ if [[ -f $WORKSPACE_DIR/.git ]]; then
 fi
 
 startup_log=$(mktemp)
+devcontainer_wait_timeout=${DEVCONTAINER_WAIT_TIMEOUT:-30}
 cleanup() {
   local status=$?
   if [[ $status -ne 0 && -n "${devcontainer_pid:-}" ]]; then
@@ -144,17 +145,26 @@ if [[ "$ready" != true ]]; then
   exit 1
 fi
 
+for ((seconds_waited = 0; seconds_waited < devcontainer_wait_timeout; seconds_waited++)); do
+  if ! kill -0 "$devcontainer_pid" 2>/dev/null; then
+    if wait "$devcontainer_pid"; then
+      devcontainer_status=0
+    else
+      devcontainer_status=$?
+    fi
+    if [[ "$devcontainer_status" -ne 0 ]]; then
+      cat "$startup_log" >&2
+      echo "Error: devcontainer failed to start" >&2
+      exit 1
+    fi
+    break
+  fi
+  sleep 1
+done
 if [[ -z "$devcontainer_status" ]]; then
-  if wait "$devcontainer_pid"; then
-    devcontainer_status=0
-  else
-    devcontainer_status=$?
-  fi
-  if [[ "$devcontainer_status" -ne 0 ]]; then
-    cat "$startup_log" >&2
-    echo "Error: devcontainer failed to start" >&2
-    exit 1
-  fi
+  cat "$startup_log" >&2
+  echo "Error: timed out waiting for devcontainer to finish starting" >&2
+  exit 1
 fi
 
 if ! response=$(curl --connect-timeout 2 --max-time 5 -fsS -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair"); then
