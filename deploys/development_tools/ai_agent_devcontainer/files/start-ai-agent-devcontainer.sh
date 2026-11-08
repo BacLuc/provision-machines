@@ -64,6 +64,12 @@ fi
 save_port "$WORKING_DIR" "$OPENCODE_PORT"
 export OPENCODE_PORT
 
+DEVCONTAINER_WAIT_TIMEOUT="${DEVCONTAINER_WAIT_TIMEOUT:-120}"
+if ! [[ "$DEVCONTAINER_WAIT_TIMEOUT" =~ ^[0-9]+$ ]]; then
+  echo "Error: DEVCONTAINER_WAIT_TIMEOUT must be a nonnegative integer" >&2
+  exit 1
+fi
+
 if [[ -z "${OPENCODE_SERVER_PASSWORD:-}" ]]; then
   mkdir -p "$PORT_MAP_DIR"
   [[ -s "$PORT_MAP_DIR/password" ]] || openssl rand -hex 16 > "$PORT_MAP_DIR/password"
@@ -120,7 +126,7 @@ devcontainer_status=
 base_url="http://localhost:${OPENCODE_PORT}"
 echo "Waiting for ${base_url} to respond..."
 ready=false
-for _ in {1..120}; do
+for ((wait_seconds = 0; wait_seconds < DEVCONTAINER_WAIT_TIMEOUT; wait_seconds++)); do
   if [[ -z "$devcontainer_status" ]] && ! kill -0 "$devcontainer_pid" 2>/dev/null; then
     if wait "$devcontainer_pid"; then
       devcontainer_status=0
@@ -141,6 +147,7 @@ for _ in {1..120}; do
 done
 
 if [[ "$ready" != true ]]; then
+  cat "$startup_log" >&2
   echo "Error: timed out waiting for ${base_url} to respond" >&2
   exit 1
 fi
@@ -183,7 +190,7 @@ opencode_url="${base_url}/auth/connect/${code}"
 printf %s "$opencode_url" | (xclip -selection clipboard 2>/dev/null || wl-copy 2>/dev/null || pbcopy 2>/dev/null || true)
 
 if [[ "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
-  open "$opencode_url"
+  open "$opencode_url" || true
 fi
 
 echo "$opencode_url"

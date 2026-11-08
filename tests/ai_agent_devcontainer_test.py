@@ -13,6 +13,7 @@ def run_launcher(
     curl_mode: str = "fail",
     devcontainer_lifecycle: str = "exits",
     open_exit: int = 0,
+    wait_timeout: str = "",
 ) -> subprocess.CompletedProcess[str]:
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
@@ -50,12 +51,14 @@ def run_launcher(
         "HOME": str(tmp_path),
         "PATH": f"{fake_bin}:{os.environ['PATH']}",
         "OPENCODE_PORT": port,
-        "ai_agent_devcontainer_open_url": "false",
+        "ai_agent_devcontainer_open_url": "true",
         "DEVCONTAINER_LOG": str(devcontainer_log),
         "DEVCONTAINER_PID_FILE": str(tmp_path / "devcontainer.pid"),
         "CURL_LOG": str(tmp_path / "curl.log"),
         "DEVCONTAINER_WAIT_TIMEOUT": "1",
     }
+    if wait_timeout:
+        env["DEVCONTAINER_WAIT_TIMEOUT"] = wait_timeout
     if curl_mode == "timeout":
         (fake_bin / "sleep").write_text("#!/bin/sh\nexit 0\n")
         (fake_bin / "curl").write_text("#!/bin/sh\nexit 1\n")
@@ -70,8 +73,16 @@ def test_invalid_port_fails_before_startup(tmp_path: Path) -> None:
     assert "valid port number" in result.stderr
 
 
+def test_invalid_wait_timeout_fails_before_startup(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", wait_timeout="not-a-number")
+
+    assert result.returncode != 0
+    assert "DEVCONTAINER_WAIT_TIMEOUT must be a nonnegative integer" in result.stderr
+    assert not (tmp_path / "devcontainer.log").exists()
+
+
 def test_failed_devcontainer_up_fails_promptly(tmp_path: Path) -> None:
-    result = run_launcher(tmp_path, "4096", devcontainer_exit=1)
+    result = run_launcher(tmp_path, "4096", devcontainer_exit=1, wait_timeout="30")
 
     assert result.returncode != 0
     assert "devcontainer failed to start" in result.stderr
@@ -108,6 +119,7 @@ def test_readiness_timeout_cleans_up_and_reaps_devcontainer(tmp_path: Path) -> N
 
     assert result.returncode != 0
     assert "timed out waiting" in result.stderr
+    assert "startup output" in result.stderr
     assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
 def test_post_readiness_timeout_logs_and_cleans_up_devcontainer(tmp_path: Path) -> None:
     result = run_launcher(tmp_path, "4096", curl_mode="ready", devcontainer_lifecycle="hangs")
@@ -130,28 +142,6 @@ def test_completed_devcontainer_up_waits_for_readiness(tmp_path: Path) -> None:
     assert result.returncode != 0
     assert "timed out waiting" in result.stderr
     assert "devcontainer failed to start" not in result.stderr
-
-
-def test_readiness_timeout_reaps_running_devcontainer_up(tmp_path: Path) -> None:
-    result = run_launcher(tmp_path, "4096", curl_mode="timeout")
-
-    assert result.returncode != 0
-    pid = int((tmp_path / "devcontainer.pid").read_text())
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        pass
-    else:
-        raise AssertionError(f"devcontainer process {pid} is still running")
-
-
-def test_completed_devcontainer_up_still_times_out_readiness(tmp_path: Path) -> None:
-    result = run_launcher(tmp_path, "4096", curl_mode="timeout", devcontainer_lifecycle="exits")
-
-    assert result.returncode != 0
-    assert "timed out waiting" in result.stderr
-    assert "devcontainer failed to start" not in result.stderr
-    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
 
 
 def test_malformed_pairing_response_cleans_up_devcontainer(tmp_path: Path) -> None:
