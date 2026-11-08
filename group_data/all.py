@@ -131,6 +131,15 @@ update_packages_script = {
     "dir": "/usr/local/bin/update-script.d",
 }
 
+auto_provision = {
+    "enabled": False,
+    "on_calendar": "Sun *-*-* 02:00:00",
+    "notify_on_calendar": "Sun *-*-* 00:00:00",
+    "checkout_dir": "/home/{user}/provision-machines",
+    "branch": "main",
+    "state_dir": "/var/lib/auto-provision",
+}
+
 devcontainer_cli = {
     "enabled": True,
 }
