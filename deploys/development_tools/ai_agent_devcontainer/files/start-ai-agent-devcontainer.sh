@@ -102,7 +102,6 @@ if [[ -f $WORKSPACE_DIR/.git ]]; then
 fi
 
 startup_log=$(mktemp)
-devcontainer_wait_timeout=${DEVCONTAINER_WAIT_TIMEOUT:-30}
 cleanup() {
   local status=$?
   if [[ $status -ne 0 && -n "${devcontainer_pid:-}" ]]; then
