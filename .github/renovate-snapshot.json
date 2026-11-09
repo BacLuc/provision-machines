@@ -12,6 +12,7 @@
   "jlandowner/helm-chartsnap",
   "jsonnet-bundler/jsonnet-bundler",
   "mcr.microsoft.com/devcontainers/universal",
+  "mikefarah/yq",
   "netcat-openbsd",
   "nodejs/node",
   "nvm-sh/nvm",
