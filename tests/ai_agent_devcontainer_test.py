@@ -40,8 +40,8 @@ def run_launcher(
     (fake_bin / "devcontainer").write_text(
         '#!/bin/sh\nprintf \'%s\\n\' "$1" >> "$DEVCONTAINER_LOG"\n'
         'if [ "$1" = up ]; then printf \'%s\\n\' "$$" > "$DEVCONTAINER_PID_FILE"; '
-        'printf \'startup output\\n\'; '
-        f'if [ {devcontainer_exit} -ne 0 ]; then exit {devcontainer_exit}; fi; '
+        "printf 'startup output\\n'; "
+        f"if [ {devcontainer_exit} -ne 0 ]; then exit {devcontainer_exit}; fi; "
         f'if [ "{devcontainer_lifecycle}" = exits ]; then exit 0; fi; '
         f'if [ "{devcontainer_lifecycle}" = hangs ]; then while :; do :; done; fi; '
         f'if [ "{devcontainer_lifecycle}" = ignores-term ]; then trap "" TERM; while :; do sleep 1; done; fi; '
@@ -63,7 +63,7 @@ def run_launcher(
     if wait_timeout:
         env["DEVCONTAINER_WAIT_TIMEOUT"] = wait_timeout
     if curl_mode == "timeout":
-        (fake_bin / "curl").write_text("#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$CURL_LOG\"\n/usr/bin/sleep 0.8\nexit 1\n")
+        (fake_bin / "curl").write_text('#!/bin/sh\nprintf \'%s\\n\' "$*" >> "$CURL_LOG"\n/usr/bin/sleep 0.8\nexit 1\n')
     return subprocess.run([str(LAUNCHER)], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=8)
 
 
