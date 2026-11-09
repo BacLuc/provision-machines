@@ -5,6 +5,7 @@ from pathlib import Path
 
 FILES = Path(__file__).parents[1] / "deploys/development_tools/ai_agent_devcontainer/files"
 LAUNCHER = FILES / "start-ai-agent-devcontainer.sh"
+DOCKERFILE = FILES / "Dockerfile"
 
 
 def run_launcher(
@@ -72,6 +73,13 @@ def test_invalid_port_fails_before_startup(tmp_path: Path) -> None:
 
     assert result.returncode != 0
     assert "valid port number" in result.stderr
+
+
+def test_dockerfile_uses_user_opencode_config_overlay() -> None:
+    dockerfile = DOCKERFILE.read_text()
+
+    assert "ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.jsonc" in dockerfile
+    assert "ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/opencode.jsonc" not in dockerfile
 
 
 def test_invalid_wait_timeout_fails_before_startup(tmp_path: Path) -> None:
