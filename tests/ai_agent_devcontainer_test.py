@@ -39,7 +39,9 @@ def run_launcher(
     elif curl_mode == "pair-malformed":
         curl_result = "case \"$*\" in *api/config*|*api/model*) printf '{\"ok\":true}';; *) printf 'not-json';; esac\n"
     elif curl_mode == "pair-invalid-code":
-        curl_result = 'case "$*" in *api/config*|*api/model*) printf \'{"ok":true}\';; *) printf \'{"code":"bad code"}\';; esac\n'
+        curl_result = (
+            'case "$*" in *api/config*|*api/model*) printf \'{"ok":true}\';; *) printf \'{"code":"bad code"}\';; esac\n'
+        )
     else:
         curl_result = "exit 1\n"
     (fake_bin / "curl").write_text(f"#!/bin/sh\n{curl_result}")
