@@ -6,6 +6,8 @@ from pathlib import Path
 FILES = Path(__file__).parents[1] / "deploys/development_tools/ai_agent_devcontainer/files"
 LAUNCHER = FILES / "start-ai-agent-devcontainer.sh"
 DOCKERFILE = FILES / "Dockerfile"
+COMPOSE = FILES / "compose.yml"
+DEVCONTAINER = FILES / "devcontainer.json"
 
 
 def run_launcher(
@@ -80,6 +82,19 @@ def test_dockerfile_uses_user_opencode_config_overlay() -> None:
 
     assert "ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/untracked-config.jsonc" in dockerfile
     assert "ENV OPENCODE_CONFIG=/home/codespace/.config/opencode/opencode.jsonc" not in dockerfile
+
+
+def test_compose_maps_configured_port_to_opencode_container_port() -> None:
+    compose = COMPOSE.read_text()
+
+    assert '"127.0.0.1:${OPENCODE_PORT:-4096}:${OPENCODE_PORT:-4096}"' in compose
+
+
+def test_devcontainer_probes_and_serves_on_compose_container_port() -> None:
+    devcontainer = DEVCONTAINER.read_text()
+
+    assert "nc -z localhost ${OPENCODE_PORT:-4096}" in devcontainer
+    assert "opencode serve --hostname 0.0.0.0 --port ${OPENCODE_PORT:-4096}" in devcontainer
 
 
 def test_invalid_wait_timeout_fails_before_startup(tmp_path: Path) -> None:
