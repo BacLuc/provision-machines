@@ -1,5 +1,6 @@
 import os
 import subprocess
+import time
 from pathlib import Path
 
 FILES = Path(__file__).parents[1] / "deploys/development_tools/ai_agent_devcontainer/files"
@@ -43,6 +44,7 @@ def run_launcher(
         f'if [ {devcontainer_exit} -ne 0 ]; then exit {devcontainer_exit}; fi; '
         f'if [ "{devcontainer_lifecycle}" = exits ]; then exit 0; fi; '
         f'if [ "{devcontainer_lifecycle}" = hangs ]; then while :; do :; done; fi; '
+        f'if [ "{devcontainer_lifecycle}" = ignores-term ]; then trap "" TERM; while :; do sleep 1; done; fi; '
         f'if [ "{curl_mode}" = timeout ]; then while :; do :; done; else sleep 2; fi; fi\n'
     )
     for command in fake_bin.iterdir():
@@ -61,9 +63,9 @@ def run_launcher(
         env["DEVCONTAINER_WAIT_TIMEOUT"] = wait_timeout
     if curl_mode == "timeout":
         (fake_bin / "sleep").write_text("#!/bin/sh\nexit 0\n")
-        (fake_bin / "curl").write_text("#!/bin/sh\nexit 1\n")
+        (fake_bin / "curl").write_text("#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$CURL_LOG\"\nexit 1\n")
         (fake_bin / "sleep").chmod(0o755)
-    return subprocess.run([str(LAUNCHER)], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=5)
+    return subprocess.run([str(LAUNCHER)], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=8)
 
 
 def test_invalid_port_fails_before_startup(tmp_path: Path) -> None:
@@ -120,6 +122,24 @@ def test_readiness_timeout_cleans_up_and_reaps_devcontainer(tmp_path: Path) -> N
     assert result.returncode != 0
     assert "timed out waiting" in result.stderr
     assert "startup output" in result.stderr
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+
+
+def test_readiness_timeout_caps_request_to_absolute_deadline(tmp_path: Path) -> None:
+    started = time.monotonic()
+    result = run_launcher(tmp_path, "4096", curl_mode="timeout", wait_timeout="1")
+
+    assert result.returncode != 0
+    assert time.monotonic() - started < 2
+    assert "--max-time 1" in (tmp_path / "curl.log").read_text()
+
+
+def test_cleanup_escalates_when_devcontainer_ignores_sigterm(tmp_path: Path) -> None:
+    started = time.monotonic()
+    result = run_launcher(tmp_path, "4096", curl_mode="pair-fail", devcontainer_lifecycle="ignores-term")
+
+    assert result.returncode != 0
+    assert time.monotonic() - started < 7
     assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
 
 

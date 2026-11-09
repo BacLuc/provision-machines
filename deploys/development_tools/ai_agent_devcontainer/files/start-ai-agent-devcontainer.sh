@@ -107,6 +107,15 @@ cleanup() {
   if [[ $status -ne 0 && -n "${devcontainer_pid:-}" ]]; then
     if kill -0 "$devcontainer_pid" 2>/dev/null; then
       kill "$devcontainer_pid" 2>/dev/null || true
+      for ((cleanup_attempt = 0; cleanup_attempt < 50; cleanup_attempt++)); do
+        if ! kill -0 "$devcontainer_pid" 2>/dev/null; then
+          break
+        fi
+        sleep 0.1
+      done
+      if kill -0 "$devcontainer_pid" 2>/dev/null; then
+        kill -KILL "$devcontainer_pid" 2>/dev/null || true
+      fi
     fi
     wait "$devcontainer_pid" 2>/dev/null || true
     devcontainer down --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >/dev/null 2>&1 || true
@@ -123,7 +132,8 @@ devcontainer_status=
 base_url="http://localhost:${OPENCODE_PORT}"
 echo "Waiting for ${base_url} to respond..."
 ready=false
-for ((wait_seconds = 0; wait_seconds < DEVCONTAINER_WAIT_TIMEOUT; wait_seconds++)); do
+readiness_deadline=$(( $(date +%s) + DEVCONTAINER_WAIT_TIMEOUT ))
+while (( $(date +%s) < readiness_deadline )); do
   if [[ -z "$devcontainer_status" ]] && ! kill -0 "$devcontainer_pid" 2>/dev/null; then
     if wait "$devcontainer_pid"; then
       devcontainer_status=0
@@ -136,7 +146,11 @@ for ((wait_seconds = 0; wait_seconds < DEVCONTAINER_WAIT_TIMEOUT; wait_seconds++
       exit 1
     fi
   fi
-  if response=$(curl --connect-timeout 2 --max-time 5 -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; json.load(sys.stdin)' 2>/dev/null; then
+  remaining_seconds=$((readiness_deadline - $(date +%s)))
+  if (( remaining_seconds <= 0 )); then
+    break
+  fi
+  if response=$(curl --connect-timeout 2 --max-time "$((remaining_seconds < 5 ? remaining_seconds : 5))" -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; json.load(sys.stdin)' 2>/dev/null; then
     ready=true
     break
   fi
