@@ -67,4 +67,9 @@ def test_update_config_parses_the_repo_jsonc_files(tmp_path: Path) -> None:
         assert config["providers"]["vshn-us-ai"]["models"] == {
             "byusage.example/model": {"name": "Model (byusage)"},
         }
+        if name == "opencode.jsonc":
+            for provider in ("cortecs2", "requesty2"):
+                assert config["providers"][provider]["package"] == "aisdk:@ai-sdk/openai-compatible"
+                assert config["providers"][provider]["settings"]["baseURL"]
+                assert config["providers"][provider]["models"]
         assert "provider" not in config
