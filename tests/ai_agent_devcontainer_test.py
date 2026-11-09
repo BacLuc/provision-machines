@@ -46,6 +46,7 @@ def run_launcher(
         f'if [ "{devcontainer_lifecycle}" = hangs ]; then while :; do :; done; fi; '
         f'if [ "{devcontainer_lifecycle}" = ignores-term ]; then trap "" TERM; while :; do sleep 1; done; fi; '
         f'if [ "{curl_mode}" = timeout ]; then while :; do :; done; else sleep 2; fi; fi\n'
+        f'if [ "$1" = down ] && [ "{devcontainer_lifecycle}" = down-ignores-term ]; then trap "" TERM; while :; do sleep 1; done; fi\n'
     )
     for command in fake_bin.iterdir():
         command.chmod(0o755)
@@ -62,9 +63,7 @@ def run_launcher(
     if wait_timeout:
         env["DEVCONTAINER_WAIT_TIMEOUT"] = wait_timeout
     if curl_mode == "timeout":
-        (fake_bin / "sleep").write_text("#!/bin/sh\nexit 0\n")
-        (fake_bin / "curl").write_text("#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$CURL_LOG\"\nexit 1\n")
-        (fake_bin / "sleep").chmod(0o755)
+        (fake_bin / "curl").write_text("#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$CURL_LOG\"\n/usr/bin/sleep 0.8\nexit 1\n")
     return subprocess.run([str(LAUNCHER)], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=8)
 
 
@@ -130,13 +129,22 @@ def test_readiness_timeout_caps_request_to_absolute_deadline(tmp_path: Path) -> 
     result = run_launcher(tmp_path, "4096", curl_mode="timeout", wait_timeout="1")
 
     assert result.returncode != 0
-    assert time.monotonic() - started < 2
+    assert time.monotonic() - started < 1.6
     assert "--max-time 1" in (tmp_path / "curl.log").read_text()
 
 
 def test_cleanup_escalates_when_devcontainer_ignores_sigterm(tmp_path: Path) -> None:
     started = time.monotonic()
     result = run_launcher(tmp_path, "4096", curl_mode="pair-fail", devcontainer_lifecycle="ignores-term")
+
+    assert result.returncode != 0
+    assert time.monotonic() - started < 7
+    assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+
+
+def test_cleanup_bounds_devcontainer_down_when_it_ignores_sigterm(tmp_path: Path) -> None:
+    started = time.monotonic()
+    result = run_launcher(tmp_path, "4096", curl_mode="pair-fail", devcontainer_lifecycle="down-ignores-term")
 
     assert result.returncode != 0
     assert time.monotonic() - started < 7

@@ -102,23 +102,30 @@ if [[ -f $WORKSPACE_DIR/.git ]]; then
 fi
 
 startup_log=$(mktemp)
+stop_process() {
+  local pid="$1"
+  if kill -0 "$pid" 2>/dev/null; then
+    kill "$pid" 2>/dev/null || true
+    for ((cleanup_attempt = 0; cleanup_attempt < 50; cleanup_attempt++)); do
+      if ! kill -0 "$pid" 2>/dev/null; then
+        break
+      fi
+      sleep 0.1
+    done
+    if kill -0 "$pid" 2>/dev/null; then
+      kill -KILL "$pid" 2>/dev/null || true
+    fi
+  fi
+  wait "$pid" 2>/dev/null || true
+}
 cleanup() {
   local status=$?
   if [[ $status -ne 0 && -n "${devcontainer_pid:-}" ]]; then
-    if kill -0 "$devcontainer_pid" 2>/dev/null; then
-      kill "$devcontainer_pid" 2>/dev/null || true
-      for ((cleanup_attempt = 0; cleanup_attempt < 50; cleanup_attempt++)); do
-        if ! kill -0 "$devcontainer_pid" 2>/dev/null; then
-          break
-        fi
-        sleep 0.1
-      done
-      if kill -0 "$devcontainer_pid" 2>/dev/null; then
-        kill -KILL "$devcontainer_pid" 2>/dev/null || true
-      fi
-    fi
-    wait "$devcontainer_pid" 2>/dev/null || true
-    devcontainer down --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >/dev/null 2>&1 || true
+    stop_process "$devcontainer_pid"
+    devcontainer down --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >/dev/null 2>&1 &
+    down_pid=$!
+    sleep 0.1
+    stop_process "$down_pid"
   fi
   rm -f "$startup_log"
   exit "$status"
@@ -154,7 +161,9 @@ while (( $(date +%s) < readiness_deadline )); do
     ready=true
     break
   fi
-  sleep 1
+  if (( remaining_seconds > 1 )); then
+    sleep 1
+  fi
 done
 
 if [[ "$ready" != true ]]; then
