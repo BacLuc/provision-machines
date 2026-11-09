@@ -50,7 +50,7 @@ services:
       - path: .tokens
         required: false
     ports:
-      - "127.0.0.1:${OPENCODE_PORT:-4096}:4096"
+      - "127.0.0.1:${OPENCODE_PORT:-4096}:${OPENCODE_PORT:-4096}"
 
 volumes:
   ai-agent-devcontainer-home:

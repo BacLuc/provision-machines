@@ -287,12 +287,12 @@ def update_config(models, config_path, npm_package=None, provider_name=None, api
     sorted_models = dict(sorted(models_dict.items()))
 
     provider_config = {
-        "npm": npm_package or "@ai-sdk/openai-compatible",
+        "package": npm_package or "aisdk:@ai-sdk/openai-compatible",
         "name": "VSHN US AI",
         "models": sorted_models,
     }
 
-    config["provider"][provider_name] = provider_config
+    config["providers"][provider_name] = provider_config
 
     text = json.dumps(config, indent=2)
 
