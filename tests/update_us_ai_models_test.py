@@ -61,12 +61,17 @@ def test_update_config_parses_the_repo_jsonc_files(tmp_path: Path) -> None:
         with open(os.path.join(_CONFIG_DIR, name)) as f:
             target = tmp_path / name
             target.write_text(f.read())
+        original_config = json.loads(mod.normalize_jsonc(target.read_text()))
         mod.update_config([{"id": "byusage.example/model", "name": "Model"}], config_path=target)
         with open(target) as f:
             config = json.loads(f.read())
         assert config["providers"]["vshn-us-ai"]["models"] == {
             "byusage.example/model": {"name": "Model (byusage)"},
         }
+        assert (
+            config["providers"]["vshn-us-ai"]["settings"]
+            == original_config["providers"]["vshn-us-ai"]["settings"]
+        )
         if name == "opencode.jsonc":
             for provider in ("cortecs2", "requesty2"):
                 assert config["providers"][provider]["package"] == "aisdk:@ai-sdk/openai-compatible"
