@@ -157,7 +157,7 @@ while (( $(date +%s) < readiness_deadline )); do
   if (( remaining_seconds <= 0 )); then
     break
   fi
-  if response=$(curl --connect-timeout 2 --max-time "$((remaining_seconds < 5 ? remaining_seconds : 5))" -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; json.load(sys.stdin)' 2>/dev/null; then
+  if response=$(curl --connect-timeout 2 --max-time "$((remaining_seconds < 5 ? remaining_seconds : 5))" -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/model" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; json.load(sys.stdin)' 2>/dev/null; then
     ready=true
     break
   fi

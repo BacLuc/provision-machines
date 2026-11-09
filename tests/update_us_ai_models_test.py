@@ -64,6 +64,7 @@ def test_update_config_parses_the_repo_jsonc_files(tmp_path: Path) -> None:
         mod.update_config([{"id": "byusage.example/model", "name": "Model"}], config_path=target)
         with open(target) as f:
             config = json.loads(f.read())
-        assert config["provider"]["vshn-us-ai"]["models"] == {
+        assert config["providers"]["vshn-us-ai"]["models"] == {
             "byusage.example/model": {"name": "Model (byusage)"},
         }
+        assert "provider" not in config

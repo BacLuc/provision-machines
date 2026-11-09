@@ -29,14 +29,19 @@ def run_launcher(
     if curl_mode == "ready":
         curl_result = (
             'printf \'%s\\n\' "$*" >> "$CURL_LOG"; '
-            'case "$*" in *api/config*) printf \'{"ok":true}\';; *) printf \'{"code":"pair-code_123"}\';; esac\n'
+            'case "$*" in *api/config*|*api/model*) printf \'{"ok":true}\';; *api/pair*) printf \'{"code":"pair-code_123"}\';; *) exit 1;; esac\n'
+        )
+    elif curl_mode == "config-only":
+        curl_result = (
+            'printf \'%s\\n\' "$*" >> "$CURL_LOG"; '
+            'case "$*" in *api/config*) printf \'{"ok":true}\';; *) exit 1;; esac\n'
         )
     elif curl_mode == "pair-fail":
-        curl_result = 'case "$*" in *api/config*) printf \'{"ok":true}\';; *) exit 1;; esac\n'
+        curl_result = 'case "$*" in *api/config*|*api/model*) printf \'{"ok":true}\';; *) exit 1;; esac\n'
     elif curl_mode == "pair-malformed":
-        curl_result = "case \"$*\" in *api/config*) printf '{\"ok\":true}';; *) printf 'not-json';; esac\n"
+        curl_result = "case \"$*\" in *api/config*|*api/model*) printf '{\"ok\":true}';; *) printf 'not-json';; esac\n"
     elif curl_mode == "pair-invalid-code":
-        curl_result = 'case "$*" in *api/config*) printf \'{"ok":true}\';; *) printf \'{"code":"bad code"}\';; esac\n'
+        curl_result = 'case "$*" in *api/config*|*api/model*) printf \'{"ok":true}\';; *) printf \'{"code":"bad code"}\';; esac\n'
     else:
         curl_result = "exit 1\n"
     (fake_bin / "curl").write_text(f"#!/bin/sh\n{curl_result}")
@@ -154,6 +159,16 @@ def test_readiness_timeout_caps_request_to_absolute_deadline(tmp_path: Path) -> 
     assert result.returncode != 0
     assert time.monotonic() - started < 1.6
     assert "--max-time 1" in (tmp_path / "curl.log").read_text()
+
+
+def test_config_readiness_does_not_bypass_model_readiness(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="config-only")
+
+    assert result.returncode != 0
+    assert "timed out waiting" in result.stderr
+    curl_log = (tmp_path / "curl.log").read_text()
+    assert "api/model" in curl_log
+    assert "api/pair" not in curl_log
 
 
 def test_cleanup_escalates_when_devcontainer_ignores_sigterm(tmp_path: Path) -> None:
