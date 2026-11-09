@@ -143,6 +143,15 @@ charging_state_monitor = {
     "enabled": False,
 }
 
+auto_provision = {
+    "enabled": False,
+    "on_calendar": "Sun *-*-* 03:00:00",
+    "notify_on_calendar": "Sun *-*-* 01:00:00",
+    "checkout_dir": "/home/{user}/provision-machines",
+    "branch": "main",
+    "state_dir": "/home/{user}/.local/var/auto-provision",
+}
+
 firefox = {
     "enabled": True,
 }

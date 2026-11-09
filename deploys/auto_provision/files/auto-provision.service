@@ -1,0 +1,10 @@
+[Unit]
+Description=Provision the development machine
+
+[Service]
+Type=oneshot
+User={{ provision_user }}
+Environment=HOME={{ home }}
+ExecStart=/usr/local/bin/auto-provision-runner
+StandardOutput=journal
+StandardError=journal

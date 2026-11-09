@@ -138,6 +138,13 @@ charging_state_monitor = {
     "enabled": False,
 }
 
+auto_provision = {
+    "enabled": True,
+    "checkout_dir": "/home/runner/work/provision-machines/provision-machines",
+    "branch": "devel",
+    "state_dir": "/home/runner/.local/var/auto-provision",
+}
+
 firefox_taskbar_tabs = {
     "enabled": False,
 }
