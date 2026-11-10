@@ -284,7 +284,7 @@ syft = {
 ollama = {
     "enabled": False,
     # renovate: datasource=github-releases depName=ollama/ollama
-    "ollama_version": "0.32.5",
+    "ollama_version": "0.40.16",
     "model": "qwen2.5:3b",
 }
 
