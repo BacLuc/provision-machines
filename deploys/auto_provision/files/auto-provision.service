@@ -5,6 +5,7 @@ Description=Provision the development machine
 Type=oneshot
 User={{ provision_user }}
 Environment=HOME={{ home }}
+Environment=CI={{ ci_environment }}
 ExecStart=/usr/local/bin/auto-provision-runner
 StandardOutput=journal
 StandardError=journal

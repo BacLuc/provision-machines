@@ -145,6 +145,7 @@ charging_state_monitor = {
 
 auto_provision = {
     "enabled": False,
+    "ci_environment": "",
     "on_calendar": "Sun *-*-* 03:00:00",
     "notify_on_calendar": "Sun *-*-* 01:00:00",
     "checkout_dir": "/home/{user}/provision-machines",

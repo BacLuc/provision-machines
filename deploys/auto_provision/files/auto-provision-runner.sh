@@ -34,9 +34,11 @@ if [ ! -d "$CHECKOUT_DIR/.git" ]; then
     exit 1
 fi
 
-git -C "$CHECKOUT_DIR" fetch --prune origin "$BRANCH"
-git -C "$CHECKOUT_DIR" checkout --force "$BRANCH"
-git -C "$CHECKOUT_DIR" reset --hard "origin/$BRANCH"
+if [ "${CI:-}" != "true" ]; then
+    git -C "$CHECKOUT_DIR" fetch --prune origin "$BRANCH"
+    git -C "$CHECKOUT_DIR" checkout --force "$BRANCH"
+    git -C "$CHECKOUT_DIR" reset --hard "origin/$BRANCH"
+fi
 
 sudo /usr/local/bin/cleanup-script
 cd "$CHECKOUT_DIR"

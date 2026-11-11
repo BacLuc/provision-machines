@@ -140,6 +140,7 @@ charging_state_monitor = {
 
 auto_provision = {
     "enabled": True,
+    "ci_environment": "true",
     "checkout_dir": "/home/runner/work/provision-machines/provision-machines",
     "branch": "devel",
     "state_dir": "/home/runner/.local/var/auto-provision",
