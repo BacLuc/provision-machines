@@ -55,6 +55,7 @@ def test_runner_has_order_locking_and_weekly_idempotency() -> None:
     assert '"$HOME/bin/uv" run scripts/run_pyinfra_local.py' in runner
     assert "sudo /usr/local/bin/update-script" in runner
     assert 'if [ "${CI:-}" != "true" ]; then' in runner
+    assert 'export XDG_RUNTIME_DIR="/run/user/$(id -u)"' in runner
     assert runner.index('if [ "${CI:-}" != "true" ]; then') < runner.index("cleanup-script")
     assert runner.index("cleanup-script") < runner.index("run_pyinfra_local.py") < runner.index("update-script")
 

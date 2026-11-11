@@ -9,6 +9,7 @@ SUCCESS_FILE="$STATE_DIR/last-success-week"
 STOP_FILE="$STATE_DIR/stopped-today"
 WEEK=$(date +%G-%V)
 TODAY=$(date +%F)
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
 
 mkdir -p "$STATE_DIR"
 exec 9>"$STATE_DIR/lock"
