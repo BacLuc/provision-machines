@@ -1,0 +1,10 @@
+[Unit]
+Description=Notify before development machine provisioning
+
+[Service]
+Type=oneshot
+User={{ provision_user }}
+Environment=HOME={{ home }}
+ExecStart=/usr/local/bin/auto-provision-notify
+StandardOutput=journal
+StandardError=journal
