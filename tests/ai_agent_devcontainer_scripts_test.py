@@ -464,11 +464,12 @@ def test_open_url_is_controlled_by_a_single_setting_variable() -> None:
 def test_gh_wrapper_is_not_duplicated_and_comes_from_one_pinned_source() -> None:
     assert not (FILES / "gh-cli-wrapper.py").exists()
     dockerfile = (FILES / "Dockerfile").read_text()
+    pinned = "https://raw.githubusercontent.com/bacluc-agent/agent-runner/9857579fc6f42d5b8c9f1bdd5eba900b823152fb/scripts/gh_cli_wrapper.py"
     sources = re.findall(
         r"https://raw\.githubusercontent\.com/[^/\s]+/[^/\s]+/[0-9a-f]{40}/scripts/gh_cli_wrapper\.py",
         dockerfile,
     )
-    assert len(sources) == 1
+    assert sources == [pinned]
     assert len(re.findall(r"https://raw\.githubusercontent\.com/\S*gh_cli_wrapper\.py", dockerfile)) == 1
     assert "real-gh" in dockerfile
     assert "ln -sf" in dockerfile
