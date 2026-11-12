@@ -11,8 +11,8 @@ user = get_user_name()
 t3_code = host.data.t3_code
 
 # renovate: datasource=github-releases depName=pingdotgg/t3code
-t3_code_version = "0.1.7"
-t3_code_checksum = "faaee4094dca1276057840a1a45a6b2d00d7418afbf5735f75a7503b774e63d1"
+t3_code_version = "0.1.9"
+t3_code_checksum = "d0ab56df3e338f242848435621297fd963a33715b0d8208dbf08399659572d81"
 
 if t3_code["enabled"]:
     version = t3_code_version
