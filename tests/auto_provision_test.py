@@ -33,15 +33,19 @@ def test_default_configuration_is_disabled_and_laptop_safe() -> None:
     assert '"ci_environment": "true"' in ci_values
 
 
-def test_templates_configure_calendars_user_home_and_journald() -> None:
+def test_templates_configure_calendars_user_home_without_redundant_journald() -> None:
     service = (_DEPLOY / "files" / "auto-provision.service").read_text()
+    notify_service = (_DEPLOY / "files" / "auto-provision-notify.service").read_text()
     timer = (_DEPLOY / "files" / "auto-provision.timer").read_text()
     notify_timer = (_DEPLOY / "files" / "auto-provision-notify.timer").read_text()
 
     assert "User={{ provision_user }}" in service
     assert "Environment=HOME={{ home }}" in service
     assert "Environment=CI={{ ci_environment }}" in service
-    assert "StandardOutput=journal" in service
+    assert "StandardOutput=journal" not in service
+    assert "StandardError=journal" not in service
+    assert "StandardOutput=journal" not in notify_service
+    assert "StandardError=journal" not in notify_service
     assert "OnCalendar={{ on_calendar }}" in timer
     assert "OnCalendar={{ notify_on_calendar }}" in notify_timer
 
