@@ -21,6 +21,28 @@ uv sync --all-extras
 uv run scripts/run_pyinfra_local.py
 ```
 
+## Auto provisioning
+
+Enable the weekly provisioning run in `group_data/local.py`:
+
+```python
+auto_provision = {
+    "enabled": True,
+}
+```
+
+The provisioning user needs passwordless sudo because the systemd oneshot runs unattended and
+calls `sudo /usr/local/bin/cleanup-script` and `sudo /usr/local/bin/update-script`, so a
+password prompt would fail. The default schedule is Sundays at 03:00 with a notification two
+hours earlier at 01:00. To stop today's run:
+
+```shell
+sudo systemctl stop auto-provision.service
+```
+
+State (`last-success-week`, `stopped-today`, and the lock) lives in
+`~/.local/var/auto-provision`.
+
 ## Lint
 
 ```shell

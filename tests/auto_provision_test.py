@@ -1,4 +1,5 @@
 import os
+import socket
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -64,16 +65,43 @@ def test_runner_has_order_locking_and_weekly_idempotency() -> None:
     assert runner.index("cleanup-script") < runner.index("run_pyinfra_local.py") < runner.index("update-script")
 
 
-def test_runner_stop_marks_today_and_does_not_use_dbus() -> None:
+def test_runner_stop_marks_today_and_notifier_uses_user_bus() -> None:
     runner = (_DEPLOY / "files" / "auto-provision-runner.sh").read_text()
     notifier = (_DEPLOY / "files" / "auto-provision-notify.sh").read_text()
 
     assert 'printf \'%s\\n\' "$TODAY" > "$STOP_FILE"' in runner
     assert 'if [ ! -S "$RUNTIME_DIR/bus" ]; then' in notifier
-    assert "DBUS_SESSION_BUS_ADDRESS" not in notifier
+    assert 'export XDG_RUNTIME_DIR="$RUNTIME_DIR"' in notifier
+    assert 'export DBUS_SESSION_BUS_ADDRESS="unix:path=$RUNTIME_DIR/bus"' in notifier
     assert "sudo systemctl stop auto-provision.service" in notifier
     assert '"$STATE_DIR/stopped-today"' not in notifier
     assert "stopped-today" in notifier
+
+
+def test_notifier_exports_the_user_bus_for_notify_send() -> None:
+    notifier = (_DEPLOY / "files" / "auto-provision-notify.sh").read_text()
+
+    with TemporaryDirectory() as directory:
+        runtime = Path(directory) / "runtime"
+        stubs = Path(directory) / "stubs"
+        runtime.mkdir()
+        stubs.mkdir()
+        bus = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        bus.bind(str(runtime / "bus"))
+        capture = Path(directory) / "capture"
+        notify_send = stubs / "notify-send"
+        notify_send.write_text(
+            "#!/bin/sh\nprintf '%s\\n%s\\n' \"$XDG_RUNTIME_DIR\" \"$DBUS_SESSION_BUS_ADDRESS\" > \"$CAPTURE\"\n"
+        )
+        notify_send.chmod(0o755)
+        script = notifier.replace('RUNTIME_DIR="/run/user/$USER_ID"', f'RUNTIME_DIR="{runtime}"')
+        script = script.replace("{{ state_dir }}", directory)
+        env = {**os.environ, "PATH": f"{stubs}:{os.environ['PATH']}", "CAPTURE": str(capture)}
+        result = subprocess.run(["sh", "-c", script], env=env, check=False)
+        bus.close()
+
+        assert result.returncode == 0
+        assert capture.read_text().splitlines() == [str(runtime), f"unix:path={runtime}/bus"]
 
 
 def test_runner_skips_a_stopped_day() -> None:
