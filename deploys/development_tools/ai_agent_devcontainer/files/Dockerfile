@@ -52,3 +52,9 @@ USER root
 
 COPY init-home.sh /usr/local/bin/init-ai-devcontainer-home
 RUN chmod +x /usr/local/bin/init-ai-devcontainer-home
+
+RUN mkdir -p /usr/local/lib/gh-cli-wrapper \
+    && curl -fsSL https://raw.githubusercontent.com/bacluc-agent/agent-runner/9857579fc6f42d5b8c9f1bdd5eba900b823152fb/scripts/gh_cli_wrapper.py -o /usr/local/lib/gh-cli-wrapper/gh \
+    && chmod 755 /usr/local/lib/gh-cli-wrapper/gh \
+    && printf '%s\n' "$(command -v gh)" > /usr/local/lib/gh-cli-wrapper/real-gh \
+    && ln -sf /usr/local/lib/gh-cli-wrapper/gh /usr/local/bin/gh
