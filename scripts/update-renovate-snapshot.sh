@@ -9,7 +9,7 @@ SCRIPT_DIR=$(realpath $(dirname $0))
 REPO_ROOT=$(dirname $SCRIPT_DIR)
 SNAPSHOT_FILE="$REPO_ROOT/.github/renovate-snapshot.json"
 # renovate: datasource=docker depName=renovate/renovate
-RENOVATE_VERSION="44.222.0"
+RENOVATE_VERSION="44.239.1"
 
 show_help() {
     echo "Usage: $0 [OPTION]"
