@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
 
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
@@ -46,6 +48,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
 
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
@@ -61,5 +65,23 @@ jobs:
       - name: "run cleanup-script"
         run: sudo cleanup-script
 
+      - name: "run auto-provision notification service"
+        run: sudo systemctl start --wait auto-provision-notify.service
+
+      - name: "run auto-provision service"
+        run: sudo systemctl start --wait auto-provision.service
+
       - name: "run pyinfra a second time"
         run: uv run scripts/run_pyinfra_local.py
+
+  agent_pr_base:
+    name: "Agent PR targets devel"
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'bacluc-agent'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: "Check base branch"
+        run: |
+          if [ "${{ github.base_ref }}" != "devel" ]; then
+            echo "::error::Agent pull requests must target devel, not ${{ github.base_ref }}"
+            exit 1
+          fi
