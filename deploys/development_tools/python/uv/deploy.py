@@ -4,8 +4,8 @@ from operations.github_release_binary import github_release_binary
 
 # renovate: datasource=github-releases depName=astral-sh/uv
 python_uv_version = "0.13.8"
-python_uv_checksum = "b97ae0e1ed3661fcd0c446cc59d81f5720c24d35627b21814a7581fb67eba673"
-python_uvx_checksum = "1fcf2b8daffc8971e3d46e348d47cb76a453cf6488d3db5322cbdbeb41bee93e"
+python_uv_checksum = "4a7607589912d9c20e86b860b032f7c7f2913c9a3e76f46aef136885387452b8"
+python_uvx_checksum = "c246ee76ad8d606c9347c2774698654235f2016becd87de559662a33f7d13726"
 
 enabled = host.data.python["uv"]["enabled"]
 
