@@ -286,7 +286,19 @@ def update_config(models, config_path, npm_package=None, provider_name=None, api
 
     sorted_models = dict(sorted(models_dict.items()))
 
-    provider_config = config["providers"].setdefault(provider_name, {})
+    providers = config.setdefault("providers", {})
+    legacy_container = config.get("provider")
+    legacy_entry = {}
+    if isinstance(legacy_container, dict):
+        for legacy_name, legacy_val in legacy_container.items():
+            if isinstance(legacy_val, dict) and legacy_name not in providers:
+                providers[legacy_name] = legacy_val
+        legacy_entry = legacy_container.get(provider_name, {})
+        if not isinstance(legacy_entry, dict):
+            legacy_entry = {}
+    provider_config = providers.setdefault(provider_name, {})
+    if "settings" in legacy_entry and "settings" not in provider_config:
+        provider_config["settings"] = legacy_entry["settings"]
     provider_config.update(
         {
             "package": npm_package or "aisdk:@ai-sdk/openai-compatible",
@@ -294,6 +306,9 @@ def update_config(models, config_path, npm_package=None, provider_name=None, api
             "models": sorted_models,
         }
     )
+
+    if "provider" in config:
+        del config["provider"]
 
     text = json.dumps(config, indent=2)
 
