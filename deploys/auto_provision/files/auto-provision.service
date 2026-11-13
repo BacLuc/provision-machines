@@ -1,5 +1,6 @@
 [Unit]
 Description=Provision the development machine
+ConditionACPower=true
 
 [Service]
 Type=oneshot

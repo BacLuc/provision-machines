@@ -25,13 +25,16 @@ def test_default_configuration_is_disabled_and_laptop_safe() -> None:
     assert '"enabled": False' in values
     assert '"ci_environment": ""' in values
     assert ".local/var/auto-provision" in values
-    assert '"on_calendar": "Sun *-*-* 03:00:00"' in values
+    assert ".local/var/provision-machines" in values
+    assert '"on_calendar": "Sun *-*-* 12:00:00"' in values
+    assert '"notify_on_calendar": "Sun *-*-* 10:00:00"' in values
 
     ci_configuration = (Path(__file__).parents[1] / "group_data" / "ci.py").read_text()
     ci_start = ci_configuration.index("auto_provision = {")
     ci_end = ci_configuration.index("}\n", ci_start) + 2
     ci_values = ci_configuration[ci_start:ci_end]
     assert '"ci_environment": "true"' in ci_values
+    assert '"/home/runner/work/provision-machines/provision-machines"' in ci_values
 
 
 def test_templates_configure_calendars_user_home_without_redundant_journald() -> None:
@@ -47,7 +50,9 @@ def test_templates_configure_calendars_user_home_without_redundant_journald() ->
     assert "StandardError=journal" not in service
     assert "StandardOutput=journal" not in notify_service
     assert "StandardError=journal" not in notify_service
+    assert "ConditionACPower=true" in service
     assert "OnCalendar={{ on_calendar }}" in timer
+    assert "Persistent=false" in timer
     assert "OnCalendar={{ notify_on_calendar }}" in notify_timer
 
 

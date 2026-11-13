@@ -3,7 +3,7 @@ Description=Schedule development machine provisioning
 
 [Timer]
 OnCalendar={{ on_calendar }}
-Persistent=true
+Persistent=false
 Unit=auto-provision.service
 
 [Install]
