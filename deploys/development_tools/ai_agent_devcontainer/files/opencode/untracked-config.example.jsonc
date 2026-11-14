@@ -1,55 +1,55 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "my-favorite-model",
-  "provider": {
+  "providers": {
     "opencode-go-anthropic": {
-      "options": {
+      "settings": {
         "apiKey": "apiKey",
       },
     },
     "opencode-go-openai": {
-      "options": {
+      "settings": {
         "apiKey": "apiKey",
       },
     },
     "google": {
-      "options": {
+      "settings": {
         "apiKey": "apikey",
       },
     },
     "cortecs": {
-      "options": {
+      "settings": {
         "apiKey": "apikey",
       },
     },
     "cortecs2": {
-      "options": {
+      "settings": {
         "apiKey": "apikey",
       },
     },
     "requesty": {
-      "options": {
+      "settings": {
         "apiKey": "apikey",
       },
     },
     "requesty2": {
-      "options": {
+      "settings": {
         "apiKey": "apikey",
       },
     },
     "openrouter": {
-      "options": {
+      "settings": {
         "apiKey": "apikey",
       },
     },
     "vshn-us-ai": {
-      "options": {
+      "settings": {
         "baseURL": "baseurl",
         "apiKey": "apikey",
       },
     },
     "vshn-llm-router": {
-      "options": {
+      "settings": {
         "baseURL": "{env:VSHN_LLM_ROUTER_BASE_URL}",
         "apiKey": "{env:VSHN_LLM_ROUTER_API_KEY}",
       },

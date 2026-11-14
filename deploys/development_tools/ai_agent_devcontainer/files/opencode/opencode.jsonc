@@ -50,11 +50,11 @@
       "disable": true,
     },
   },
-  "provider": {
+  "providers": {
     "ollama": {
-      "npm": "@ai-sdk/openai-compatible",
+      "package": "aisdk:@ai-sdk/openai-compatible",
       "name": "Ollama (local)",
-      "options": {
+      "settings": {
         "baseURL": "http://host.docker.internal:11434/v1",
       },
       "models": {
@@ -85,9 +85,9 @@
       },
     },
     "opencode-go-anthropic": {
-      "npm": "@ai-sdk/anthropic",
+      "package": "aisdk:@ai-sdk/anthropic",
       "name": "opencode-go-anthropic",
-      "options": {
+      "settings": {
         "baseURL": "https://opencode.ai/zen/go/v1/messages",
         "apiKey": "{env:OPENCODE_GO_API_KEY}",
       },
@@ -116,9 +116,9 @@
       },
     },
     "opencode-go-openai": {
-      "npm": "@ai-sdk/openai-compatible",
+      "package": "aisdk:@ai-sdk/openai-compatible",
       "name": "opencode-go-openai",
-      "options": {
+      "settings": {
         "baseURL": "https://opencode.ai/zen/go/v1",
         "apiKey": "{env:OPENCODE_GO_API_KEY}",
       },
@@ -149,15 +149,11 @@
         },
         "gpt-5.6-luna": {
           "name": "gpt-5.6-luna",
-          "provider": {
-            "npm": "@ai-sdk/openai",
-          },
+          "package": "aisdk:@ai-sdk/openai",
         },
         "gpt-6-luna": {
           "name": "gpt-6-luna",
-          "provider": {
-            "npm": "@ai-sdk/openai",
-          },
+          "package": "aisdk:@ai-sdk/openai",
         },
         "grok-4.5": {
           "name": "grok-4.5",
@@ -240,9 +236,9 @@
       },
     },
     "opencode-go-anthropic-2": {
-      "npm": "@ai-sdk/anthropic",
+      "package": "aisdk:@ai-sdk/anthropic",
       "name": "opencode-go-anthropic-2",
-      "options": {
+      "settings": {
         "baseURL": "https://opencode.ai/zen/go/v1/messages",
         "apiKey": "{env:OPENCODE_GO_2_API_KEY}",
       },
@@ -271,9 +267,9 @@
       },
     },
     "opencode-go-openai-2": {
-      "npm": "@ai-sdk/openai-compatible",
+      "package": "aisdk:@ai-sdk/openai-compatible",
       "name": "opencode-go-openai-2",
-      "options": {
+      "settings": {
         "baseURL": "https://opencode.ai/zen/go/v1",
         "apiKey": "{env:OPENCODE_GO_2_API_KEY}",
       },
@@ -304,15 +300,11 @@
         },
         "gpt-5.6-luna": {
           "name": "gpt-5.6-luna",
-          "provider": {
-            "npm": "@ai-sdk/openai",
-          },
+          "package": "aisdk:@ai-sdk/openai",
         },
         "gpt-6-luna": {
           "name": "gpt-6-luna",
-          "provider": {
-            "npm": "@ai-sdk/openai",
-          },
+          "package": "aisdk:@ai-sdk/openai",
         },
         "grok-4.5": {
           "name": "grok-4.5",
@@ -395,7 +387,8 @@
       },
     },
     "cortecs2": {
-      "options": {
+      "package": "aisdk:@ai-sdk/openai-compatible",
+      "settings": {
         "baseURL": "https://api.cortecs.ai/v1",
       },
       "models": {
@@ -426,7 +419,8 @@
       },
     },
     "requesty2": {
-      "options": {
+      "package": "aisdk:@ai-sdk/openai-compatible",
+      "settings": {
         "baseURL": "https://router.requesty.ai/v1",
       },
       "models": {
@@ -448,9 +442,9 @@
       },
     },
     "openrouter": {
-      "npm": "@ai-sdk/openai-compatible",
+      "package": "aisdk:@ai-sdk/openai-compatible",
       "name": "OpenRouter",
-      "options": {
+      "settings": {
         "baseURL": "https://openrouter.ai/api/v1",
         "apiKey": "{env:OPENROUTER_API_KEY}",
       },
@@ -482,9 +476,9 @@
       },
     },
     "vshn-us-ai": {
-      "npm": "@ai-sdk/openai-compatible",
+      "package": "aisdk:@ai-sdk/openai-compatible",
       "name": "VSHN US AI",
-      "options": {
+      "settings": {
         "baseURL": "{env:VSHN_US_BASE_URL}",
         "apiKey": "{env:VSHN_US_AI_API_KEY}",
       },
@@ -555,9 +549,9 @@
       },
     },
     "vshn-llm-router": {
-      "npm": "@ai-sdk/openai-compatible",
+      "package": "aisdk:@ai-sdk/openai-compatible",
       "name": "VSHN LLM Router",
-      "options": {
+      "settings": {
         "baseURL": "{env:VSHN_LLM_ROUTER_BASE_URL}",
         "apiKey": "{env:VSHN_LLM_ROUTER_API_KEY}",
       },

@@ -64,6 +64,12 @@ fi
 save_port "$WORKING_DIR" "$OPENCODE_PORT"
 export OPENCODE_PORT
 
+DEVCONTAINER_WAIT_TIMEOUT="${DEVCONTAINER_WAIT_TIMEOUT:-120}"
+if ! [[ "$DEVCONTAINER_WAIT_TIMEOUT" =~ ^[0-9]+$ ]]; then
+  echo "Error: DEVCONTAINER_WAIT_TIMEOUT must be a nonnegative integer" >&2
+  exit 1
+fi
+
 if [[ -z "${OPENCODE_SERVER_PASSWORD:-}" ]]; then
   mkdir -p "$PORT_MAP_DIR"
   [[ -s "$PORT_MAP_DIR/password" ]] || openssl rand -hex 16 > "$PORT_MAP_DIR/password"
@@ -95,18 +101,84 @@ if [[ -f $WORKSPACE_DIR/.git ]]; then
   fi
 fi
 
-devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" &
+startup_log=$(mktemp)
+stop_process() {
+  local pid="$1"
+  if kill -0 "$pid" 2>/dev/null; then
+    kill "$pid" 2>/dev/null || true
+    for ((cleanup_attempt = 0; cleanup_attempt < 50; cleanup_attempt++)); do
+      if ! kill -0 "$pid" 2>/dev/null; then
+        break
+      fi
+      sleep 0.1
+    done
+    if kill -0 "$pid" 2>/dev/null; then
+      kill -KILL "$pid" 2>/dev/null || true
+    fi
+  fi
+  wait "$pid" 2>/dev/null || true
+}
+cleanup() {
+  local status=$?
+  if [[ $status -ne 0 && -n "${devcontainer_pid:-}" ]]; then
+    stop_process "$devcontainer_pid"
+    devcontainer down --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >/dev/null 2>&1 &
+    down_pid=$!
+    sleep 0.1
+    stop_process "$down_pid"
+  fi
+  rm -f "$startup_log"
+  exit "$status"
+}
+trap cleanup EXIT
+
+devcontainer up --workspace-folder . --config "$CONFIG_DIR/devcontainer.json" >"$startup_log" 2>&1 &
 devcontainer_pid=$!
+devcontainer_status=
 
 base_url="http://localhost:${OPENCODE_PORT}"
 echo "Waiting for ${base_url} to respond..."
-until curl -sf -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/config" > /dev/null; do
-  sleep 1
+ready=false
+readiness_deadline=$(( $(date +%s) + DEVCONTAINER_WAIT_TIMEOUT ))
+while (( $(date +%s) < readiness_deadline )); do
+  if [[ -z "$devcontainer_status" ]] && ! kill -0 "$devcontainer_pid" 2>/dev/null; then
+    if wait "$devcontainer_pid"; then
+      devcontainer_status=0
+    else
+      devcontainer_status=$?
+    fi
+    if [[ "$devcontainer_status" -ne 0 ]]; then
+      cat "$startup_log" >&2
+      echo "Error: devcontainer failed to start" >&2
+      exit 1
+    fi
+  fi
+  remaining_seconds=$((readiness_deadline - $(date +%s)))
+  if (( remaining_seconds <= 0 )); then
+    break
+  fi
+  if response=$(curl --connect-timeout 2 --max-time "$((remaining_seconds < 5 ? remaining_seconds : 5))" -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/model" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; json.load(sys.stdin)' 2>/dev/null; then
+    ready=true
+    break
+  fi
+  if (( remaining_seconds > 1 )); then
+    sleep 1
+  fi
 done
 
-response=$(curl -sf -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair")
-code=$(printf %s "$response" | sed 's/.*"code":"\([^"]*\)".*/\1/')
-if [[ -z "$code" ]]; then
+if [[ "$ready" != true ]]; then
+  cat "$startup_log" >&2
+  echo "Error: timed out waiting for ${base_url} to respond" >&2
+  exit 1
+fi
+
+if ! response=$(curl --connect-timeout 2 --max-time 5 -fsS -X POST -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/pair"); then
+  echo "Error: could not request pairing code" >&2
+  echo "Fallback: use the password from ~/.config/ai-agent-devcontainer/password to log in at ${base_url}" >&2
+  exit 1
+fi
+code=$(printf %s "$response" | python3 -c 'import json, sys; value = json.load(sys.stdin).get("code", ""); print(value if isinstance(value, str) else "")' 2>/dev/null || true)
+if [[ -z "$code" ]] || [[ ! "$code" =~ ^[A-Za-z0-9_-]+$ ]]; then
   echo "Error: could not extract pairing code from: $response" >&2
   echo "Fallback: use the password from ~/.config/ai-agent-devcontainer/password to log in at ${base_url}" >&2
   exit 1
@@ -116,7 +188,7 @@ opencode_url="${base_url}/auth/connect/${code}"
 printf %s "$opencode_url" | (xclip -selection clipboard 2>/dev/null || wl-copy 2>/dev/null || pbcopy 2>/dev/null || true)
 
 if [[ "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
-  open "$opencode_url"
+  open "$opencode_url" || true
 fi
 
 echo "$opencode_url"

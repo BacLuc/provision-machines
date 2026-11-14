@@ -286,13 +286,32 @@ def update_config(models, config_path, npm_package=None, provider_name=None, api
 
     sorted_models = dict(sorted(models_dict.items()))
 
-    provider_config = {
-        "npm": npm_package or "@ai-sdk/openai-compatible",
-        "name": "VSHN US AI",
-        "models": sorted_models,
-    }
+    providers = config.get("providers")
+    legacy_provider = config.get("provider")
 
-    config["provider"][provider_name] = provider_config
+    if isinstance(providers, dict) and provider_name in providers:
+        target = providers[provider_name]
+        package_key = "package"
+        package_value = npm_package or "aisdk:@ai-sdk/openai-compatible"
+    elif isinstance(legacy_provider, dict) and provider_name in legacy_provider:
+        target = legacy_provider[provider_name]
+        package_key = "npm"
+        package_value = npm_package or "@ai-sdk/openai-compatible"
+    elif isinstance(providers, dict):
+        target = providers.setdefault(provider_name, {})
+        package_key = "package"
+        package_value = npm_package or "aisdk:@ai-sdk/openai-compatible"
+    elif isinstance(legacy_provider, dict):
+        target = legacy_provider.setdefault(provider_name, {})
+        package_key = "npm"
+        package_value = npm_package or "@ai-sdk/openai-compatible"
+    else:
+        config["providers"] = {provider_name: {}}
+        target = config["providers"][provider_name]
+        package_key = "package"
+        package_value = npm_package or "aisdk:@ai-sdk/openai-compatible"
+
+    target.update({package_key: package_value, "name": "VSHN US AI", "models": sorted_models})
 
     text = json.dumps(config, indent=2)
 
