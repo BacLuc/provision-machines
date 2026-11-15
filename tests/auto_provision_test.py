@@ -162,3 +162,4 @@ def test_runner_skips_git_sync_in_ci_and_runs_it_outside() -> None:
         local_script = script.replace("{{ checkout_dir }}", str(local_checkout.parent)).replace("{{ state_dir }}", str(local_state))
         result = subprocess.run(["sh", "-c", local_script], env={k: v for k, v in env.items() if k != "CI"}, check=False)
         assert result.returncode == 42
+        assert not (local_state / "running").exists()

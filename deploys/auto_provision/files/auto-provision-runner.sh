@@ -30,6 +30,7 @@ stop_today() {
 
 trap stop_today TERM INT
 touch "$STATE_DIR/running"
+trap 'rm -f "$STATE_DIR/running"' EXIT
 if [ ! -d "$CHECKOUT_DIR/.git" ]; then
     printf '%s\n' "Checkout not found: $CHECKOUT_DIR" >&2
     exit 1
