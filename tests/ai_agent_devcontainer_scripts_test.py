@@ -1,12 +1,16 @@
 import hashlib
+import importlib.util
 import json
 import os
 import re
 import signal
 import subprocess
 import time
+import urllib.request
 from pathlib import Path
 from typing import TypedDict, cast
+
+import pytest
 
 ROOT = Path(__file__).parents[1]
 FILES = ROOT / "deploys/development_tools/ai_agent_devcontainer/files"
@@ -464,7 +468,7 @@ def test_open_url_is_controlled_by_a_single_setting_variable() -> None:
 def test_gh_wrapper_is_not_duplicated_and_comes_from_one_pinned_source() -> None:
     assert not (FILES / "gh-cli-wrapper.py").exists()
     dockerfile = (FILES / "Dockerfile").read_text()
-    pinned = "https://raw.githubusercontent.com/bacluc-agent/agent-runner/9857579fc6f42d5b8c9f1bdd5eba900b823152fb/scripts/gh_cli_wrapper.py"
+    pinned = "https://raw.githubusercontent.com/bacluc-agent/agent-runner/2def6d1781adbbf87f3428c2931447404fed86cd/scripts/gh_cli_wrapper.py"
     sources = re.findall(
         r"https://raw\.githubusercontent\.com/[^/\s]+/[^/\s]+/[0-9a-f]{40}/scripts/gh_cli_wrapper\.py",
         dockerfile,
@@ -473,3 +477,32 @@ def test_gh_wrapper_is_not_duplicated_and_comes_from_one_pinned_source() -> None
     assert len(re.findall(r"https://raw\.githubusercontent\.com/\S*gh_cli_wrapper\.py", dockerfile)) == 1
     assert "real-gh" in dockerfile
     assert "ln -sf" in dockerfile
+
+
+def test_pinned_gh_wrapper_enforces_owned_orgs_and_merge_guards(tmp_path: Path) -> None:
+    dockerfile = (FILES / "Dockerfile").read_text()
+    url = re.findall(
+        r"https://raw\.githubusercontent\.com/[^/\s]+/[^/\s]+/[0-9a-f]{40}/scripts/gh_cli_wrapper\.py",
+        dockerfile,
+    )[0]
+    source = tmp_path / "gh_cli_wrapper.py"
+    source.write_text(urllib.request.urlopen(url, timeout=15).read().decode())
+    spec = importlib.util.spec_from_file_location("pinned_gh_cli_wrapper", source)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    owned_repo = module.owned_repo
+    owned_repo("bacluc-agent-org/agent-runner")
+    owned_repo("BacLuc/provision-machines")
+    with pytest.raises(ValueError):
+        owned_repo("ecamp/ecamp3")
+    validate_pr = module.validate_pr
+    validate_pr(["merge", "1", "-R", "BacLuc/provision-machines"])
+    with pytest.raises(ValueError):
+        validate_pr(["merge", "1"])
+    with pytest.raises(ValueError):
+        validate_pr(["merge", "1", "-R", "ecamp/ecamp3"])
+    validate_api = module.validate_api
+    with pytest.raises(ValueError):
+        validate_api(["repos/ecamp/ecamp3/issues/1/comments", "-XPOST", "-fbody=x"])
