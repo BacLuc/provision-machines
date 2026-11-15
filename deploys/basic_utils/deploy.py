@@ -380,6 +380,7 @@ if basic_utils["enable_zoom"]:
     flatpak.packages(packages=["us.zoom.Zoom"])
 
 if basic_utils["enable_go"]:
+    local.include(f"{DEPLOYS_DIR}/homebrew/deploy.py")
     goenv_bin = f"{HOMEBREW_BIN}/goenv"
 
     server.shell(
