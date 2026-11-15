@@ -150,6 +150,11 @@ def test_runner_skips_git_sync_in_ci_and_runs_it_outside() -> None:
         assert result.returncode == 0
         assert (ci_state / "last-success-week").read_text().strip() == subprocess.check_output(["date", "+%G-%V"], text=True).strip()
 
+        (stubs / "sudo").write_text("#!/bin/sh\nexit 42\n")
+        (home / "bin" / "uv").write_text("#!/bin/sh\nexit 42\n")
+        result = subprocess.run(["sh", "-c", ci_script], env={**env, "CI": "true"}, check=False)
+        assert result.returncode == 0
+
         local_state = Path(directory) / "local-state"
         local_checkout = Path(directory) / "local-checkout" / ".git"
         local_state.mkdir()

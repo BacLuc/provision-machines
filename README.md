@@ -31,9 +31,9 @@ auto_provision = {
 }
 ```
 
-The provisioning user needs passwordless sudo because the systemd oneshot runs unattended and
-calls `sudo /usr/local/bin/cleanup-script` and `sudo /usr/local/bin/update-script`, so a
-password prompt would fail. The checkout is expected at `~/.local/var/provision-machines`;
+The provisioning user needs passwordless sudo because the unattended systemd oneshot runs the
+pyinfra deploy (which uses sudo) and calls `sudo /usr/local/bin/cleanup-script` and
+`sudo /usr/local/bin/update-script`, so a password prompt would fail. The checkout is expected at `~/.local/var/provision-machines`;
 override `checkout_dir` in `group_data/local.py` to use another location. The default schedule
 is Sundays at 12:00 with a notification two hours earlier at 10:00. Provisioning only runs on
 AC power, and a missed weekly run is not caught up later. To stop today's run:
