@@ -27,7 +27,12 @@ def run_launcher(
     if curl_mode == "ready":
         curl_result = (
             'printf \'%s\\n\' "$*" >> "$CURL_LOG"; '
-            'case "$*" in *api/config*|*api/model*) printf \'{"ok":true}\';; *api/pair*) printf \'{"code":"pair-code_123"}\';; *) exit 1;; esac\n'
+            'case "$*" in *api/model*) printf \'{"provider":{"model":{"name":"Model"}}}\';; *api/pair*) printf \'{"code":"pair-code_123"}\';; *) exit 1;; esac\n'
+        )
+    elif curl_mode == "empty-model":
+        curl_result = (
+            'printf \'%s\\n\' "$*" >> "$CURL_LOG"; '
+            'case "$*" in *api/model*) printf \'{}\';; *api/pair*) printf \'{"code":"pair-code_123"}\';; *) exit 1;; esac\n'
         )
     elif curl_mode == "config-only":
         curl_result = (
@@ -120,6 +125,26 @@ def test_authenticated_pairing_returns_code_and_keeps_devcontainer(tmp_path: Pat
     assert result.stdout.strip().endswith("http://localhost:4096/auth/connect/pair-code_123")
     assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up"]
     assert all("-u opencode:password" in line for line in (tmp_path / "curl.log").read_text().splitlines())
+
+
+def test_empty_model_catalog_is_not_ready_or_paired(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="empty-model")
+
+    assert result.returncode != 0
+    assert "timed out waiting" in result.stderr
+    curl_log = (tmp_path / "curl.log").read_text()
+    assert "api/model" in curl_log
+    assert "api/pair" not in curl_log
+
+
+def test_populated_model_catalog_is_ready_and_paired(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="ready")
+
+    assert result.returncode == 0
+    assert result.stdout.strip().endswith("http://localhost:4096/auth/connect/pair-code_123")
+    curl_log = (tmp_path / "curl.log").read_text()
+    assert "api/model" in curl_log
+    assert "api/pair" in curl_log
 
 
 def test_open_failure_does_not_fail_startup(tmp_path: Path) -> None:

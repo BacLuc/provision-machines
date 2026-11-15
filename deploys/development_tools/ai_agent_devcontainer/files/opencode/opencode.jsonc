@@ -304,11 +304,15 @@
         },
         "gpt-5.6-luna": {
           "name": "gpt-5.6-luna",
-          "package": "aisdk:@ai-sdk/openai",
+          "provider": {
+            "npm": "@ai-sdk/openai",
+          },
         },
         "gpt-6-luna": {
           "name": "gpt-6-luna",
-          "package": "aisdk:@ai-sdk/openai",
+          "provider": {
+            "npm": "@ai-sdk/openai",
+          },
         },
         "grok-4.5": {
           "name": "grok-4.5",
@@ -551,9 +555,9 @@
       },
     },
     "vshn-llm-router": {
-      "package": "aisdk:@ai-sdk/openai-compatible",
+      "npm": "@ai-sdk/openai-compatible",
       "name": "VSHN LLM Router",
-      "settings": {
+      "options": {
         "baseURL": "{env:VSHN_LLM_ROUTER_BASE_URL}",
         "apiKey": "{env:VSHN_LLM_ROUTER_API_KEY}",
       },

@@ -49,7 +49,7 @@
       },
     },
     "vshn-llm-router": {
-      "settings": {
+      "options": {
         "baseURL": "{env:VSHN_LLM_ROUTER_BASE_URL}",
         "apiKey": "{env:VSHN_LLM_ROUTER_API_KEY}",
       },
