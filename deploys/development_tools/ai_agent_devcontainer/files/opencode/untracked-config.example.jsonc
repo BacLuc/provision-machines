@@ -1,49 +1,49 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "my-favorite-model",
-  "providers": {
+  "provider": {
     "opencode-go-anthropic": {
-      "settings": {
+      "options": {
         "apiKey": "apiKey",
       },
     },
     "opencode-go-openai": {
-      "settings": {
+      "options": {
         "apiKey": "apiKey",
       },
     },
     "google": {
-      "settings": {
+      "options": {
         "apiKey": "apikey",
       },
     },
     "cortecs": {
-      "settings": {
+      "options": {
         "apiKey": "apikey",
       },
     },
     "cortecs2": {
-      "settings": {
+      "options": {
         "apiKey": "apikey",
       },
     },
     "requesty": {
-      "settings": {
+      "options": {
         "apiKey": "apikey",
       },
     },
     "requesty2": {
-      "settings": {
+      "options": {
         "apiKey": "apikey",
       },
     },
     "openrouter": {
-      "settings": {
+      "options": {
         "apiKey": "apikey",
       },
     },
     "vshn-us-ai": {
-      "settings": {
+      "options": {
         "baseURL": "baseurl",
         "apiKey": "apikey",
       },

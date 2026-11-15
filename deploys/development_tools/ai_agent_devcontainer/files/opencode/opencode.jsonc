@@ -50,11 +50,11 @@
       "disable": true,
     },
   },
-  "providers": {
+  "provider": {
     "ollama": {
-      "package": "aisdk:@ai-sdk/openai-compatible",
+      "npm": "@ai-sdk/openai-compatible",
       "name": "Ollama (local)",
-      "settings": {
+      "options": {
         "baseURL": "http://host.docker.internal:11434/v1",
       },
       "models": {
@@ -85,9 +85,9 @@
       },
     },
     "opencode-go-anthropic": {
-      "package": "aisdk:@ai-sdk/anthropic",
+      "npm": "@ai-sdk/anthropic",
       "name": "opencode-go-anthropic",
-      "settings": {
+      "options": {
         "baseURL": "https://opencode.ai/zen/go/v1/messages",
         "apiKey": "{env:OPENCODE_GO_API_KEY}",
       },
@@ -116,9 +116,9 @@
       },
     },
     "opencode-go-openai": {
-      "package": "aisdk:@ai-sdk/openai-compatible",
+      "npm": "@ai-sdk/openai-compatible",
       "name": "opencode-go-openai",
-      "settings": {
+      "options": {
         "baseURL": "https://opencode.ai/zen/go/v1",
         "apiKey": "{env:OPENCODE_GO_API_KEY}",
       },
@@ -149,11 +149,15 @@
         },
         "gpt-5.6-luna": {
           "name": "gpt-5.6-luna",
-          "package": "aisdk:@ai-sdk/openai",
+          "provider": {
+            "npm": "@ai-sdk/openai",
+          },
         },
         "gpt-6-luna": {
           "name": "gpt-6-luna",
-          "package": "aisdk:@ai-sdk/openai",
+          "provider": {
+            "npm": "@ai-sdk/openai",
+          },
         },
         "grok-4.5": {
           "name": "grok-4.5",
@@ -236,9 +240,9 @@
       },
     },
     "opencode-go-anthropic-2": {
-      "package": "aisdk:@ai-sdk/anthropic",
+      "npm": "@ai-sdk/anthropic",
       "name": "opencode-go-anthropic-2",
-      "settings": {
+      "options": {
         "baseURL": "https://opencode.ai/zen/go/v1/messages",
         "apiKey": "{env:OPENCODE_GO_2_API_KEY}",
       },
@@ -267,9 +271,9 @@
       },
     },
     "opencode-go-openai-2": {
-      "package": "aisdk:@ai-sdk/openai-compatible",
+      "npm": "@ai-sdk/openai-compatible",
       "name": "opencode-go-openai-2",
-      "settings": {
+      "options": {
         "baseURL": "https://opencode.ai/zen/go/v1",
         "apiKey": "{env:OPENCODE_GO_2_API_KEY}",
       },
@@ -387,8 +391,7 @@
       },
     },
     "cortecs2": {
-      "package": "aisdk:@ai-sdk/openai-compatible",
-      "settings": {
+      "options": {
         "baseURL": "https://api.cortecs.ai/v1",
       },
       "models": {
@@ -419,8 +422,7 @@
       },
     },
     "requesty2": {
-      "package": "aisdk:@ai-sdk/openai-compatible",
-      "settings": {
+      "options": {
         "baseURL": "https://router.requesty.ai/v1",
       },
       "models": {
@@ -442,9 +444,9 @@
       },
     },
     "openrouter": {
-      "package": "aisdk:@ai-sdk/openai-compatible",
+      "npm": "@ai-sdk/openai-compatible",
       "name": "OpenRouter",
-      "settings": {
+      "options": {
         "baseURL": "https://openrouter.ai/api/v1",
         "apiKey": "{env:OPENROUTER_API_KEY}",
       },
@@ -476,9 +478,9 @@
       },
     },
     "vshn-us-ai": {
-      "package": "aisdk:@ai-sdk/openai-compatible",
+      "npm": "@ai-sdk/openai-compatible",
       "name": "VSHN US AI",
-      "settings": {
+      "options": {
         "baseURL": "{env:VSHN_US_BASE_URL}",
         "apiKey": "{env:VSHN_US_AI_API_KEY}",
       },
