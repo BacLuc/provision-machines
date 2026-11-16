@@ -141,7 +141,3 @@ charging_state_monitor = {
 firefox_taskbar_tabs = {
     "enabled": False,
 }
-
-desktop_url_files = {
-    "enabled": False,
-}
