@@ -89,3 +89,27 @@ URLs, e.g. `"url_prefixes": ["https://vshn.zoom.us/j/"]` sends meeting links int
 window. Unmatched URLs open in the browser as usual. Removing all `url_prefixes` deletes the
 wrapper and its handler .desktop file but leaves the scheme registration; reset it manually
 with `xdg-mime default firefox_firefox.desktop x-scheme-handler/https`.
+
+## URL desktop files
+
+`desktop_url_files` creates launchers that just open a URL through the default handler and
+optionally registers them for URL schemes:
+
+```python
+desktop_url_files = {
+    "enabled": True,
+    "files": {
+        "zoom": {
+            "name": "Zoom",
+            "url": "https://vshn.zoom.us/j/",
+            "icon": "firefox-taskbar-tab-zoom",
+            "schemes": ["zoommtg"],
+        },
+    },
+}
+```
+
+Opening a `zoommtg://` link runs `xdg-open https://vshn.zoom.us/j/`, so the `url_prefixes`
+handler above routes it into the Zoom PWA. Removing an entry deletes its launcher on the next
+deploy run; the scheme registration stays, reset it manually with
+`xdg-mime default firefox_firefox.desktop x-scheme-handler/zoommtg`.

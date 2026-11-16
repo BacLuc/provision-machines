@@ -143,6 +143,18 @@ charging_state_monitor = {
     "enabled": False,
 }
 
+desktop_url_files = {
+    "enabled": True,
+    "files": {
+        "zoom": {
+            "name": "Zoom",
+            "url": "https://vshn.zoom.us/j/",
+            "icon": "firefox-taskbar-tab-zoom",
+            "schemes": ["zoommtg"],
+        },
+    },
+}
+
 firefox = {
     "enabled": True,
 }
