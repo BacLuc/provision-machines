@@ -110,6 +110,7 @@ desktop_url_files = {
 ```
 
 Opening a `zoommtg://` link runs `xdg-open https://vshn.zoom.us/j/`, so the `url_prefixes`
-handler above routes it into the Zoom PWA. Removing an entry deletes its launcher on the next
-deploy run; the scheme registration stays, reset it manually with
+handler above routes it into the Zoom PWA. Entries with `schemes` are hidden from the app grid
+(`NoDisplay=true`); omit `schemes` for a visible launcher. Removing an entry deletes its
+launcher on the next deploy run; the scheme registration stays, reset it manually with
 `xdg-mime default firefox_firefox.desktop x-scheme-handler/zoommtg`.
