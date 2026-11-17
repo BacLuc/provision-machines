@@ -1,5 +1,5 @@
 from pyinfra import host
-from pyinfra.operations import apt, files, systemd
+from pyinfra.operations import apt, files, server, systemd
 
 from operations.filesystem import dirname_of
 from operations.user import get_user_name
@@ -44,6 +44,19 @@ if auto_provision["enabled"]:
             _sudo=True,
             mode="755",
         )
+    files.template(
+        name="Install auto-provision sudoers rule",
+        src=f"{dirname_of(__file__)}/files/auto-provision.sudoers",
+        dest="/etc/sudoers.d/auto-provision",
+        **context,
+        _sudo=True,
+        mode="0440",
+    )
+    server.shell(
+        name="Validate auto-provision sudoers rule",
+        commands=["visudo -cf /etc/sudoers.d/auto-provision"],
+        _sudo=True,
+    )
     for filename in service_files:
         files.template(
             name=f"Install {filename}",
@@ -82,3 +95,9 @@ else:
             present=False,
             _sudo=True,
         )
+    files.file(
+        name="Remove auto-provision sudoers rule",
+        path="/etc/sudoers.d/auto-provision",
+        present=False,
+        _sudo=True,
+    )

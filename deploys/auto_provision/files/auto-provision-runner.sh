@@ -42,10 +42,10 @@ if [ "${CI:-}" != "true" ]; then
     git -C "$CHECKOUT_DIR" reset --hard "origin/$BRANCH"
 fi
 
-sudo /usr/local/bin/cleanup-script
+sudo -n /usr/local/bin/cleanup-script
 cd "$CHECKOUT_DIR"
 "$HOME/bin/uv" run scripts/run_pyinfra_local.py
-sudo /usr/local/bin/update-script
+sudo -n /usr/local/bin/update-script
 
 printf '%s\n' "$WEEK" > "$SUCCESS_FILE"
 rm -f "$STATE_DIR/running" "$STOP_FILE"

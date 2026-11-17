@@ -1,3 +1,4 @@
+import getpass
 import os
 import socket
 import subprocess
@@ -11,9 +12,26 @@ def test_deploy_uses_jinja_templates_and_disabled_cleanup() -> None:
     deploy = (_DEPLOY / "deploy.py").read_text()
 
     assert "files.template(" in deploy
-    assert '"enabled": False' not in deploy
     assert 'path=f"/etc/systemd/system/{filename}"' in deploy
     assert 'running=False' in deploy
+
+
+def test_deploy_provisions_passwordless_sudo_for_the_runner() -> None:
+    deploy = (_DEPLOY / "deploy.py").read_text()
+    sudoers = (_DEPLOY / "files" / "auto-provision.sudoers").read_text()
+
+    assert sudoers == "{{ provision_user }} ALL=(root) NOPASSWD: ALL\n"
+    assert 'dest="/etc/sudoers.d/auto-provision"' in deploy
+    assert 'mode="0440"' in deploy
+    assert 'commands=["visudo -cf /etc/sudoers.d/auto-provision"]' in deploy
+    assert 'name="Remove auto-provision sudoers rule"' in deploy
+    assert 'path="/etc/sudoers.d/auto-provision"' in deploy
+
+    with TemporaryDirectory() as directory:
+        rendered = Path(directory) / "auto-provision"
+        rendered.write_text(sudoers.replace("{{ provision_user }}", getpass.getuser()))
+        result = subprocess.run(["visudo", "-cf", str(rendered)], check=False)
+        assert result.returncode == 0
 
 
 def test_default_configuration_is_disabled_and_laptop_safe() -> None:
@@ -61,9 +79,9 @@ def test_runner_has_order_locking_and_weekly_idempotency() -> None:
 
     assert 'flock -n 9 || exit 0' in runner
     assert '"$STATE_DIR/last-success-week"' in runner
-    assert "sudo /usr/local/bin/cleanup-script" in runner
+    assert "sudo -n /usr/local/bin/cleanup-script" in runner
     assert '"$HOME/bin/uv" run scripts/run_pyinfra_local.py' in runner
-    assert "sudo /usr/local/bin/update-script" in runner
+    assert "sudo -n /usr/local/bin/update-script" in runner
     assert 'if [ "${CI:-}" != "true" ]; then' in runner
     assert 'export XDG_RUNTIME_DIR="/run/user/$(id -u)"' in runner
     assert runner.index('if [ "${CI:-}" != "true" ]; then') < runner.index("cleanup-script")
@@ -145,10 +163,13 @@ def test_runner_skips_git_sync_in_ci_and_runs_it_outside() -> None:
         ci_checkout = Path(directory) / "ci-checkout" / ".git"
         ci_state.mkdir()
         ci_checkout.mkdir(parents=True)
+        (ci_state / "stopped-today").write_text("1970-01-01")
         ci_script = script.replace("{{ checkout_dir }}", str(ci_checkout.parent)).replace("{{ state_dir }}", str(ci_state))
         result = subprocess.run(["sh", "-c", ci_script], env={**env, "CI": "true"}, check=False)
         assert result.returncode == 0
         assert (ci_state / "last-success-week").read_text().strip() == subprocess.check_output(["date", "+%G-%V"], text=True).strip()
+        assert not (ci_state / "running").exists()
+        assert not (ci_state / "stopped-today").exists()
 
         (stubs / "sudo").write_text("#!/bin/sh\nexit 42\n")
         (home / "bin" / "uv").write_text("#!/bin/sh\nexit 42\n")
