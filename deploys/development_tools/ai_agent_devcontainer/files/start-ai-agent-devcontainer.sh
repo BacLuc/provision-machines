@@ -139,8 +139,9 @@ devcontainer_status=
 base_url="http://localhost:${OPENCODE_PORT}"
 echo "Waiting for ${base_url} to respond..."
 ready=false
+attempted=false
 readiness_deadline=$(( $(date +%s) + DEVCONTAINER_WAIT_TIMEOUT ))
-while (( $(date +%s) < readiness_deadline )); do
+while [[ "$ready" != true ]]; do
   if [[ -z "$devcontainer_status" ]] && ! kill -0 "$devcontainer_pid" 2>/dev/null; then
     if wait "$devcontainer_pid"; then
       devcontainer_status=0
@@ -155,8 +156,12 @@ while (( $(date +%s) < readiness_deadline )); do
   fi
   remaining_seconds=$((readiness_deadline - $(date +%s)))
   if (( remaining_seconds <= 0 )); then
-    break
+    if [[ "$attempted" = true ]]; then
+      break
+    fi
+    remaining_seconds=1
   fi
+  attempted=true
   if response=$(curl --connect-timeout 2 --max-time "$((remaining_seconds < 5 ? remaining_seconds : 5))" -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/model" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; sys.exit(not bool(json.load(sys.stdin)))' 2>/dev/null; then
     ready=true
     break

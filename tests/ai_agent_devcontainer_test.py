@@ -147,6 +147,16 @@ def test_populated_model_catalog_is_ready_and_paired(tmp_path: Path) -> None:
     assert "api/pair" in curl_log
 
 
+def test_zero_wait_timeout_still_attempts_readiness(tmp_path: Path) -> None:
+    result = run_launcher(tmp_path, "4096", curl_mode="ready", wait_timeout="0")
+
+    assert result.returncode == 0
+    assert result.stdout.strip().endswith("http://localhost:4096/auth/connect/pair-code_123")
+    curl_log = (tmp_path / "curl.log").read_text()
+    assert "api/model" in curl_log
+    assert "api/pair" in curl_log
+
+
 def test_open_failure_does_not_fail_startup(tmp_path: Path) -> None:
     result = run_launcher(tmp_path, "4096", curl_mode="ready", open_exit=1)
 
