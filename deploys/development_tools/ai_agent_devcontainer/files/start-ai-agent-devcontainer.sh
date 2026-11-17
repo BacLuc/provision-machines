@@ -64,7 +64,7 @@ fi
 save_port "$WORKING_DIR" "$OPENCODE_PORT"
 export OPENCODE_PORT
 
-DEVCONTAINER_WAIT_TIMEOUT="${DEVCONTAINER_WAIT_TIMEOUT:-120}"
+DEVCONTAINER_WAIT_TIMEOUT="${DEVCONTAINER_WAIT_TIMEOUT:-600}"
 if ! [[ "$DEVCONTAINER_WAIT_TIMEOUT" =~ ^[0-9]+$ ]]; then
   echo "Error: DEVCONTAINER_WAIT_TIMEOUT must be a nonnegative integer" >&2
   exit 1
@@ -162,7 +162,7 @@ while [[ "$ready" != true ]]; do
     remaining_seconds=1
   fi
   attempted=true
-  if response=$(curl --connect-timeout 2 --max-time "$((remaining_seconds < 5 ? remaining_seconds : 5))" -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/model" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; sys.exit(not bool(json.load(sys.stdin)))' 2>/dev/null; then
+  if response=$(curl --connect-timeout 2 --max-time "$((remaining_seconds < 5 ? remaining_seconds : 5))" -fsS -u "opencode:${OPENCODE_SERVER_PASSWORD}" "${base_url}/api/model" 2>/dev/null) && printf %s "$response" | python3 -c 'import json, sys; value = json.load(sys.stdin); data = value.get("data") if isinstance(value, dict) else None; sys.exit(not (isinstance(data, list) and data))' 2>/dev/null; then
     ready=true
     break
   fi
@@ -173,7 +173,7 @@ done
 
 if [[ "$ready" != true ]]; then
   cat "$startup_log" >&2
-  echo "Error: timed out waiting for ${base_url} to respond" >&2
+  echo "Error: timed out waiting for ${base_url} to respond; raise DEVCONTAINER_WAIT_TIMEOUT if the image is still building" >&2
   exit 1
 fi
 

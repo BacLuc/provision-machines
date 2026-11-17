@@ -27,12 +27,12 @@ def run_launcher(
     if curl_mode == "ready":
         curl_result = (
             'printf \'%s\\n\' "$*" >> "$CURL_LOG"; '
-            'case "$*" in *api/model*) printf \'{"provider":{"model":{"name":"Model"}}}\';; *api/pair*) printf \'{"code":"pair-code_123"}\';; *) exit 1;; esac\n'
+            'case "$*" in *api/model*) printf \'{"location":{},"data":[{"id":"model"}]}\';; *api/pair*) printf \'{"code":"pair-code_123"}\';; *) exit 1;; esac\n'
         )
     elif curl_mode == "empty-model":
         curl_result = (
             'printf \'%s\\n\' "$*" >> "$CURL_LOG"; '
-            'case "$*" in *api/model*) printf \'{}\';; *api/pair*) printf \'{"code":"pair-code_123"}\';; *) exit 1;; esac\n'
+            'case "$*" in *api/model*) printf \'{"location":{},"data":[]}\';; *api/pair*) printf \'{"code":"pair-code_123"}\';; *) exit 1;; esac\n'
         )
     elif curl_mode == "config-only":
         curl_result = (
@@ -40,12 +40,12 @@ def run_launcher(
             'case "$*" in *api/config*) printf \'{"ok":true}\';; *) exit 1;; esac\n'
         )
     elif curl_mode == "pair-fail":
-        curl_result = 'case "$*" in *api/config*|*api/model*) printf \'{"ok":true}\';; *) exit 1;; esac\n'
+        curl_result = 'case "$*" in *api/model*) printf \'{"location":{},"data":[{"id":"model"}]}\';; *) exit 1;; esac\n'
     elif curl_mode == "pair-malformed":
-        curl_result = "case \"$*\" in *api/config*|*api/model*) printf '{\"ok\":true}';; *) printf 'not-json';; esac\n"
+        curl_result = "case \"$*\" in *api/model*) printf '{\"location\":{},\"data\":[{\"id\":\"model\"}]}';; *) printf 'not-json';; esac\n"
     elif curl_mode == "pair-invalid-code":
         curl_result = (
-            'case "$*" in *api/config*|*api/model*) printf \'{"ok":true}\';; *) printf \'{"code":"bad code"}\';; esac\n'
+            'case "$*" in *api/model*) printf \'{"location":{},"data":[{"id":"model"}]}\';; *) printf \'{"code":"bad code"}\';; esac\n'
         )
     else:
         curl_result = "exit 1\n"
@@ -170,6 +170,7 @@ def test_readiness_timeout_cleans_up_and_reaps_devcontainer(tmp_path: Path) -> N
 
     assert result.returncode != 0
     assert "timed out waiting" in result.stderr
+    assert "raise DEVCONTAINER_WAIT_TIMEOUT" in result.stderr
     assert "startup output" in result.stderr
     assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
 
