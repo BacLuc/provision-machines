@@ -65,18 +65,19 @@ def test_update_config_parses_the_repo_jsonc_files(tmp_path: Path) -> None:
         mod.update_config([{"id": "byusage.example/model", "name": "Model"}], config_path=target)
         with open(target) as f:
             config = json.loads(f.read())
-        assert config["provider"]["vshn-us-ai"]["models"] == {
+        assert config["providers"]["vshn-us-ai"]["models"] == {
             "byusage.example/model": {"name": "Model (byusage)"},
         }
         assert (
-            config["provider"]["vshn-us-ai"]["options"]
-            == original_config["provider"]["vshn-us-ai"]["options"]
+            config["providers"]["vshn-us-ai"]["settings"]
+            == original_config["providers"]["vshn-us-ai"]["settings"]
         )
         if name == "opencode.jsonc":
             for provider in ("cortecs2", "requesty2"):
-                assert config["provider"][provider]["options"]["baseURL"]
-                assert config["provider"][provider]["models"]
-        assert "providers" not in config
+                assert config["providers"][provider]["package"] == "aisdk:@ai-sdk/openai-compatible"
+                assert config["providers"][provider]["settings"]["baseURL"]
+                assert config["providers"][provider]["models"]
+        assert "provider" not in config
 
 
 def test_update_config_preserves_legacy_v1_config(tmp_path: Path) -> None:
