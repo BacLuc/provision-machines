@@ -1,3 +1,5 @@
+import importlib.util
+import json
 import os
 import subprocess
 import time
@@ -6,6 +8,13 @@ from pathlib import Path
 FILES = Path(__file__).parents[1] / "deploys/development_tools/ai_agent_devcontainer/files"
 LAUNCHER = FILES / "start-ai-agent-devcontainer.sh"
 DOCKERFILE = FILES / "Dockerfile"
+
+_SCRIPT = Path(__file__).parents[1] / "scripts/update-us-ai-models.py"
+_spec = importlib.util.spec_from_file_location("update_us_ai_models", _SCRIPT)
+assert _spec is not None
+assert _spec.loader is not None
+mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(mod)
 
 
 def run_launcher(
@@ -243,3 +252,19 @@ def test_invalid_pairing_code_cleans_up_devcontainer(tmp_path: Path) -> None:
     assert result.returncode != 0
     assert "could not extract pairing code" in result.stderr
     assert (tmp_path / "devcontainer.log").read_text().splitlines() == ["up", "down"]
+
+
+def test_tracked_configs_use_consistent_v1_format() -> None:
+    for name in ("opencode.jsonc", "untracked-config.example.jsonc"):
+        config = json.loads(mod.normalize_jsonc((FILES / "opencode" / name).read_text()))
+        assert "provider" in config
+        assert "providers" not in config
+        pending = [config]
+        while pending:
+            node = pending.pop()
+            if isinstance(node, dict):
+                assert "package" not in node
+                assert "settings" not in node
+                pending.extend(node.values())
+            elif isinstance(node, list):
+                pending.extend(node)
