@@ -1,7 +1,9 @@
 import getpass
 import os
+import signal
 import socket
 import subprocess
+import time
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -184,3 +186,49 @@ def test_runner_skips_git_sync_in_ci_and_runs_it_outside() -> None:
         result = subprocess.run(["sh", "-c", local_script], env={k: v for k, v in env.items() if k != "CI"}, check=False)
         assert result.returncode == 42
         assert not (local_state / "running").exists()
+
+
+def test_runner_marks_a_signal_during_initial_git_sync_as_stopped_today() -> None:
+    runner = (_DEPLOY / "files" / "auto-provision-runner.sh").read_text()
+
+    with TemporaryDirectory() as directory:
+        root = Path(directory)
+        stubs = root / "stubs"
+        home = root / "home"
+        state = root / "state"
+        checkout = root / "checkout" / ".git"
+        stubs.mkdir()
+        (home / "bin").mkdir(parents=True)
+        state.mkdir()
+        checkout.mkdir(parents=True)
+        git_log = root / "git.log"
+        (stubs / "git").write_text(
+            f"#!/bin/sh\nprintf '%s\\n' \"$*\" > {git_log}\nsleep 10\n"
+        )
+        (stubs / "sudo").write_text("#!/bin/sh\nexit 0\n")
+        (home / "bin" / "uv").write_text("#!/bin/sh\nexit 0\n")
+        for executable in (stubs / "git", stubs / "sudo", home / "bin" / "uv"):
+            executable.chmod(0o755)
+
+        script = (
+            runner.replace("{{ checkout_dir }}", str(checkout.parent))
+            .replace("{{ state_dir }}", str(state))
+            .replace("{{ branch }}", "main")
+        )
+        process = subprocess.Popen(
+            ["sh", "-c", script],
+            env={
+                key: value
+                for key, value in {**os.environ, "HOME": str(home), "PATH": f"{stubs}:{os.environ['PATH']}"}.items()
+                if key != "CI"
+            },
+            start_new_session=True,
+        )
+        time.sleep(0.1)
+        os.killpg(process.pid, signal.SIGINT)
+        result = process.wait()
+
+        assert result == 143
+        assert (state / "stopped-today").read_text().strip() == subprocess.check_output(["date", "+%F"], text=True).strip()
+        assert not (state / "running").exists()
+        assert "-C" in git_log.read_text()

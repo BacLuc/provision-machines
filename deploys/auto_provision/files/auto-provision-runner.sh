@@ -15,13 +15,6 @@ mkdir -p "$STATE_DIR"
 exec 9>"$STATE_DIR/lock"
 flock -n 9 || exit 0
 
-if [ -f "$SUCCESS_FILE" ] && [ "$(cat "$SUCCESS_FILE")" = "$WEEK" ]; then
-    exit 0
-fi
-if [ -f "$STOP_FILE" ] && [ "$(cat "$STOP_FILE")" = "$TODAY" ]; then
-    exit 0
-fi
-
 stop_today() {
     printf '%s\n' "$TODAY" > "$STOP_FILE"
     rm -f "$STATE_DIR/running"
@@ -31,6 +24,14 @@ stop_today() {
 trap stop_today TERM INT
 touch "$STATE_DIR/running"
 trap 'rm -f "$STATE_DIR/running"' EXIT
+
+if [ -f "$SUCCESS_FILE" ] && [ "$(cat "$SUCCESS_FILE")" = "$WEEK" ]; then
+    exit 0
+fi
+if [ -f "$STOP_FILE" ] && [ "$(cat "$STOP_FILE")" = "$TODAY" ]; then
+    exit 0
+fi
+
 if [ ! -d "$CHECKOUT_DIR/.git" ]; then
     printf '%s\n' "Checkout not found: $CHECKOUT_DIR" >&2
     exit 1
