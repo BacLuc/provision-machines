@@ -26,3 +26,4 @@ Rules:
 # Auth
 
 You have the auth credentials you need as env variables. Use them without hesitation.
+If you don't have them, you can find a file in a path like deploys/development_tools/ai_agent_devcontainer/files/.tokens and source that file. Then you have the credentials.
