@@ -366,11 +366,11 @@ ubuntu_desktop = {
 }
 
 hashicorp_apt_repo = {
-    "enabled": False,
+    "enabled": True,
 }
 
 hashicorp_vault_cli = {
-    "enabled": False,
+    "enabled": True,
 }
 
 php_development = {

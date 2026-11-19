@@ -107,11 +107,11 @@ zed = {
 }
 
 hashicorp_apt_repo = {
-    "enabled": False,
+    "enabled": True,
 }
 
 hashicorp_vault_cli = {
-    "enabled": False,
+    "enabled": True,
 }
 
 openwebui = {
