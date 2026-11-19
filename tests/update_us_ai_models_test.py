@@ -196,6 +196,19 @@ def test_update_config_creates_v1_provider_when_no_container_exists(tmp_path: Pa
     assert config["theme"] == {"name": "opencode"}
 
 
+def test_update_config_accepts_trailing_root_comma_when_creating_provider(tmp_path: Path) -> None:
+    target = tmp_path / "config.jsonc"
+    target.write_text('{"theme": {"name": "opencode"},}')
+
+    mod.update_config([{"id": "byusage.example/model", "name": "Model"}], config_path=target)
+
+    config = json.loads(mod.normalize_jsonc(target.read_text()))
+    assert config["provider"]["vshn-us-ai"]["models"] == {
+        "byusage.example/model": {"name": "Model (byusage)"}
+    }
+    assert config["theme"] == {"name": "opencode"}
+
+
 def test_update_config_preserves_legacy_v1_config(tmp_path: Path) -> None:
     target = tmp_path / "config.json"
     target.write_text(

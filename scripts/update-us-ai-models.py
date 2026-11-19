@@ -386,7 +386,8 @@ def update_config(models, config_path, api_base_url=None):
     else:
         body = render_members({"provider": {PROVIDER_NAME: target}}, "")
         close = original.rfind("}")
-        original = original[:close] + ",\n" + body + "\n" + original[close:]
+        separator = "\n" if original[:close].rstrip().endswith(",") else ",\n"
+        original = original[:close] + separator + body + "\n" + original[close:]
 
     with open(config_path, "w") as f:
         f.write(original)
