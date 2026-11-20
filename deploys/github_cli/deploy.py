@@ -6,7 +6,7 @@ github_cli = host.data.github_cli
 
 if github_cli["enabled"]:
     # renovate: datasource=github-releases depName=cli/cli
-    gh_version = "2.104.0"
+    gh_version = "2.105.0"
     gh_checksum = "fca7ac8a8386e3ad65c9a96a96cbf272d1dcc4f76de174dae91d54e50729e240"
 
     github_release_binary(
