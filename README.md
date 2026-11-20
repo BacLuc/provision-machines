@@ -21,6 +21,42 @@ uv sync --all-extras
 uv run scripts/run_pyinfra_local.py
 ```
 
+## Auto provisioning
+
+Enable the weekly provisioning run in `group_data/local.py`:
+
+```python
+auto_provision = {
+    "enabled": True,
+}
+```
+
+The deploy installs `/etc/sudoers.d/auto-provision`, granting the provisioning user passwordless
+sudo. The unattended systemd oneshot calls `sudo -n ...` for the pyinfra deploy and the
+cleanup/update scripts, so a password prompt would fail. `NOPASSWD: ALL` is effectively root
+access for that user; a narrower rule would not confine it, because the deploy runs
+repository-controlled commands as root.
+
+Clone the checkout before the first scheduled run, and override `checkout_dir` in
+`group_data/local.py` if it lives elsewhere:
+
+```shell
+mkdir -p ~/.local/var
+git clone https://github.com/BacLuc/provision-machines.git ~/.local/var/provision-machines
+```
+
+The default schedule is Sundays at 12:00 with a notification two hours earlier at 10:00.
+Provisioning only runs on AC power, and a missed weekly run is not caught up later. To stop
+today's run:
+
+```shell
+sudo systemctl stop auto-provision.service
+printf '%s\n' "$(date +%F)" > ~/.local/var/auto-provision/stopped-today
+```
+
+Use the configured `state_dir` if you changed it. State (`last-success-week`, `stopped-today`,
+and the lock) lives in `~/.local/var/auto-provision`.
+
 ## Lint
 
 ```shell

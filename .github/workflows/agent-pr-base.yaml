@@ -1,0 +1,20 @@
+name: "Agent PR base guard"
+"on":
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  agent_pr_base:
+    name: "Agent PR targets devel"
+    if: github.event.pull_request.user.login == 'bacluc-agent'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: "Check base branch"
+        run: |
+          if [ "${{ github.base_ref }}" != "devel" ]; then
+            echo "::error::Agent pull requests must target devel, not ${{ github.base_ref }}"
+            exit 1
+          fi
