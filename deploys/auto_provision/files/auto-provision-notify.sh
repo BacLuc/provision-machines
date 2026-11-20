@@ -15,4 +15,4 @@ export DBUS_SESSION_BUS_ADDRESS="unix:path=$RUNTIME_DIR/bus"
 
 notify-send \
     "Provisioning scheduled in two hours" \
-    "Run sudo systemctl stop auto-provision.service; printf '%s\\n' \"\$(date +%F)\" > $STATE_DIR/stopped-today to stop today's execution." || true
+    "To stop today's execution, run: sudo systemctl stop auto-provision.service; printf '%s\\n' \"\$(date +%F)\" > $STATE_DIR/stopped-today" || true

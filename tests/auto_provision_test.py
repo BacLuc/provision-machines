@@ -101,6 +101,8 @@ def test_runner_stop_marks_today_and_notifier_uses_user_bus() -> None:
     assert "sudo systemctl stop auto-provision.service" in notifier
     assert '"$STATE_DIR/stopped-today"' not in notifier
     assert "stopped-today" in notifier
+    assert "stopped-today to stop" not in notifier
+    assert notifier.rstrip().endswith('> $STATE_DIR/stopped-today" || true')
 
 
 def test_notifier_exports_the_user_bus_for_notify_send() -> None:
