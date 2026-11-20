@@ -631,6 +631,24 @@
         "opencode/step-5-preview": {
           "name": "step-5-preview",
         },
+        "coding": {
+          "name": "coding",
+        },
+        "coding+thinking": {
+          "name": "coding+thinking",
+        },
+        "complex-coding": {
+          "name": "complex-coding",
+        },
+        "fast": {
+          "name": "fast",
+        },
+        "web-research": {
+          "name": "web-research",
+        },
+        "embedding": {
+          "name": "embedding",
+        },
       },
     },
     "vshn-llm-router-test": {
@@ -709,6 +727,24 @@
         },
         "opencode/step-5-preview": {
           "name": "step-5-preview",
+        },
+        "coding": {
+          "name": "coding",
+        },
+        "coding+thinking": {
+          "name": "coding+thinking",
+        },
+        "complex-coding": {
+          "name": "complex-coding",
+        },
+        "fast": {
+          "name": "fast",
+        },
+        "web-research": {
+          "name": "web-research",
+        },
+        "embedding": {
+          "name": "embedding",
         },
       },
     },
