@@ -4,10 +4,15 @@
 
 set -e
 
-WORKSPACE_BASENAME=$(basename "$(pwd)")
+WORKSPACE_DIR=$(realpath "$(pwd)")
+WORKSPACE_BASENAME=$(basename "$WORKSPACE_DIR")
 WORKING_DIR="/workspaces/${WORKSPACE_BASENAME}"
 SANITIZED_PATH=$(echo "$WORKING_DIR" | tr '/' '_' | sed 's/^_//' | sed 's/_$//')
 COMPOSE_PROJECT_NAME="ai_devcontainer_${SANITIZED_PATH}"
+if [[ "$WORKSPACE_BASENAME" == "workspace" ]]; then
+  WORKSPACE_PROJECT_SUFFIX=$(printf '%s' "$WORKSPACE_DIR" | sha256sum | cut -c1-8)
+  COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}_${WORKSPACE_PROJECT_SUFFIX}"
+fi
 
 CONTAINER=$(docker ps \
   --filter "label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}" \
