@@ -116,7 +116,7 @@ opencode_url="${base_url}/auth/connect/${code}"
 printf %s "$opencode_url" | (xclip -selection clipboard 2>/dev/null || wl-copy 2>/dev/null || pbcopy 2>/dev/null || true)
 
 if [[ "${ai_agent_devcontainer_open_url:-true}" = "true" ]]; then
-  open "$opencode_url"
+  open "$opencode_url" || true
 fi
 
 echo "$opencode_url"
