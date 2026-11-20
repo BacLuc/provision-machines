@@ -12,7 +12,7 @@ if host.data.hashicorp_apt_repo["enabled"] or host.data.hashicorp_vault_cli["ena
         name="Download hashicorp gpg key",
         commands=[
             f"""keyfile={keyfile}
-checksum_before="5890794459b76f45c3a25d2ecffa11477d689386bc593d1d470047f3dfef9faa91e61c1d55f89ffd6c718f8fafd181604f717b8c2dc4f374d132ae324808d54b"
+checksum_before="dd26ab487729e1be7656b0c8ba19db10d5a5a76fc8af80285638f8dc1b46c104c67678345a9bef1a60a88f3cd990d679c542fbd38e6ebf7a89e089b10397ebf2"
 if [ -f $keyfile ]; then
   checksum_before=$(shasum -a 512 $keyfile | awk '{{print $1}}')
 fi
