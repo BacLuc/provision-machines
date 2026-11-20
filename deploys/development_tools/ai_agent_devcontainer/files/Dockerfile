@@ -16,6 +16,8 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && curl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/refs/tags/v1.5.9063/files/docker/systemctl3.py -o /usr/local/bin/systemctl \
     && chmod +x /usr/local/bin/systemctl
 
+RUN printf '#!/bin/sh\nexit 0\n' > /usr/local/share/pull-git-lfs-artifacts.sh
+
 USER codespace
 
 ENV NVM_DIR=/usr/local/share/nvm
