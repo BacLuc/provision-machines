@@ -4,6 +4,11 @@ from pyinfra.operations import apt, server
 ubuntu_desktop = host.data.ubuntu_desktop
 
 if ubuntu_desktop["enabled"]:
+    server.shell(
+        name="Set GNOME cursor theme",
+        commands=["gsettings set org.gnome.desktop.interface cursor-theme Adwaita"],
+    )
+
     if ubuntu_desktop["enable_dependencies"]:
         apt.packages(
             name="Install psutil needed for dconf",
