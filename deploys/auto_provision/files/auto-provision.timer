@@ -1,0 +1,10 @@
+[Unit]
+Description=Schedule development machine provisioning
+
+[Timer]
+OnCalendar={{ on_calendar }}
+Persistent=true
+Unit=auto-provision.service
+
+[Install]
+WantedBy=timers.target
