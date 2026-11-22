@@ -358,7 +358,7 @@ def render_members(mapping, indent):
     return "\n".join(indent + line for line in lines)
 
 
-def update_config(models, config_path, api_base_url=None):
+def update_config(models, config_path):
     """Update the opencode.jsonc config with the given models."""
     with open(config_path) as f:
         original = f.read()
@@ -499,7 +499,6 @@ def main():
     update_config(
         filtered,
         config_path=args.config_path,
-        api_base_url=args.api_base_url,
     )
 
 
