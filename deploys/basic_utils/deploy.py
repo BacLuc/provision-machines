@@ -9,7 +9,7 @@ from pyinfra.operations import (
 )
 
 from operations.filesystem import DEPLOYS_DIR, dirname_of
-from operations.homebrew import HOMEBREW_BIN
+from operations.homebrew import HOMEBREW_BIN, user_brew_bin
 from operations.user import get_user_name
 
 user = get_user_name()
@@ -380,11 +380,12 @@ if basic_utils["enable_zoom"]:
     flatpak.packages(packages=["us.zoom.Zoom"])
 
 if basic_utils["enable_go"]:
+    local.include(f"{DEPLOYS_DIR}/homebrew/deploy.py")
     goenv_bin = f"{HOMEBREW_BIN}/goenv"
 
     server.shell(
         name="Install goenv via brew",
-        commands=[f"/home/{user}/bin/brew install goenv"],
+        commands=[f"{user_brew_bin(user)} install goenv"],
         _if=lambda: host.get_fact(File, goenv_bin) is None,
     )
 
