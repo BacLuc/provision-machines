@@ -25,8 +25,8 @@ github_release_binary(
 )
 
 # renovate: datasource=github-releases depName=vshn/k8ify
-k8ify_version = "2.6.0"
-k8ify_checksum = "761a34419c92e7ef9e7225ae0f40319b1d57e045849f56ab315a8e5ad38ab210"
+k8ify_version = "2.7.0"
+k8ify_checksum = "a21a561d65a3c9cf8a050fba9063c64f469ccc4034b809ff3eafac1297edcb06"
 
 github_release_binary(
     url=f"https://github.com/vshn/k8ify/releases/download/v{k8ify_version}/k8ify_{k8ify_version}_linux_amd64.tar.gz",
@@ -36,8 +36,8 @@ github_release_binary(
 )
 
 # renovate: datasource=github-releases depName=vshn/kharon
-kharon_version = "2.0.1"
-kharon_checksum = "974258e7da542dde94f0490e96f8e85f0738826d980ea465544826eb959cded6"
+kharon_version = "2.0.2"
+kharon_checksum = "a58934107c784c1395a71dc5615f1224530ef1779fc2656f5dc6ee5c77a98a62"
 
 if enabled:
     github_release_binary(

@@ -1,4 +1,5 @@
 from pyinfra import host, local
+from pyinfra.api import deploy
 from pyinfra.facts.files import Directory, File
 from pyinfra.operations import (
     apt,
@@ -379,7 +380,14 @@ if basic_utils["enable_zoom"]:
     local.include(f"{DEPLOYS_DIR}/flatpak/deploy.py")
     flatpak.packages(packages=["us.zoom.Zoom"])
 
+
+@deploy()
+def install_homebrew() -> None:
+    local.include(f"{DEPLOYS_DIR}/homebrew/deploy.py")
+
+
 if basic_utils["enable_go"]:
+    install_homebrew()
     goenv_bin = f"{HOMEBREW_BIN}/goenv"
 
     server.shell(

@@ -1,5 +1,5 @@
 # renovate: datasource=docker depName=mcr.microsoft.com/devcontainers/universal
-FROM mcr.microsoft.com/devcontainers/universal:6.1.12-noble@sha256:7d644a3e845e78e2175c9c265a383436c93ab740e77947bbcaff9592e39f7205
+FROM --platform=amd64 mcr.microsoft.com/devcontainers/universal:6.1.12-noble@sha256:7d644a3e845e78e2175c9c265a383436c93ab740e77947bbcaff9592e39f7205
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
@@ -16,6 +16,8 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && curl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/refs/tags/v1.5.9063/files/docker/systemctl3.py -o /usr/local/bin/systemctl \
     && chmod +x /usr/local/bin/systemctl
 
+RUN printf '#!/bin/sh\nexit 0\n' > /usr/local/share/pull-git-lfs-artifacts.sh
+
 USER codespace
 
 ENV NVM_DIR=/usr/local/share/nvm
@@ -28,7 +30,7 @@ ENV GEMINI_CLI_VERSION=0.67.0
 # renovate: datasource=npm depName=@openai/codex
 ENV CODEX_VERSION=0.167.0
 # renovate: datasource=npm depName=@opencode/cli
-ENV OPENCODE_VERSION=2.2.6
+ENV OPENCODE_VERSION=2.2.2
 # renovate: datasource=npm depName=t3
 ENV T3_CODE_VERSION=0.0.31
 
