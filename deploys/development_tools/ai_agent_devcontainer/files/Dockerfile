@@ -1,5 +1,5 @@
 # renovate: datasource=docker depName=mcr.microsoft.com/devcontainers/universal
-FROM --platform=amd64 mcr.microsoft.com/devcontainers/universal:6.1.12-noble@sha256:7d644a3e845e78e2175c9c265a383436c93ab740e77947bbcaff9592e39f7205
+FROM --platform=amd64 mcr.microsoft.com/devcontainers/universal:6.1.15-noble@sha256:2e679271a5a75d6da7b7271cb90149099e13142da89dd2f7225b23cf36dcc9fb
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
