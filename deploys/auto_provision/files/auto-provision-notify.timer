@@ -1,0 +1,10 @@
+[Unit]
+Description=Schedule the provisioning notification
+
+[Timer]
+OnCalendar={{ notify_on_calendar }}
+Persistent=false
+Unit=auto-provision-notify.service
+
+[Install]
+WantedBy=timers.target

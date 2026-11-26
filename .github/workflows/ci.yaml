@@ -61,5 +61,11 @@ jobs:
       - name: "run cleanup-script"
         run: sudo cleanup-script
 
+      - name: "run auto-provision notification service"
+        run: sudo systemctl start --wait auto-provision-notify.service
+
+      - name: "run auto-provision service"
+        run: sudo systemctl start --wait auto-provision.service
+
       - name: "run pyinfra a second time"
         run: uv run scripts/run_pyinfra_local.py
