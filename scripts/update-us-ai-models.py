@@ -15,6 +15,7 @@ import argparse
 import getpass
 import json
 import os
+import re
 import sys
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -270,35 +271,126 @@ def npm_name(spec):
     return spec[:at]
 
 
-def update_config(models, config_path, npm_package=None, provider_name=None, api_base_url=None):
+def skip_ws_comments(text, i, end):
+    while i < end:
+        if text[i].isspace():
+            i += 1
+        elif text[i : i + 2] == "//":
+            while i < end and text[i] != "\n":
+                i += 1
+        elif text[i : i + 2] == "/*":
+            i += 2
+            while i < end and text[i : i + 2] != "*/":
+                i += 1
+            i += 2
+        else:
+            break
+    return i
+
+
+def value_end(text, i, end):
+    i = skip_ws_comments(text, i, end)
+    if i >= end:
+        return end
+    if text[i] == '"':
+        i += 1
+        while i < end:
+            if text[i] == "\\":
+                i += 2
+            elif text[i] == '"':
+                return i + 1
+            else:
+                i += 1
+    elif text[i] in "{[":
+        stack = ["]" if text[i] == "[" else "}"]
+        i += 1
+        while i < end and stack:
+            if text[i] == '"':
+                i += 1
+                while i < end:
+                    if text[i] == "\\":
+                        i += 2
+                    elif text[i] == '"':
+                        i += 1
+                        break
+                    else:
+                        i += 1
+                continue
+            if text[i : i + 2] == "//":
+                while i < end and text[i] != "\n":
+                    i += 1
+                continue
+            if text[i : i + 2] == "/*":
+                i += 2
+                while i < end and text[i : i + 2] != "*/":
+                    i += 1
+                i += 2
+                continue
+            if text[i] in "{[":
+                stack.append("]" if text[i] == "[" else "}")
+            elif text[i] == stack[-1]:
+                stack.pop()
+            i += 1
+        return i
+    while i < end and text[i] not in ",}] \t\r\n":
+        i += 1
+    return i
+
+
+def object_span(text, key, start=0, end=None):
+    if end is None:
+        end = len(text)
+    match = re.search(rf'"{re.escape(key)}"\s*:\s*\{{', text[start:end])
+    if not match:
+        return None
+    brace = start + match.end() - 1
+    return brace, value_end(text, brace, end)
+
+
+def line_indent(text, pos):
+    start = text.rfind("\n", 0, pos) + 1
+    line = text[start:]
+    return line[: len(line) - len(line.lstrip())]
+
+
+def render_members(mapping, indent):
+    lines = json.dumps(mapping, indent=2).splitlines()[1:-1]
+    return "\n".join(indent + line for line in lines)
+
+
+def update_config(models, config_path):
     """Update the opencode.jsonc config with the given models."""
     with open(config_path) as f:
-        config = json.loads(normalize_jsonc(f.read()))
-
-    provider_name = provider_name or PROVIDER_NAME
-    api_base_url = api_base_url or API_BASE_URL
+        original = f.read()
+    config = json.loads(normalize_jsonc(original))
 
     models_dict = {}
     for model in models:
-        model_id = model.get("id", "")
-        display_name = get_display_name(model)
-        models_dict[model_id] = {"name": display_name}
-
+        models_dict[model.get("id", "")] = {"name": get_display_name(model)}
     sorted_models = dict(sorted(models_dict.items()))
 
-    provider_config = {
-        "npm": npm_package or "@ai-sdk/openai-compatible",
-        "name": "VSHN US AI",
-        "models": sorted_models,
-    }
+    target = config.setdefault("provider", {}).setdefault(PROVIDER_NAME, {})
+    target.update({"npm": "@ai-sdk/openai-compatible", "name": "VSHN US AI", "models": sorted_models})
 
-    config["provider"][provider_name] = provider_config
-
-    text = json.dumps(config, indent=2)
+    provider_span = object_span(original, "provider")
+    if provider_span:
+        target_span = object_span(original, PROVIDER_NAME, provider_span[0], provider_span[1])
+        if target_span:
+            indent = line_indent(original, target_span[0])
+            body = render_members(target, indent)
+            original = original[: target_span[0] + 1] + "\n" + body + "\n" + indent + original[target_span[1] - 1 :]
+        else:
+            indent = line_indent(original, provider_span[0])
+            body = render_members({PROVIDER_NAME: target}, indent)
+            original = original[: provider_span[0] + 1] + "\n" + body + "," + original[provider_span[0] + 1 :]
+    else:
+        body = render_members({"provider": {PROVIDER_NAME: target}}, "")
+        close = original.rfind("}")
+        separator = "\n" if original[:close].rstrip().endswith(",") else ",\n"
+        original = original[:close] + separator + body + "\n" + original[close:]
 
     with open(config_path, "w") as f:
-        f.write(text)
-        f.write("\n")
+        f.write(original)
 
     print(f"Updated {len(sorted_models)} models in {config_path}")
 
@@ -407,7 +499,6 @@ def main():
     update_config(
         filtered,
         config_path=args.config_path,
-        api_base_url=args.api_base_url,
     )
 
 
