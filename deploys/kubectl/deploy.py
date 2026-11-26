@@ -174,10 +174,14 @@ complete -F __start_kubectl k
             ],
         )
 
+    # renovate: datasource=github-releases depName=itaysk/kubectl-neat
+    kubectl_neat_version = "2.0.4"
+    kubectl_neat_checksum = "2a4e0ce4988554e39e66135f3e6894434e7c8629fb173f40bc4e160dbc7f3f25"
+
     github_release_binary(
-        url=f"https://github.com/itaysk/kubectl-neat/releases/download/v{kubectl['kubectl_neat_version']}/kubectl-neat_linux_amd64.tar.gz",
+        url=f"https://github.com/itaysk/kubectl-neat/releases/download/v{kubectl_neat_version}/kubectl-neat_linux_amd64.tar.gz",
         binary_name="kubectl-neat",
-        checksum="8dc3086fa8e7f5390f35a0b257566af478575ae3cc0d5b4614fbebbee5f35352",
+        checksum=kubectl_neat_checksum,
     )
 
     github_release_binary(

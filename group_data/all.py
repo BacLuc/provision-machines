@@ -253,8 +253,6 @@ nvm = {
 
 kubectl = {
     "enabled": True,
-    # renovate: datasource=github-releases depName=itaysk/kubectl-neat
-    "kubectl_neat_version": "2.0.4",
     # renovate: datasource=github-releases depName=robscott/kube-capacity
     "kubectl_capacity_version": "0.8.0",
     # renovate: datasource=github-releases depName=rajatjindal/kubectl-modify-secret
